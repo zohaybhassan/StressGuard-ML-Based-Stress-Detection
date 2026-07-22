@@ -1,0 +1,170 @@
+{
+  "selected_model": "Voting_top3_tuned",
+  "rationale": "Highest holdout test_accuracy and test_f1_weighted on StressGuard_Iteration1_Balanced_Data.csv (binary-stress, base features).",
+  "dataset_path": "D:\\FYP\\StressGuard_Iteration1_Balanced_Data.csv",
+  "feature_mode": "base",
+  "label": {
+    "type": "binary-stress",
+    "binary_threshold": 7,
+    "class_0": "not_stressed",
+    "class_1": "stressed"
+  },
+  "reported_voting_metrics": {
+    "test_accuracy": 0.8940677966101694,
+    "test_f1_weighted": 0.8939725623847665,
+    "classification_report": {
+      "0": {
+        "precision": 0.9087719298245615,
+        "recall": 0.9151943462897526,
+        "f1-score": 0.9119718309859155,
+        "support": 283.0
+      },
+      "1": {
+        "precision": 0.8716577540106952,
+        "recall": 0.8624338624338624,
+        "f1-score": 0.8670212765957447,
+        "support": 189.0
+      },
+      "accuracy": 0.8940677966101694,
+      "macro avg": {
+        "precision": 0.8902148419176283,
+        "recall": 0.8888141043618075,
+        "f1-score": 0.8894965537908301,
+        "support": 472.0
+      },
+      "weighted avg": {
+        "precision": 0.8939105331533311,
+        "recall": 0.8940677966101694,
+        "f1-score": 0.8939725623847665,
+        "support": 472.0
+      }
+    },
+    "confusion_matrix": [
+      [
+        259,
+        24
+      ],
+      [
+        26,
+        163
+      ]
+    ]
+  },
+  "refit_holdout_metrics_dataframe_fit": {
+    "test_accuracy": 0.8940677966101694,
+    "test_f1_weighted": 0.8939725623847665
+  },
+  "onnx_bundle_holdout_metrics_numpy_refit": {
+    "test_accuracy": 0.8940677966101694,
+    "test_f1_weighted": 0.8939725623847665
+  },
+  "onnx_export_note": "Sub-models were refit on float32 NumPy (same column order as feature_names) so XGBoost exports to ONNX; use the same input layout on Android. Metrics may differ slightly from the original DataFrame-trained voting reported in tuning_report.json.",
+  "feature_names": [
+    "Age",
+    "Heart Rate",
+    "Daily Steps",
+    "Sleep Duration",
+    "Gender_Male",
+    "Occupation_Artist",
+    "Occupation_Chef",
+    "Occupation_Doctor",
+    "Occupation_Engineer",
+    "Occupation_Lawyer",
+    "Occupation_Manager",
+    "Occupation_Nurse",
+    "Occupation_Sales Representative",
+    "Occupation_Salesperson",
+    "Occupation_Scientist",
+    "Occupation_Software Engineer",
+    "Occupation_Student",
+    "Occupation_Teacher",
+    "Occupation_Writer",
+    "BMI Category_Obese",
+    "BMI Category_Overweight",
+    "BMI Category_Underweight"
+  ],
+  "n_features": 22,
+  "ensemble": {
+    "type": "soft_vote_equal_weights",
+    "members": [
+      {
+        "tuned_name": "RandomForest_tuned",
+        "onnx_file": "random_forest.onnx",
+        "inputs": [
+          [
+            "float_input",
+            [
+              0,
+              22
+            ]
+          ]
+        ],
+        "outputs": [
+          [
+            "output_label",
+            [
+              0
+            ]
+          ],
+          [
+            "output_probability",
+            []
+          ]
+        ]
+      },
+      {
+        "tuned_name": "CatBoost_tuned",
+        "onnx_file": "catboost.onnx",
+        "inputs": [
+          [
+            "features",
+            [
+              0,
+              22
+            ]
+          ]
+        ],
+        "outputs": [
+          [
+            "label",
+            [
+              0
+            ]
+          ],
+          [
+            "probabilities",
+            []
+          ]
+        ]
+      },
+      {
+        "tuned_name": "XGBoost_tuned",
+        "onnx_file": "xgboost.onnx",
+        "inputs": [
+          [
+            "input",
+            [
+              0,
+              22
+            ]
+          ]
+        ],
+        "outputs": [
+          [
+            "label",
+            [
+              0
+            ]
+          ],
+          [
+            "probabilities",
+            [
+              0,
+              2
+            ]
+          ]
+        ]
+      }
+    ]
+  }
+}

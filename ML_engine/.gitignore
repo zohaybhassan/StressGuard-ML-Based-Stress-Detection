@@ -1,0 +1,11 @@
+﻿__pycache__/
+.venv/
+venv/
+mlruns/
+catboost_info/
+*.joblib
+*.pkl
+*.pickle
+
+!mobile_export/**/*.onnx
+!mobile_export/**/*.json

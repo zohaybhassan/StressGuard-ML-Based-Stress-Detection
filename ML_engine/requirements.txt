@@ -1,0 +1,14 @@
+pandas
+numpy
+scikit-learn
+xgboost
+joblib
+matplotlib
+seaborn
+mlflow
+lightgbm
+catboost
+plotly
+onnx
+skl2onnx
+onnxmltools

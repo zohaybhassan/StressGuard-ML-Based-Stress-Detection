@@ -1,0 +1,26 @@
+StressGuard Tuning Summary
+Label mode: three-level
+Three-level scheme: wide-normal
+Feature mode: base
+Train samples: 1888 | Test samples: 472
+RandomizedSearch iterations per model: 12
+
+CV best weighted F1 (tuned base models):
+- RandomForest_tuned: 0.7646
+- XGBoost_tuned: 0.7640
+- CatBoost_tuned: 0.7638
+- LightGBM_tuned: 0.7523
+
+Test weighted F1 (all tuned candidates):
+- Voting_top3_tuned: 0.8139 | acc 0.8136
+- Stacking_top3_tuned: 0.7987 | acc 0.7987
+- XGBoost_tuned: 0.7950 | acc 0.7945
+- LightGBM_tuned: 0.7870 | acc 0.7860
+- RandomForest_tuned: 0.7845 | acc 0.7839
+- CatBoost_tuned: 0.7824 | acc 0.7818
+
+Selected best candidate: Voting_top3_tuned
+Best test weighted F1: 0.8139
+Best test accuracy: 0.8136
+Saved model: d:\FYP\ml_engine\artifacts_tuned_widenormal\best_tuned_model.joblib
+Saved report: d:\FYP\ml_engine\artifacts_tuned_widenormal\tuning_report.json
