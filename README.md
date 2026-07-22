@@ -1,6 +1,6 @@
 
 
-# StressGuard: Multi-Modal Stress Detection & Intervention
+# **StressGuard: Multi-Modal Stress Detection & Intervention**
 
 StressGuard is an AI-driven health monitoring system designed to detect, analyze, and mitigate psychological stress using real-time wearable telemetry. The project utilizes a **Stacked Ensemble Learning** architecture to provide high-accuracy stress predictions on a 1-10 scale.
 
