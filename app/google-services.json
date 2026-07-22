@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "1073725128023",
+    "project_id": "stressguard-8f410",
+    "storage_bucket": "stressguard-8f410.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1073725128023:android:006f29582c42288e0c9212",
+        "android_client_info": {
+          "package_name": "com.example.stressguard"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1073725128023-oatnp08kch4hbnhfi2sr8uuuulk1as10.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.stressguard",
+            "certificate_hash": "ae97eb6600006af0e2fa9bbf76dfbd2aea7a5157"
+          }
+        },
+        {
+          "client_id": "1073725128023-kqh8coab485qj90th0gud1rqvd8k0qvg.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA6UlstIl3u5BBtH9QhggY_gI2h02x2rPU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1073725128023-kqh8coab485qj90th0gud1rqvd8k0qvg.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

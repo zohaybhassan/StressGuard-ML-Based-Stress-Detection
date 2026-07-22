@@ -1,0 +1,60 @@
+# Gradle / Android build outputs
+.gradle/
+.kotlin/
+build/
+*/build/
+captures/
+.externalNativeBuild/
+.cxx/
+
+# Local machine configuration
+local.properties
+*.local
+
+# Android Studio / IntelliJ
+*.iml
+.idea/caches/
+.idea/libraries/
+.idea/modules.xml
+.idea/workspace.xml
+.idea/navEditor.xml
+.idea/assetWizardSettings.xml
+.idea/deploymentTargetSelector.xml
+.idea/compiler.xml
+.idea/jarRepositories.xml
+.idea/misc.xml
+.idea/runConfigurations.xml
+
+# Generated APK / bundle artifacts
+*.apk
+*.ap_
+*.aab
+*.aar
+*.dex
+
+# Signing and secrets
+*.jks
+*.keystore
+keystore.properties
+
+# Logs and reports
+*.log
+logcat*.txt
+hs_err_pid*
+lint-results*.html
+lint-results*.xml
+
+# Test outputs
+test-results/
+connected_android_test_additional_output/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Temporary project inspection files
+tmp_model_inspect/
+
+# Keep source model assets tracked.
+!app/src/main/assets/stress_model/*.onnx
+!app/src/main/assets/stress_model/*.json

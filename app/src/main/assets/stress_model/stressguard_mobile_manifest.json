@@ -1,0 +1,190 @@
+{
+  "selected_model": "Voting_top3_tuned",
+  "export_kind": "three_level_wide_normal",
+  "rationale": "Voting_top3_tuned three-level (wide-normal) on StressGuard_Iteration1_Balanced_Data.csv (base features). Reference test_accuracy ~0.814, test_f1_weighted ~0.814.",
+  "tuning_report_path": "D:\\FYP\\ml_engine\\artifacts_tuned_widenormal\\tuning_report.json",
+  "dataset_path": "D:\\FYP\\StressGuard_Iteration1_Balanced_Data.csv",
+  "feature_mode": "base",
+  "label": {
+    "type": "three-level",
+    "three_level_scheme": "wide-normal",
+    "n_classes": 3,
+    "class_0": "relaxed_low_stress",
+    "class_1": "normal",
+    "class_2": "stressed_high",
+    "scheme_note_wide_normal": "wide-normal bins on 1\u201310 score: classes 0\u22481\u20133, 1\u22484\u20137, 2\u22488\u201310 (see optimize_ml_engine.map_to_three_level_stress)."
+  },
+  "reported_voting_metrics": {
+    "test_accuracy": 0.8135593220338984,
+    "test_f1_weighted": 0.8139329600407043,
+    "classification_report": {
+      "0": {
+        "precision": 0.8652482269503546,
+        "recall": 0.8591549295774648,
+        "f1-score": 0.8621908127208481,
+        "support": 142.0
+      },
+      "1": {
+        "precision": 0.7589743589743589,
+        "recall": 0.783068783068783,
+        "f1-score": 0.7708333333333334,
+        "support": 189.0
+      },
+      "2": {
+        "precision": 0.8382352941176471,
+        "recall": 0.8085106382978723,
+        "f1-score": 0.8231046931407943,
+        "support": 141.0
+      },
+      "accuracy": 0.8135593220338984,
+      "macro avg": {
+        "precision": 0.8208192933474536,
+        "recall": 0.8169114503147067,
+        "f1-score": 0.8187096130649919,
+        "support": 472.0
+      },
+      "weighted avg": {
+        "precision": 0.8146241070840942,
+        "recall": 0.8135593220338984,
+        "f1-score": 0.8139329600407043,
+        "support": 472.0
+      }
+    },
+    "confusion_matrix": [
+      [
+        122,
+        20,
+        0
+      ],
+      [
+        19,
+        148,
+        22
+      ],
+      [
+        0,
+        27,
+        114
+      ]
+    ]
+  },
+  "refit_holdout_metrics_dataframe_fit": {
+    "test_accuracy": 0.8135593220338984,
+    "test_f1_weighted": 0.8139329600407043
+  },
+  "onnx_bundle_holdout_metrics_numpy_refit": {
+    "test_accuracy": 0.8135593220338984,
+    "test_f1_weighted": 0.8139329600407043
+  },
+  "onnx_export_note": "Sub-models were refit on float32 NumPy (same column order as feature_names) so XGBoost exports to ONNX; use the same input layout on Android.",
+  "kotlin_inference": "For each ONNX, obtain a length-K probability vector (K=n_classes). Average the three vectors element-wise, then argmax for the predicted class. If a model returns logits, apply softmax per model before averaging.",
+  "feature_names": [
+    "Age",
+    "Heart Rate",
+    "Daily Steps",
+    "Sleep Duration",
+    "Gender_Male",
+    "Occupation_Artist",
+    "Occupation_Chef",
+    "Occupation_Doctor",
+    "Occupation_Engineer",
+    "Occupation_Lawyer",
+    "Occupation_Manager",
+    "Occupation_Nurse",
+    "Occupation_Sales Representative",
+    "Occupation_Salesperson",
+    "Occupation_Scientist",
+    "Occupation_Software Engineer",
+    "Occupation_Student",
+    "Occupation_Teacher",
+    "Occupation_Writer",
+    "BMI Category_Obese",
+    "BMI Category_Overweight",
+    "BMI Category_Underweight"
+  ],
+  "n_features": 22,
+  "n_classes": 3,
+  "ensemble": {
+    "type": "soft_vote_equal_weights",
+    "members": [
+      {
+        "tuned_name": "RandomForest_tuned",
+        "onnx_file": "random_forest.onnx",
+        "inputs": [
+          [
+            "float_input",
+            [
+              0,
+              22
+            ]
+          ]
+        ],
+        "outputs": [
+          [
+            "output_label",
+            [
+              0
+            ]
+          ],
+          [
+            "output_probability",
+            []
+          ]
+        ]
+      },
+      {
+        "tuned_name": "XGBoost_tuned",
+        "onnx_file": "xgboost.onnx",
+        "inputs": [
+          [
+            "input",
+            [
+              0,
+              22
+            ]
+          ]
+        ],
+        "outputs": [
+          [
+            "label",
+            [
+              0
+            ]
+          ],
+          [
+            "probabilities",
+            [
+              0,
+              3
+            ]
+          ]
+        ]
+      },
+      {
+        "tuned_name": "CatBoost_tuned",
+        "onnx_file": "catboost.onnx",
+        "inputs": [
+          [
+            "features",
+            [
+              0,
+              22
+            ]
+          ]
+        ],
+        "outputs": [
+          [
+            "label",
+            [
+              0
+            ]
+          ],
+          [
+            "probabilities",
+            []
+          ]
+        ]
+      }
+    ]
+  }
+}
