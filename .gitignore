@@ -36,6 +36,7 @@ local.properties
 *.jks
 *.keystore
 keystore.properties
+app/google-services.json
 
 # Logs and reports
 *.log
@@ -58,3 +59,4 @@ tmp_model_inspect/
 # Keep source model assets tracked.
 !app/src/main/assets/stress_model/*.onnx
 !app/src/main/assets/stress_model/*.json
+
