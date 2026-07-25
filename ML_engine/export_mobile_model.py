@@ -22,7 +22,7 @@ import joblib
 import numpy as np
 import onnx
 from catboost import CatBoostClassifier
-from onnxmltools.convert import convert_xgboost
+from onnxmltools.convert import convert_lightgbm, convert_xgboost
 from onnxmltools.convert.common.data_types import FloatTensorType
 from sklearn.base import clone
 from sklearn.ensemble import RandomForestClassifier, VotingClassifier
@@ -143,8 +143,10 @@ def export_onnx_for_top_three(
             _export_one_catboost(est, out_dir / fname, catboost_doc)
         elif "LightGBM" in full_name:
             fname = "lightgbm.onnx"
-            initial_types = [("float_input", SklFloatTensorType([None, n_features]))]
-            onx = convert_sklearn(est, initial_types=initial_types, target_opset=opset)
+            # skl2onnx has no shape calculator for LGBMClassifier; it needs onnxmltools,
+            # the same way XGBoost does.
+            initial_types = [("input", FloatTensorType([None, n_features]))]
+            onx = convert_lightgbm(est, initial_types=initial_types, target_opset=opset)
             (out_dir / fname).write_bytes(onx.SerializeToString())
         else:
             raise ValueError(f"Unsupported estimator for ONNX export: {full_name}")
@@ -187,6 +189,45 @@ def _label_block(
             ),
         }
     return {"type": label_mode, "n_classes": n_classes}
+
+
+def _resolve_members(
+    requested: str,
+    report: Dict[str, Any],
+    built: Dict[str, Any],
+) -> List[str]:
+    """
+    Decide which base learners go into the exported soft-voting ensemble.
+
+    The tuning report's top_three_for_ensembles is whichever three scored best in CV, which
+    varies with the data and can include SVM or LightGBM. Those are deliberately not the
+    default here: the Android bundle, its manifest and the project write-up are all built
+    around three tree models that convert cleanly to ONNX, and their accuracy is within a
+    fraction of a point of the CV leaders. Pass --ensemble-members to override.
+    """
+    names = [n.strip() for n in requested.split(",") if n.strip()]
+    if not names:
+        raise ValueError("--ensemble-members is empty")
+
+    resolved: List[str] = []
+    for name in names:
+        key = name if name.endswith("_tuned") else f"{name}_tuned"
+        if key not in built:
+            raise KeyError(
+                f"cannot build {key!r} for export. Available: {sorted(built)}. "
+                "Tuned parameters for it may be absent from the report, or the exporter has "
+                "no ONNX conversion path for that model type."
+            )
+        resolved.append(key)
+
+    cv_top = report.get("top_three_for_ensembles", [])
+    if cv_top and list(cv_top) != resolved:
+        print(
+            f"NOTE: exporting {resolved} instead of the report's CV top three {list(cv_top)}. "
+            "Metrics recorded in the manifest are measured on the exported ensemble, not on "
+            "the report's Voting_top3_tuned figure."
+        )
+    return resolved
 
 
 def _resolve_dataset(override: str | None, recorded: str | None, root: Path) -> Path:
@@ -248,6 +289,14 @@ def main() -> None:
         help="Training CSV. Overrides the dataset_path recorded in the tuning report, which "
         "may point at a stale absolute path from the machine that ran the tuning.",
     )
+    parser.add_argument(
+        "--ensemble-members",
+        type=str,
+        default="RandomForest,XGBoost,CatBoost",
+        help="Comma-separated base learners for the exported soft vote. Defaults to the three "
+        "tree models the Android bundle is built around, rather than the tuning report's CV "
+        "top three, which may include models with no ONNX conversion path here.",
+    )
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--test-size", type=float, default=0.2)
     parser.add_argument("--opset", type=int, default=15)
@@ -303,7 +352,7 @@ def main() -> None:
     )
 
     built = _build_estimators(report, args.seed, n_classes)
-    top_three: List[str] = report["top_three_for_ensembles"]
+    top_three: List[str] = _resolve_members(args.ensemble_members, report, built)
     estimators_list: List[Tuple[str, Any]] = [
         (full.replace("_tuned", ""), built[full]) for full in top_three
     ]
@@ -356,7 +405,16 @@ def main() -> None:
     manifest: Dict[str, Any] = {
         "selected_model": "Voting_top3_tuned",
         "export_kind": args.export_kind,
-        "rationale": rationale,
+        # Describe what was actually exported. A hardcoded rationale goes stale the first time
+        # the data or the ensemble membership changes, and this string ends up in the report.
+        "rationale": (
+            f"Soft-voting ensemble of {[m['tuned_name'] for m in members]} for {label_mode}"
+            + (f" ({scheme})" if label_mode == "three-level" else "")
+            + f", trained on {data_path.name} ({feature_mode} features, raw physical units). "
+            f"Holdout test_accuracy {acc_np:.4f}, test_f1_weighted {f1_np:.4f} "
+            f"over {len(y_test)} samples."
+        ),
+        "export_preset": rationale,
         "tuning_report_path": str(report_path),
         "dataset_path": str(data_path),
         "feature_mode": feature_mode,
@@ -376,6 +434,12 @@ def main() -> None:
         "feature_names": feature_names,
         "n_features": n_features,
         "n_classes": n_classes,
+        # The contract the caller must honour. "raw_physical" means Age in years, Heart Rate in
+        # bpm, Daily Steps as a count and Sleep Duration in hours, passed through unscaled.
+        # Recorded explicitly because sending standardized values to a model trained on raw
+        # units (or the reverse) produces confident, constant, wrong predictions rather than
+        # any visible error. See diagnose_input_scale.py.
+        "input_units": "raw_physical",
         "ensemble": {
             "type": "soft_vote_equal_weights",
             "members": members,

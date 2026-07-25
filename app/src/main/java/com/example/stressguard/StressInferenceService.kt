@@ -1,215 +1,220 @@
 package com.example.stressguard
 
-import android.content.Context
-import android.util.Log
 import ai.onnxruntime.OnnxTensor
 import ai.onnxruntime.OnnxValue
 import ai.onnxruntime.OrtEnvironment
 import ai.onnxruntime.OrtSession
+import android.content.Context
+import android.util.Log
 import java.nio.FloatBuffer
-import kotlin.math.abs
 
 data class StressPrediction(
     val label: String,
     val classIndex: Int,
     val confidence: Float,
     val probabilities: FloatArray,
-)
+    /** Which model build produced this, for stored history and for the report. */
+    val modelVersion: String,
+) {
+    /** FloatArray gives this data class reference equality; compare by content instead. */
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is StressPrediction) return false
+        return label == other.label &&
+            classIndex == other.classIndex &&
+            confidence == other.confidence &&
+            modelVersion == other.modelVersion &&
+            probabilities.contentEquals(other.probabilities)
+    }
 
+    override fun hashCode(): Int {
+        var result = label.hashCode()
+        result = 31 * result + classIndex
+        result = 31 * result + confidence.hashCode()
+        result = 31 * result + modelVersion.hashCode()
+        result = 31 * result + probabilities.contentHashCode()
+        return result
+    }
+}
+
+/**
+ * Runs the exported stress ensemble on device.
+ *
+ * The three ONNX base learners each produce a class-probability vector; those are averaged
+ * element-wise (equal-weight soft vote, matching the sklearn VotingClassifier they were
+ * exported from) and the argmax is the prediction.
+ *
+ * Nothing here adjusts the model's output. An earlier version blended in a hand-written
+ * "sensor risk" score at 45% weight to make the gauge respond to heart rate, because the models
+ * were being fed raw units while trained on z-scores and so returned a constant vector. The
+ * models are now trained on raw units (ML_engine/prepare_dataset.py), which fixes the cause,
+ * and the displayed score is the model's own output.
+ *
+ * Sessions are created lazily on first use. Loading all three graphs costs roughly 23 MB, so
+ * [predict] must be called off the main thread.
+ */
 class StressInferenceService(context: Context) : AutoCloseable {
     private val appContext = context.applicationContext
     private val environment: OrtEnvironment = OrtEnvironment.getEnvironment()
     private val sessionOptions = OrtSession.SessionOptions()
 
-    private val models = listOf(
-        ModelSpec("RandomForest", "stress_model/random_forest.onnx", "float_input", "output_probability"),
-        ModelSpec("XGBoost", "stress_model/xgboost.onnx", "input", "probabilities"),
-        ModelSpec("CatBoost", "stress_model/catboost.onnx", "features", "probabilities"),
-    )
-
-    private val sessions: List<Pair<ModelSpec, OrtSession>> = models.map { spec ->
-        spec to environment.createSession(readAssetBytes(spec.assetPath), sessionOptions)
+    val modelInfo: StressModelInfo by lazy {
+        StressModelInfo.parse(readAssetText(MANIFEST_ASSET), ASSET_DIR)
     }
 
+    private val sessionsDelegate = lazy {
+        modelInfo.members.map { member ->
+            member to environment.createSession(readAssetBytes(member.assetPath), sessionOptions)
+        }
+    }
+
+    private val sessions: List<Pair<StressModelMember, OrtSession>> by sessionsDelegate
+
+    /** Builds the feature vector in the manifest's declared order, then predicts. */
+    fun predict(profile: StressProfile, vitals: StressVitals): StressPrediction =
+        predict(StressFeatureBuilder.buildVector(profile, vitals, modelInfo.featureNames))
+
     fun predict(features: FloatArray): StressPrediction {
-        require(features.size == StressFeatureBuilder.FEATURE_COUNT) {
-            "Expected ${StressFeatureBuilder.FEATURE_COUNT} features, received ${features.size}"
+        val expected = modelInfo.featureNames.size
+        require(features.size == expected) {
+            "Expected $expected features (per manifest), received ${features.size}"
         }
 
-        val averaged = FloatArray(CLASS_LABELS.size)
+        val classCount = modelInfo.classCount
+        val averaged = FloatArray(classCount)
 
-        sessions.forEach { (spec, session) ->
-            val probabilities = runModel(spec, session, features)
-            Log.d(
-                "STRESS_MODEL",
-                "${spec.name} probabilities=${probabilities.joinToString(prefix = "[", postfix = "]")}"
-            )
+        sessions.forEach { (member, session) ->
+            val probabilities = runModel(member, session, features, classCount)
+            Log.d(TAG, "${member.name} probabilities=${probabilities.joinToString(prefix = "[", postfix = "]")}")
             for (index in averaged.indices) {
                 averaged[index] += probabilities[index] / sessions.size
             }
         }
 
+        val normalized = normalize(averaged, classCount)
+        val classIndex = normalized.indices.maxByOrNull { normalized[it] } ?: 0
+
         Log.d(
-            "STRESS_MODEL",
-            "ModelAverage probabilities=${averaged.joinToString(prefix = "[", postfix = "]")}"
+            TAG,
+            "EnsembleAverage=${normalized.joinToString(prefix = "[", postfix = "]")} " +
+                "class=${modelInfo.classLabels[classIndex]} model=${modelInfo.version}"
         )
 
-        val sensorCalibrated = calibrateWithSensorRisk(averaged, features)
-        val classIndex = sensorCalibrated.indices.maxByOrNull { sensorCalibrated[it] } ?: 0
         return StressPrediction(
-            label = CLASS_LABELS[classIndex],
+            label = modelInfo.classLabels[classIndex],
             classIndex = classIndex,
-            confidence = sensorCalibrated[classIndex],
-            probabilities = sensorCalibrated,
+            confidence = normalized[classIndex],
+            probabilities = normalized,
+            modelVersion = modelInfo.version,
         )
-    }
-
-    private fun calibrateWithSensorRisk(
-        modelProbabilities: FloatArray,
-        features: FloatArray,
-    ): FloatArray {
-        val heartRate = features[HEART_RATE_INDEX]
-        val dailySteps = features[DAILY_STEPS_INDEX]
-        val sleepHours = features[SLEEP_DURATION_INDEX]
-
-        val heartRisk = ((heartRate - 70f) / 45f).coerceIn(0f, 1f)
-        val lowSleepRisk = ((7f - sleepHours) / 3f).coerceIn(0f, 1f)
-        val lowActivityRisk = ((6000f - dailySteps) / 5000f).coerceIn(0f, 1f)
-        val sensorRisk = (
-            heartRisk * 0.55f +
-                lowSleepRisk * 0.30f +
-                lowActivityRisk * 0.15f
-            ).coerceIn(0f, 1f)
-
-        // Tree models can be piecewise constant for a fixed profile, so this light
-        // calibration keeps live wearable changes visible in the final app score.
-        val sensorProbabilities = normalize(
-            floatArrayOf(
-                (1f - sensorRisk) * (1f - sensorRisk),
-                (1f - abs(sensorRisk - 0.5f) * 2f).coerceIn(0f, 1f) * 1.25f,
-                sensorRisk * sensorRisk,
-            )
-        )
-
-        val calibrated = FloatArray(CLASS_LABELS.size) { index ->
-            modelProbabilities[index] * MODEL_WEIGHT + sensorProbabilities[index] * SENSOR_WEIGHT
-        }
-
-        Log.d(
-            "STRESS_MODEL",
-            "SensorCalibration risk=$sensorRisk, sensorProbabilities=" +
-                sensorProbabilities.joinToString(prefix = "[", postfix = "]") +
-                ", calibrated=${calibrated.joinToString(prefix = "[", postfix = "]")}"
-        )
-
-        return normalize(calibrated)
     }
 
     private fun runModel(
-        spec: ModelSpec,
+        member: StressModelMember,
         session: OrtSession,
         features: FloatArray,
+        classCount: Int,
     ): FloatArray {
         val inputShape = longArrayOf(1L, features.size.toLong())
-        OnnxTensor.createTensor(environment, FloatBuffer.wrap(features), inputShape).use { inputTensor ->
-            session.run(mapOf(spec.inputName to inputTensor)).use { result ->
-                val output = result.get(spec.probabilityOutputName).orElse(null)
-                    ?: throw IllegalStateException("Missing ONNX output ${spec.probabilityOutputName}")
-
-                return extractProbabilities(output)
+        OnnxTensor.createTensor(environment, FloatBuffer.wrap(features), inputShape).use { input ->
+            session.run(mapOf(member.inputName to input)).use { result ->
+                val output = result.get(member.probabilityOutputName).orElse(null)
                     ?: throw IllegalStateException(
-                        "Could not read probabilities from ${spec.assetPath}. " +
-                            "Output type: ${describeValue(output)}"
+                        "Missing ONNX output ${member.probabilityOutputName} in ${member.assetPath}"
+                    )
+
+                return probabilityVector(output.value, classCount)
+                    ?: throw IllegalStateException(
+                        "Could not read probabilities from ${member.assetPath}. " +
+                            "Output type: ${describe(output.value)}"
                     )
             }
         }
     }
 
-    private fun extractProbabilities(output: OnnxValue): FloatArray? =
-        normalizeProbabilityVector(output.value)
-
-    private fun normalizeProbabilityVector(value: Any?): FloatArray? {
-        return when (value) {
-            is OnnxValue -> normalizeProbabilityVector(value.value)
-            is FloatArray -> normalize(value)
-            is DoubleArray -> normalize(value.map { it.toFloat() }.toFloatArray())
-            is IntArray -> normalize(value.map { it.toFloat() }.toFloatArray())
-            is LongArray -> normalize(value.map { it.toFloat() }.toFloatArray())
-            is Array<*> -> value.firstNotNullOfOrNull { normalizeProbabilityVector(it) }
-            is List<*> -> value.firstNotNullOfOrNull { normalizeProbabilityVector(it) }
-            is Map<*, *> -> mapToProbabilityVector(value)
-            else -> {
-                Log.w("STRESS_MODEL", "Unsupported ONNX probability value: ${describeAny(value)}")
-                null
-            }
+    /**
+     * Unpacks a probability vector from the shapes the three exporters emit: a plain array,
+     * a batch-of-one wrapping such an array, or the ZipMap output skl2onnx gives
+     * RandomForest, which is a class-index-to-probability map.
+     */
+    private fun probabilityVector(value: Any?, classCount: Int): FloatArray? = when (value) {
+        is OnnxValue -> probabilityVector(value.value, classCount)
+        is FloatArray -> normalize(value, classCount)
+        is DoubleArray -> normalize(FloatArray(value.size) { value[it].toFloat() }, classCount)
+        is IntArray -> normalize(FloatArray(value.size) { value[it].toFloat() }, classCount)
+        is LongArray -> normalize(FloatArray(value.size) { value[it].toFloat() }, classCount)
+        is Array<*> -> value.firstNotNullOfOrNull { probabilityVector(it, classCount) }
+        is List<*> -> value.firstNotNullOfOrNull { probabilityVector(it, classCount) }
+        is Map<*, *> -> mapToProbabilityVector(value, classCount)
+        else -> {
+            Log.w(TAG, "Unsupported ONNX probability value: ${describe(value)}")
+            null
         }
     }
 
-    private fun mapToProbabilityVector(value: Map<*, *>): FloatArray {
-        val probabilities = FloatArray(CLASS_LABELS.size)
+    private fun mapToProbabilityVector(value: Map<*, *>, classCount: Int): FloatArray {
+        val probabilities = FloatArray(classCount)
+        var matched = 0
 
-        value.forEach { (key, rawValue) ->
+        value.forEach { (key, raw) ->
             val classIndex = when (key) {
                 is Number -> key.toInt()
                 is String -> key.toIntOrNull()
                 else -> null
             }
-
-            if (classIndex != null && classIndex in probabilities.indices) {
-                probabilities[classIndex] = when (rawValue) {
-                    is Number -> rawValue.toFloat()
-                    else -> 0f
-                }
+            if (classIndex != null && classIndex in probabilities.indices && raw is Number) {
+                probabilities[classIndex] = raw.toFloat()
+                matched++
             }
         }
 
-        return normalize(probabilities)
+        require(matched == classCount) {
+            "ZipMap output had $matched usable entries for $classCount classes: ${value.keys}"
+        }
+        return normalize(probabilities, classCount)
     }
 
-    private fun normalize(values: FloatArray): FloatArray {
-        val trimmed = if (values.size == CLASS_LABELS.size) values else values.copyOf(CLASS_LABELS.size)
-        val sum = trimmed.sum()
-
-        if (sum <= 0f) return trimmed
-        return FloatArray(trimmed.size) { index -> trimmed[index] / sum }
+    /**
+     * Scales a vector to sum to 1. A length mismatch means the bundle and the manifest disagree,
+     * which would silently reassign classes, so it throws rather than padding or truncating.
+     */
+    private fun normalize(values: FloatArray, classCount: Int): FloatArray {
+        require(values.size == classCount) {
+            "Model returned ${values.size} probabilities but the manifest declares $classCount classes"
+        }
+        val sum = values.sum()
+        if (sum <= 0f) return values
+        return FloatArray(values.size) { values[it] / sum }
     }
 
     private fun readAssetBytes(assetPath: String): ByteArray =
         appContext.assets.open(assetPath).use { it.readBytes() }
 
-    private fun describeValue(value: OnnxValue): String =
-        "${value.javaClass.name}, raw=${describeAny(value.value)}"
+    private fun readAssetText(assetPath: String): String =
+        appContext.assets.open(assetPath).use { it.readBytes().decodeToString() }
 
-    private fun describeAny(value: Any?): String =
-        when (value) {
-            null -> "null"
-            is Array<*> -> "Array(${value.size}) first=${describeAny(value.firstOrNull())}"
-            is List<*> -> "List(${value.size}) first=${describeAny(value.firstOrNull())}"
-            is Map<*, *> -> {
-                val first = value.entries.firstOrNull()
-                "Map(${value.size}) firstKey=${describeAny(first?.key)} firstValue=${describeAny(first?.value)}"
-            }
-            else -> value.javaClass.name
+    private fun describe(value: Any?): String = when (value) {
+        null -> "null"
+        is Array<*> -> "Array(${value.size}) first=${describe(value.firstOrNull())}"
+        is List<*> -> "List(${value.size}) first=${describe(value.firstOrNull())}"
+        is Map<*, *> -> value.entries.firstOrNull().let {
+            "Map(${value.size}) firstKey=${describe(it?.key)} firstValue=${describe(it?.value)}"
         }
+        else -> value.javaClass.name
+    }
 
     override fun close() {
-        sessions.forEach { (_, session) -> session.close() }
+        // Only if something was actually loaded -- touching `sessions` here would otherwise
+        // build all three graphs just to tear them down again.
+        if (sessionsDelegate.isInitialized()) {
+            sessionsDelegate.value.forEach { (_, session) -> session.close() }
+        }
         sessionOptions.close()
     }
 
-    private data class ModelSpec(
-        val name: String,
-        val assetPath: String,
-        val inputName: String,
-        val probabilityOutputName: String,
-    )
-
     companion object {
-        val CLASS_LABELS = listOf("relaxed_low_stress", "normal", "stressed_high")
-        private const val HEART_RATE_INDEX = 1
-        private const val DAILY_STEPS_INDEX = 2
-        private const val SLEEP_DURATION_INDEX = 3
-        private const val MODEL_WEIGHT = 0.55f
-        private const val SENSOR_WEIGHT = 0.45f
+        const val TAG = "STRESS_MODEL"
+        private const val ASSET_DIR = "stress_model"
+        private const val MANIFEST_ASSET = "$ASSET_DIR/stressguard_mobile_manifest.json"
     }
 }

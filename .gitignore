@@ -56,6 +56,13 @@ Thumbs.db
 # Temporary project inspection files
 tmp_model_inspect/
 
+# ML training scratch output. CatBoost and MLflow write these into the working directory,
+# so they appear at the repo root when a training script is run from here.
+catboost_info/
+mlruns/
+__pycache__/
+*.joblib
+
 # Keep source model assets tracked.
 !app/src/main/assets/stress_model/*.onnx
 !app/src/main/assets/stress_model/*.json

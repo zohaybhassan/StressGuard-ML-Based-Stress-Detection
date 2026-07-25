@@ -1,66 +1,81 @@
 {
   "selected_model": "Voting_top3_tuned",
-  "export_kind": "binary",
-  "rationale": "Soft-voting ensemble of ['RandomForest_tuned', 'XGBoost_tuned', 'CatBoost_tuned'] for binary-stress, trained on StressGuard_Iteration1_Raw_Units.csv (base features, raw physical units). Holdout test_accuracy 0.8877, test_f1_weighted 0.8878 over 472 samples.",
-  "export_preset": "Voting_top3_tuned binary stress on StressGuard_Iteration1_Balanced_Data.csv (base features). Reference test_accuracy ~0.894, test_f1_weighted ~0.894.",
-  "tuning_report_path": "d:\\StressGuard\\ML_engine\\artifacts_tuned_binary_raw\\tuning_report.json",
+  "export_kind": "three_level_wide_normal",
+  "rationale": "Soft-voting ensemble of ['RandomForest_tuned', 'XGBoost_tuned', 'CatBoost_tuned'] for three-level (wide-normal), trained on StressGuard_Iteration1_Raw_Units.csv (base features, raw physical units). Holdout test_accuracy 0.7797, test_f1_weighted 0.7800 over 472 samples.",
+  "export_preset": "Voting_top3_tuned three-level (wide-normal) on StressGuard_Iteration1_Balanced_Data.csv (base features). Reference test_accuracy ~0.814, test_f1_weighted ~0.814.",
+  "tuning_report_path": "d:\\StressGuard\\ML_engine\\artifacts_tuned_widenormal_raw\\tuning_report.json",
   "dataset_path": "d:\\StressGuard\\ML_engine\\data\\StressGuard_Iteration1_Raw_Units.csv",
   "feature_mode": "base",
   "label": {
-    "type": "binary-stress",
-    "binary_threshold": 7,
-    "n_classes": 2,
-    "class_0": "not_stressed",
-    "class_1": "stressed"
+    "type": "three-level",
+    "three_level_scheme": "wide-normal",
+    "n_classes": 3,
+    "class_0": "relaxed_low_stress",
+    "class_1": "normal",
+    "class_2": "stressed_high",
+    "scheme_note_wide_normal": "wide-normal bins on 1\u201310 score: classes 0\u22481\u20133, 1\u22484\u20137, 2\u22488\u201310 (see optimize_ml_engine.map_to_three_level_stress)."
   },
   "reported_voting_metrics": {
-    "test_accuracy": 0.885593220338983,
-    "test_f1_weighted": 0.8854903673755479,
+    "test_accuracy": 0.7817796610169492,
+    "test_f1_weighted": 0.7813291422866606,
     "classification_report": {
       "0": {
-        "precision": 0.9017543859649123,
-        "recall": 0.9081272084805654,
-        "f1-score": 0.9049295774647887,
-        "support": 283.0
+        "precision": 0.8194444444444444,
+        "recall": 0.8309859154929577,
+        "f1-score": 0.8251748251748252,
+        "support": 142.0
       },
       "1": {
-        "precision": 0.8609625668449198,
-        "recall": 0.8518518518518519,
-        "f1-score": 0.8563829787234043,
+        "precision": 0.7391304347826086,
+        "recall": 0.7195767195767195,
+        "f1-score": 0.7292225201072386,
         "support": 189.0
       },
-      "accuracy": 0.885593220338983,
+      "2": {
+        "precision": 0.7986111111111112,
+        "recall": 0.8156028368794326,
+        "f1-score": 0.8070175438596491,
+        "support": 141.0
+      },
+      "accuracy": 0.7817796610169492,
       "macro avg": {
-        "precision": 0.881358476404916,
-        "recall": 0.8799895301662086,
-        "f1-score": 0.8806562780940965,
+        "precision": 0.7857286634460547,
+        "recall": 0.7887218239830366,
+        "f1-score": 0.787138296380571,
         "support": 472.0
       },
       "weighted avg": {
-        "precision": 0.8854203736477967,
-        "recall": 0.885593220338983,
-        "f1-score": 0.8854903673755479,
+        "precision": 0.7810612922705314,
+        "recall": 0.7817796610169492,
+        "f1-score": 0.7813291422866606,
         "support": 472.0
       }
     },
     "confusion_matrix": [
       [
-        257,
-        26
+        118,
+        22,
+        2
       ],
       [
-        28,
-        161
+        26,
+        136,
+        27
+      ],
+      [
+        0,
+        26,
+        115
       ]
     ]
   },
   "refit_holdout_metrics_dataframe_fit": {
-    "test_accuracy": 0.8877118644067796,
-    "test_f1_weighted": 0.8877606317573302
+    "test_accuracy": 0.7796610169491526,
+    "test_f1_weighted": 0.7799903508497493
   },
   "onnx_bundle_holdout_metrics_numpy_refit": {
-    "test_accuracy": 0.8877118644067796,
-    "test_f1_weighted": 0.8877606317573302
+    "test_accuracy": 0.7796610169491526,
+    "test_f1_weighted": 0.7799903508497493
   },
   "onnx_export_note": "Sub-models were refit on float32 NumPy (same column order as feature_names) so XGBoost exports to ONNX; use the same input layout on Android.",
   "kotlin_inference": "For each ONNX, obtain a length-K probability vector (K=n_classes). Average the three vectors element-wise, then argmax for the predicted class. If a model returns logits, apply softmax per model before averaging.",
@@ -89,7 +104,7 @@
     "BMI Category_Underweight"
   ],
   "n_features": 22,
-  "n_classes": 2,
+  "n_classes": 3,
   "input_units": "raw_physical",
   "ensemble": {
     "type": "soft_vote_equal_weights",
@@ -142,7 +157,7 @@
             "probabilities",
             [
               0,
-              2
+              3
             ]
           ]
         ]

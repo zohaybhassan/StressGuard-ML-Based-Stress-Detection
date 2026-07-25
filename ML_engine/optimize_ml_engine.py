@@ -264,7 +264,9 @@ def main() -> None:
     parser.add_argument(
         "--data-path",
         type=str,
-        default=str(Path(__file__).resolve().parents[1] / "StressGuard_Iteration1_Balanced_Data.csv"),
+        # Raw physical units: the tree ensembles are scale-invariant, and the Android app
+        # sends bpm / step counts / hours. See prepare_dataset.py.
+        default=str(Path(__file__).resolve().parent / "data" / "StressGuard_Iteration1_Raw_Units.csv"),
     )
     parser.add_argument(
         "--label-mode",

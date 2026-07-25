@@ -1,0 +1,29 @@
+StressGuard Tuning Summary
+Label mode: binary-stress
+Three-level scheme: classic
+Binary threshold: 7
+Feature mode: base
+Train samples: 1888 | Test samples: 472
+RandomizedSearch iterations per model: 20
+
+CV best weighted F1 (tuned base models):
+- RandomForest_tuned: 0.8571
+- SVM_tuned: 0.8549
+- CatBoost_tuned: 0.8538
+- XGBoost_tuned: 0.8500
+- LightGBM_tuned: 0.8500
+
+Test weighted F1 (all tuned candidates):
+- Stacking_top3_tuned: 0.8960 | acc 0.8962
+- RandomForest_tuned: 0.8876 | acc 0.8877
+- LightGBM_tuned: 0.8855 | acc 0.8856
+- Voting_top3_tuned: 0.8855 | acc 0.8856
+- CatBoost_tuned: 0.8728 | acc 0.8729
+- SVM_tuned: 0.8726 | acc 0.8729
+- XGBoost_tuned: 0.8666 | acc 0.8665
+
+Selected best candidate: Stacking_top3_tuned
+Best test weighted F1: 0.8960
+Best test accuracy: 0.8962
+Saved model: d:\StressGuard\ML_engine\artifacts_tuned_binary_raw\best_tuned_model.joblib
+Saved report: d:\StressGuard\ML_engine\artifacts_tuned_binary_raw\tuning_report.json

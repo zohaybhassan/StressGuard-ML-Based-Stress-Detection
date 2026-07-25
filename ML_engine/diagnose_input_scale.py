@@ -120,11 +120,18 @@ def main() -> None:
 
     manifest_path = bundle / "stressguard_mobile_manifest.json"
     labels = [f"p{i}" for i in range(n_classes)]
+    # Bundles built after the units fix declare their input contract. Older ones do not, and
+    # those are the ones that expect z-scores.
+    input_units = "z_scored (assumed: manifest predates input_units)"
     if manifest_path.is_file():
-        label_block = json.loads(manifest_path.read_text(encoding="utf-8")).get("label", {})
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        label_block = manifest.get("label", {})
         named = [label_block.get(f"class_{i}") for i in range(n_classes)]
         if all(named):
             labels = named
+        input_units = manifest.get("input_units", input_units)
+
+    expects_raw = input_units.startswith("raw")
 
     print("=" * 78)
     print("StressGuard input-scale diagnostic")
@@ -132,12 +139,18 @@ def main() -> None:
     print(f"  bundle        {bundle.name}")
     print(f"  features      {len(feature_names)}")
     print(f"  classes       {n_classes}  ({', '.join(labels)})")
+    print(f"  input_units   {input_units}")
+    print(f"  => the app should send {'RAW physical units' if expects_raw else 'Z-SCORED values'}")
 
-    # Show what range the model was actually trained on, next to the raw values we send.
-    train_csv = HERE / "data" / "StressGuard_Iteration1_Balanced_Data.csv"
+    # Show what range the model was actually trained on, next to the values we send. Which CSV
+    # that is depends on the bundle: raw-units bundles were trained on the raw-units file.
+    train_csv = HERE / "data" / (
+        "StressGuard_Iteration1_Raw_Units.csv" if expects_raw
+        else "StressGuard_Iteration1_Balanced_Data.csv"
+    )
     if train_csv.is_file():
         train = pd.read_csv(train_csv)
-        print(f"\n  Trained-on ranges vs. what the Android app currently sends:")
+        print(f"\n  Trained-on ranges ({train_csv.name}) vs. the values sent below:")
         print(f"    {'column':<16} {'train min':>10} {'train max':>10}    {'raw sent':>10}")
         for col in NUMERIC_COLUMNS:
             raw_vals = [s[col] for s in SCENARIOS.values()]
@@ -160,17 +173,32 @@ def main() -> None:
     z_collapsed = report_case("predict_proba:", z_probs, labels, names)
 
     print("\n" + "=" * 78)
-    if raw_collapsed and not z_collapsed:
-        print("DIAGNOSIS CONFIRMED")
-        print("  Raw-unit inputs collapse to one prediction; z-scored inputs separate.")
-        print("  The units mismatch is the root cause of the unresponsive probabilities")
-        print("  documented in README.md, which calibrateWithSensorRisk currently masks.")
-    elif not raw_collapsed:
-        print("DIAGNOSIS NOT REPRODUCED")
-        print("  Raw inputs already vary the output. The root cause lies elsewhere;")
-        print("  revisit the plan before changing the training pipeline.")
+    if expects_raw:
+        # A bundle trained on raw units: case 1 is the real code path and must respond.
+        if not raw_collapsed:
+            print("PASS")
+            print("  This bundle expects raw physical units, and raw inputs move the output.")
+            print("  Heart rate, steps and sleep now reach the model as intended, so no")
+            print("  post-hoc sensor calibration is needed to make the gauge respond.")
+            if not z_collapsed:
+                print("\n  (Case 2 also varies, which is expected -- z-scored values are simply")
+                print("   different numbers to a tree, not a special input. They are wrong,")
+                print("   just not detectably wrong. Only the units contract distinguishes them.)")
+        else:
+            print("FAIL")
+            print("  This bundle claims raw physical units but raw inputs produce one constant")
+            print("  prediction. Do not ship it: the app's gauge would not respond to sensors.")
     else:
-        print("INCONCLUSIVE: both cases collapsed. Check the scenarios and the bundle.")
+        if raw_collapsed and not z_collapsed:
+            print("DIAGNOSIS CONFIRMED")
+            print("  Raw-unit inputs collapse to one prediction; z-scored inputs separate.")
+            print("  This bundle was trained on standardized columns, so sending raw bpm and")
+            print("  step counts pushes every sample past the outermost split in every tree.")
+        elif not raw_collapsed:
+            print("DIAGNOSIS NOT REPRODUCED")
+            print("  Raw inputs already vary the output. The root cause lies elsewhere.")
+        else:
+            print("INCONCLUSIVE: both cases collapsed. Check the scenarios and the bundle.")
     print("=" * 78)
 
 

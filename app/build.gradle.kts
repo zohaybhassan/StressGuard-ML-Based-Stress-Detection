@@ -48,6 +48,9 @@ dependencies {
     implementation("com.google.android.gms:play-services-auth:20.7.0")
     implementation("com.microsoft.onnxruntime:onnxruntime-android:1.20.0")
     testImplementation(libs.junit)
+    // Real org.json for unit tests: the one bundled in android.jar is a stub that throws,
+    // so tests that read the model manifest need an actual implementation on the classpath.
+    testImplementation("org.json:json:20240303")
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
 }

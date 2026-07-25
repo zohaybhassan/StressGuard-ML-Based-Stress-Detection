@@ -198,29 +198,16 @@ class HomeDashboardActivity : AppCompatActivity() {
     private fun runStressPredictionIfReady() {
         val heartRate = latestHeartRate ?: return
         val steps = latestSteps ?: return
+
+        // Sleep comes from Health Connect, which has no records on a device where no provider
+        // has ever written any. Falling back keeps inference running instead of stalling the
+        // dashboard forever; the label makes clear the value is assumed, not measured.
         val sleepHours = latestSleepHours ?: run {
-            tvStressStatus.text = "WAITING FOR SLEEP"
-            tvStressStatus.setTextColor(Color.parseColor("#AAB8B0"))
-            return
+            tvSleep.text = "Sleep: ${String.format("%.1f", DEFAULT_SLEEP_HOURS)} hrs (assumed)"
+            DEFAULT_SLEEP_HOURS
         }
 
-        val features = StressFeatureBuilder.build(
-            context = this,
-            heartRate = heartRate,
-            dailySteps = steps,
-            sleepHours = sleepHours,
-        ) ?: run {
-            tvStressStatus.text = "PROFILE NEEDED"
-            tvStressStatus.setTextColor(Color.parseColor("#AAB8B0"))
-            return
-        }
-
-        Log.d(
-            "STRESS_MODEL",
-            "Features=${features.joinToString(prefix = "[", postfix = "]")}"
-        )
-
-        runStressPrediction(features)
+        runStressPrediction(StressVitals(heartRate, steps, sleepHours))
     }
 
     private fun simulateModelInput() {
@@ -244,43 +231,40 @@ class HomeDashboardActivity : AppCompatActivity() {
                 "steps=${scenario.steps}, sleep=${scenario.sleepHours}"
         )
 
-        val features = StressFeatureBuilder.build(
-            context = this,
-            heartRate = scenario.heartRate,
-            dailySteps = scenario.steps,
-            sleepHours = scenario.sleepHours,
-        ) ?: run {
-            tvStressStatus.text = "PROFILE NEEDED"
-            tvStressStatus.setTextColor(Color.parseColor("#AAB8B0"))
-            return
-        }
-
         Log.d(
-            "STRESS_MODEL",
+            StressInferenceService.TAG,
             "ProfileSnapshot age=${SessionManager.getUserAge(this)}, " +
                 "gender=${SessionManager.getUserGender(this)}, " +
                 "occupation=${SessionManager.getUserOccupation(this)}, " +
                 "bmi=${SessionManager.getUserBmi(this)}"
         )
-        Log.d(
-            "STRESS_MODEL",
-            "DebugFeatures=${features.joinToString(prefix = "[", postfix = "]")}"
+
+        runStressPrediction(
+            StressVitals(scenario.heartRate, scenario.steps, scenario.sleepHours)
         )
-        runStressPrediction(features)
     }
 
-    private fun runStressPrediction(features: FloatArray) {
+    private fun runStressPrediction(vitals: StressVitals) {
+        val profile = SessionManager.readProfile(this) ?: run {
+            tvStressStatus.text = "PROFILE NEEDED"
+            tvStressStatus.setTextColor(Color.parseColor("#AAB8B0"))
+            return
+        }
+
         lifecycleScope.launch {
             try {
                 val prediction = withContext(Dispatchers.Default) {
-                    val service = stressInferenceService ?: StressInferenceService(this@HomeDashboardActivity)
-                        .also { stressInferenceService = it }
-                    service.predict(features)
+                    // Loading the three ONNX graphs is ~23 MB of work, so it happens here on a
+                    // background dispatcher rather than during construction.
+                    val service = stressInferenceService
+                        ?: StressInferenceService(this@HomeDashboardActivity)
+                            .also { stressInferenceService = it }
+                    service.predict(profile, vitals)
                 }
 
                 updateStressUi(prediction)
             } catch (error: Exception) {
-                Log.e("STRESS_MODEL", "Stress prediction failed", error)
+                Log.e(StressInferenceService.TAG, "Stress prediction failed", error)
                 tvStressStatus.text = "MODEL ERROR"
                 tvStressStatus.setTextColor(Color.parseColor("#F44336"))
             }
@@ -294,32 +278,42 @@ class HomeDashboardActivity : AppCompatActivity() {
                 "probabilities=${prediction.probabilities.joinToString(prefix = "[", postfix = "]")}"
         )
 
-        val stressScore = (
-            prediction.probabilities[0] * 15f +
-                prediction.probabilities[1] * 55f +
-                prediction.probabilities[2] * 90f
-            ).roundToInt().coerceIn(0, 100)
-
+        val stressScore = gaugeScore(prediction.probabilities)
         stressGauge.setProgressCompat(stressScore, true)
         tvStressPercentage.text = "$stressScore%"
 
-        when (prediction.classIndex) {
-            0 -> {
-                tvStressStatus.text = "RELAXED"
-                tvStressStatus.setTextColor(Color.parseColor("#69D18F"))
-                stressGauge.setIndicatorColor(Color.parseColor("#69D18F"))
-            }
-            1 -> {
-                tvStressStatus.text = "NORMAL"
-                tvStressStatus.setTextColor(Color.parseColor("#FFC107"))
-                stressGauge.setIndicatorColor(Color.parseColor("#FFC107"))
-            }
-            else -> {
-                tvStressStatus.text = "HIGH STRESS"
-                tvStressStatus.setTextColor(Color.parseColor("#F44336"))
-                stressGauge.setIndicatorColor(Color.parseColor("#F44336"))
-            }
+        val color = Color.parseColor(severityColor(prediction.classIndex, prediction.probabilities.size))
+        tvStressStatus.text = displayName(prediction.label)
+        tvStressStatus.setTextColor(color)
+        stressGauge.setIndicatorColor(color)
+    }
+
+    /**
+     * Expected stress on a 0-100 scale: each class sits at an anchor point spread evenly from
+     * low to high, and the score is the probability-weighted average of those anchors. Derived
+     * from the class count rather than hardcoded, so a binary bundle works unchanged.
+     */
+    private fun gaugeScore(probabilities: FloatArray): Int {
+        if (probabilities.size < 2) return 0
+        val step = (GAUGE_MAX - GAUGE_MIN) / (probabilities.size - 1)
+        val score = probabilities.withIndex().sumOf { (index, p) ->
+            (p * (GAUGE_MIN + step * index)).toDouble()
         }
+        return score.roundToInt().coerceIn(0, 100)
+    }
+
+    private fun severityColor(classIndex: Int, classCount: Int): String = when {
+        classIndex >= classCount - 1 -> "#F44336" // most severe class
+        classIndex == 0 -> "#69D18F" // least severe class
+        else -> "#FFC107"
+    }
+
+    /** Manifest class names are snake_case; show something readable. */
+    private fun displayName(label: String): String = when (label.lowercase()) {
+        "relaxed_low_stress" -> "RELAXED"
+        "normal", "not_stressed" -> "NORMAL"
+        "stressed_high", "stressed" -> "HIGH STRESS"
+        else -> label.replace('_', ' ').uppercase()
     }
 
     private data class DebugScenario(
@@ -330,6 +324,16 @@ class HomeDashboardActivity : AppCompatActivity() {
     )
 
     companion object {
+        /**
+         * Used when Health Connect holds no sleep records, so a missing provider does not stop
+         * the app from predicting. Close to the training set's mean of 7.75 hours.
+         */
+        private const val DEFAULT_SLEEP_HOURS = 7.5f
+
+        // Gauge anchors, inset from 0 and 100 so the extremes still read as a filled arc.
+        private const val GAUGE_MIN = 10f
+        private const val GAUGE_MAX = 90f
+
         private val DEBUG_SCENARIOS = listOf(
             DebugScenario(
                 name = "relaxed",
@@ -343,11 +347,15 @@ class HomeDashboardActivity : AppCompatActivity() {
                 steps = 6200,
                 sleepHours = 6.5f,
             ),
+            // Kept inside the training set's ranges (heart rate 43-109, steps 1000-16036,
+            // sleep 5.1-10.0). Beyond those the trees just clamp to their outermost leaf, so an
+            // out-of-range demo value would produce the same output as the range edge and look
+            // like the model was ignoring the input.
             DebugScenario(
                 name = "high stress",
-                heartRate = 118,
-                steps = 700,
-                sleepHours = 4.1f,
+                heartRate = 105,
+                steps = 1200,
+                sleepHours = 5.3f,
             ),
         )
     }

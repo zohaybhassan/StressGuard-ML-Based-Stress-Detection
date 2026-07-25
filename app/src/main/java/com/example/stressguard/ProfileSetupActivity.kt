@@ -28,15 +28,18 @@ class ProfileSetupActivity : AppCompatActivity() {
             etName.setText(googleName)
         }
 
-        // 2. Define the exact lists for the ML Model choices
+        // 2. Define the exact lists for the ML Model choices.
+        // These must use the dataset's own category names, because StressFeatureBuilder
+        // matches on them to set the one-hot flags. "Accountant" and "Normal" are the
+        // drop_first baselines, so they are represented by all-zero flags rather than a
+        // column of their own -- they still have to be selectable.
         val genders = arrayOf("Male", "Female")
         val occupations = arrayOf(
-            "Artist", "Chef", "Doctor", "Engineer", "Lawyer", "Manager",
+            "Accountant", "Artist", "Chef", "Doctor", "Engineer", "Lawyer", "Manager",
             "Nurse", "Sales Representative", "Salesperson", "Scientist",
             "Software Engineer", "Student", "Teacher", "Writer"
         )
-        // I added "Normal Weight" to your list just in case, but you can remove it if your ML doesn't use it!
-        val bmiCategories = arrayOf("Underweight", "Normal Weight", "Overweight", "Obese")
+        val bmiCategories = arrayOf("Underweight", "Normal", "Overweight", "Obese")
 
         // 3. Attach the lists to the Dropdown menus
         val genderAdapter = ArrayAdapter(this, android.R.layout.simple_dropdown_item_1line, genders)
@@ -62,10 +65,22 @@ class ProfileSetupActivity : AppCompatActivity() {
                 return@setOnClickListener
             }
 
+            // The model was trained on ages 18-80; outside that it is extrapolating, so
+            // reject rather than silently predict from an unsupported profile.
+            val ageValue = age.toIntOrNull()
+            if (ageValue == null || ageValue < MIN_AGE || ageValue > MAX_AGE) {
+                Toast.makeText(
+                    this,
+                    "Enter an age between $MIN_AGE and $MAX_AGE",
+                    Toast.LENGTH_SHORT
+                ).show()
+                return@setOnClickListener
+            }
+
             SessionManager.saveProfile(
                 context = this,
                 name = name,
-                age = age.toInt(),
+                age = ageValue,
                 gender = gender,
                 occupation = occupation,
                 bmi = bmi
@@ -78,5 +93,11 @@ class ProfileSetupActivity : AppCompatActivity() {
             startActivity(intent)
             finish() // Prevent user from going back to setup
         }
+    }
+
+    companion object {
+        // Age range covered by the training dataset (ML_engine/data/sleep_health_dataset.csv).
+        private const val MIN_AGE = 18
+        private const val MAX_AGE = 80
     }
 }

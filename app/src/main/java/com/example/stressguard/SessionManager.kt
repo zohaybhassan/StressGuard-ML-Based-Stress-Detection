@@ -61,6 +61,15 @@ object SessionManager {
             .apply()
     }
 
+    /** The saved profile, or null when any field the model needs is missing. */
+    fun readProfile(context: Context): StressProfile? {
+        val age = getUserAge(context) ?: return null
+        val gender = getUserGender(context) ?: return null
+        val occupation = getUserOccupation(context) ?: return null
+        val bmi = getUserBmi(context) ?: return null
+        return StressProfile(age = age, gender = gender, occupation = occupation, bmi = bmi)
+    }
+
     fun getUserName(context: Context): String? = prefs(context).getString(KEY_USER_NAME, null)
 
     fun getUserAge(context: Context): Int? {

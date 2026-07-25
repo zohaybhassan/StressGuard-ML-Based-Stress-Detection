@@ -1,0 +1,29 @@
+StressGuard Tuning Summary
+Label mode: three-level
+Three-level scheme: wide-normal
+Binary threshold: 7
+Feature mode: base
+Train samples: 1888 | Test samples: 472
+RandomizedSearch iterations per model: 20
+
+CV best weighted F1 (tuned base models):
+- LightGBM_tuned: 0.7381
+- XGBoost_tuned: 0.7377
+- RandomForest_tuned: 0.7373
+- CatBoost_tuned: 0.7319
+- SVM_tuned: 0.7038
+
+Test weighted F1 (all tuned candidates):
+- Stacking_top3_tuned: 0.7861 | acc 0.7860
+- LightGBM_tuned: 0.7831 | acc 0.7839
+- XGBoost_tuned: 0.7816 | acc 0.7818
+- Voting_top3_tuned: 0.7813 | acc 0.7818
+- CatBoost_tuned: 0.7686 | acc 0.7691
+- RandomForest_tuned: 0.7674 | acc 0.7669
+- SVM_tuned: 0.7253 | acc 0.7267
+
+Selected best candidate: Stacking_top3_tuned
+Best test weighted F1: 0.7861
+Best test accuracy: 0.7860
+Saved model: d:\StressGuard\ML_engine\artifacts_tuned_widenormal_raw\best_tuned_model.joblib
+Saved report: d:\StressGuard\ML_engine\artifacts_tuned_widenormal_raw\tuning_report.json
