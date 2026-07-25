@@ -1,0 +1,58 @@
+# StressGuard backend configuration
+#
+# Copy these keys into your local.properties (which is gitignored) and fill in the values.
+# Gradle reads them into BuildConfig at build time. If any are missing the build still
+# succeeds, but the app reports the misconfiguration on the login screen instead of
+# failing with an opaque network error.
+#
+#   cp supabase.properties.template >> local.properties     # then edit
+#
+# ------------------------------------------------------------------------------
+# WHAT BELONGS HERE
+#
+# Only values that are safe to ship inside an APK. Anything in local.properties ends
+# up in BuildConfig, which is readable by anyone who unzips the APK. Treat it as public.
+#
+#   SAFE      project URL, publishable key (sb_publishable_...), legacy anon key,
+#             OAuth *web client ID*
+#   NEVER     service_role key, sb_secret_... key, OAuth client *secret*,
+#             database password, JWT secret
+#
+# The publishable key is designed to be public. What actually protects your data is
+# Row Level Security on every table. A service_role key bypasses RLS entirely, so
+# putting one in an app hands every user full access to every other user's rows.
+# ------------------------------------------------------------------------------
+
+
+# Supabase project URL.
+#   Dashboard -> Project Settings -> Data API -> Project URL
+supabase.url=https://your-project-ref.supabase.co
+
+# Supabase publishable key. Prefer the sb_publishable_... form over the older anon
+# JWT: it can be revoked on its own, so rotating a leaked secret key does not force
+# an app release.
+#   Dashboard -> Project Settings -> API Keys -> Publishable key
+supabase.publishableKey=sb_publishable_xxxxxxxxxxxxxxxxxxxxxx
+
+# Google Cloud OAuth 2.0 client ID, type "Web application".
+#
+# Counter-intuitively the Android app uses the *web* client ID, not the Android one.
+# Credential Manager sends it as serverClientId so Google mints an ID token whose
+# audience is the web client, which is the audience Supabase validates against.
+#
+# Setup, in Google Cloud Console -> APIs & Services -> Credentials:
+#   1. Create OAuth client ID, type "Web application". Copy its ID here.
+#      Paste its ID *and secret* into Supabase -> Authentication -> Sign In / Providers
+#      -> Google. The secret stays in Supabase; it never comes back to this file.
+#   2. Create a second OAuth client ID, type "Android".
+#        Package name: com.example.stressguard
+#        SHA-1:        your signing certificate fingerprint
+#      Nothing from this client is referenced in code, but sign-in fails without it.
+#      Add a separate Android client for each keystore you sign with (debug, release).
+#   3. In Supabase -> Google provider, add the Android client ID to the additional
+#      authorized client IDs so tokens issued to it are accepted.
+#
+# Get your debug SHA-1 with:
+#   keytool -list -v -keystore ~/.android/debug.keystore \
+#           -alias androiddebugkey -storepass android -keypass android
+supabase.googleWebClientId=000000000000-xxxxxxxxxxxxxxxxxxxxxxxxxxxx.apps.googleusercontent.com

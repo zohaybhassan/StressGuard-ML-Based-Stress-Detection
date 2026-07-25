@@ -16,6 +16,15 @@ composeFoundation = "1.2.1"
 wearToolingPreview = "1.0.0"
 activityCompose = "1.12.4"
 coreSplashscreen = "1.0.1"
+# Backend + auth
+supabase = "3.1.4"
+# Must match the ktor-client-core that supabase-kt pulls in. Ktor requires the engine and
+# core to be the same version; a mismatch fails at runtime with NoSuchMethodError, not at
+# build time. Check with: gradlew :app:dependencies --configuration debugRuntimeClasspath
+ktor = "3.1.2"
+credentials = "1.3.0"
+googleid = "1.1.1"
+coroutines = "1.9.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -40,8 +49,25 @@ androidx-wear-tooling-preview = { group = "androidx.wear", name = "wear-tooling-
 androidx-activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "activityCompose" }
 androidx-core-splashscreen = { group = "androidx.core", name = "core-splashscreen", version.ref = "coreSplashscreen" }
 
+# Supabase. The BOM pins the module versions so they cannot drift apart.
+supabase-bom = { group = "io.github.jan-tennert.supabase", name = "bom", version.ref = "supabase" }
+supabase-auth = { group = "io.github.jan-tennert.supabase", name = "auth-kt" }
+supabase-postgrest = { group = "io.github.jan-tennert.supabase", name = "postgrest-kt" }
+# supabase-kt is built on Ktor but ships no engine; Android needs one supplied explicitly.
+ktor-client-okhttp = { group = "io.ktor", name = "ktor-client-okhttp", version.ref = "ktor" }
+
+# Credential Manager: the supported way to get a Google ID token. The older
+# GoogleSignInClient in play-services-auth is deprecated.
+androidx-credentials = { group = "androidx.credentials", name = "credentials", version.ref = "credentials" }
+androidx-credentials-play-services = { group = "androidx.credentials", name = "credentials-play-services-auth", version.ref = "credentials" }
+googleid = { group = "com.google.android.libraries.identity.googleid", name = "googleid", version.ref = "googleid" }
+
+kotlinx-coroutines-android = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-android", version.ref = "coroutines" }
+kotlinx-coroutines-test = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-test", version.ref = "coroutines" }
+
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
+kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 

@@ -3,19 +3,49 @@ package com.example.stressguard
 import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
+import com.example.stressguard.data.AuthRepository
+import com.example.stressguard.data.SupabaseConfig
+import io.github.jan.supabase.auth.status.SessionStatus
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
 
+/**
+ * Splash router.
+ *
+ * Waits for the Supabase client to finish restoring a stored session before deciding where to
+ * go. Reading the session synchronously here would send a signed-in user to the login screen,
+ * because restoring from storage (and refreshing an expired token) has not finished yet.
+ */
 class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        val nextScreen = when {
-            !SessionManager.isSignedIn(this) -> LoginActivity::class.java
-            !SessionManager.isProfileComplete(this) -> ProfileSetupActivity::class.java
-            else -> HomeDashboardActivity::class.java
+
+        // Without configuration there is no session to wait for; let LoginActivity explain.
+        if (!SupabaseConfig.isBackendConfigured) {
+            route(LoginActivity::class.java)
+            return
         }
 
-        startActivity(Intent(this, nextScreen))
+        lifecycleScope.launch {
+            val signedIn = AuthRepository.sessionStatus
+                .first { it !is SessionStatus.Initializing } is SessionStatus.Authenticated
+
+            route(
+                when {
+                    !signedIn -> LoginActivity::class.java
+                    !SessionManager.isProfileComplete(this@MainActivity) ->
+                        ProfileSetupActivity::class.java
+                    else -> HomeDashboardActivity::class.java
+                }
+            )
+        }
+    }
+
+    private fun route(destination: Class<*>) {
+        startActivity(Intent(this, destination))
         finish()
     }
 }

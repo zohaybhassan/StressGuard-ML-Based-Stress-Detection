@@ -1,98 +1,107 @@
-package com.example.stressguard // KEEP YOUR ACTUAL PACKAGE NAME
+package com.example.stressguard
 
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
+import android.view.View
 import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.activity.result.contract.ActivityResultContracts
-import com.google.android.gms.auth.api.signin.GoogleSignIn
-import com.google.android.gms.auth.api.signin.GoogleSignInAccount
-import com.google.android.gms.auth.api.signin.GoogleSignInClient
-import com.google.android.gms.auth.api.signin.GoogleSignInOptions
-import com.google.android.gms.common.api.ApiException
-import com.google.android.gms.tasks.Task
+import androidx.lifecycle.lifecycleScope
+import com.example.stressguard.data.AuthRepository
+import com.example.stressguard.data.SignInResult
+import com.example.stressguard.data.SupabaseConfig
+import kotlinx.coroutines.launch
 
+/**
+ * Google sign-in, exchanged for a Supabase session.
+ *
+ * Replaces the previous GoogleSignInClient flow, which authenticated against Google alone and
+ * kept a local "signed in" boolean. That never produced a token any backend could verify, so
+ * there was no identity to attach data to. The session now comes from Supabase and is what
+ * row-level security keys off.
+ */
 class LoginActivity : AppCompatActivity() {
 
     private lateinit var tvLoginStatus: TextView
     private lateinit var btnGoogleSignIn: Button
-    private lateinit var googleSignInClient: GoogleSignInClient
-
-    // Modern way to handle Activity Results in Android
-    private val signInLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-        val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
-        handleSignInResult(task)
-    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_login)
 
         tvLoginStatus = findViewById(R.id.tvLoginStatus)
+        btnGoogleSignIn = findViewById(R.id.btnGoogleSignIn)
 
-        // 1. Configure Google Sign-In
-        // IMPORTANT: If you want to request an ID token for a backend later, you add .requestIdToken("YOUR_WEB_CLIENT_ID") here.
-        val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-            .requestEmail()
-            .requestProfile()
-            .build()
+        val problems = SupabaseConfig.problems()
+        if (problems.isNotEmpty()) {
+            showConfigurationProblems(problems)
+            return
+        }
 
-        googleSignInClient = GoogleSignIn.getClient(this, gso)
-
-        // 2. Check if user is already signed in (Skip login screen if they are)
-        val account = GoogleSignIn.getLastSignedInAccount(this)
-        if (account != null) {
-            saveSignedInAccount(account)
+        // An existing Supabase session survives app restarts and is refreshed by the client,
+        // so a returning user should not see this screen at all.
+        if (AuthRepository.currentUser != null) {
             goToNextScreen()
             return
         }
 
-        // 3. Setup the Button Click
-        btnGoogleSignIn = findViewById(R.id.btnGoogleSignIn)
-        btnGoogleSignIn.setOnClickListener {
-            launchGoogleSignIn()
+        btnGoogleSignIn.setOnClickListener { signIn() }
+    }
+
+    private fun signIn() {
+        setBusy(true)
+        tvLoginStatus.text = ""
+
+        lifecycleScope.launch {
+            when (val result = AuthRepository.signInWithGoogle(this@LoginActivity)) {
+                is SignInResult.Success -> {
+                    Toast.makeText(
+                        this@LoginActivity,
+                        "Signed in as ${result.user.email ?: "user"}",
+                        Toast.LENGTH_SHORT,
+                    ).show()
+                    goToNextScreen()
+                }
+
+                SignInResult.Cancelled -> {
+                    setBusy(false)
+                    tvLoginStatus.text = ""
+                }
+
+                SignInResult.NoAccountAvailable -> {
+                    setBusy(false)
+                    tvLoginStatus.text =
+                        "No Google account on this device. Add one in Settings, then try again."
+                }
+
+                is SignInResult.NotConfigured -> showConfigurationProblems(result.problems)
+
+                is SignInResult.Failed -> {
+                    setBusy(false)
+                    tvLoginStatus.text = result.message
+                }
+            }
         }
     }
 
-    private fun launchGoogleSignIn() {
-        signInLauncher.launch(googleSignInClient.signInIntent)
-    }
-
-    private fun handleSignInResult(completedTask: Task<GoogleSignInAccount>) {
-        try {
-            val account = completedTask.getResult(ApiException::class.java)
-            // Signed in successfully! You can access account.email or account.displayName here if needed.
-            saveSignedInAccount(account)
-            tvLoginStatus.text = ""
-            Toast.makeText(this, "Signed in as ${account.email ?: "user"}", Toast.LENGTH_SHORT).show()
-            goToNextScreen()
-        } catch (e: ApiException) {
-            Log.e("AUTH", "Google sign-in failed with status code ${e.statusCode}", e)
-
-            if (e.statusCode == 12501) {
-                tvLoginStatus.text = "Sign-in was canceled."
-                return
-            }
-
-            tvLoginStatus.text = when (e.statusCode) {
-                10 -> "Google sign-in is not configured for this app yet."
-                12500 -> "Google Play Services could not complete sign-in."
-                else -> "Login failed with code ${e.statusCode}. Please try again."
-            }
+    /**
+     * Configuration mistakes are the most likely reason sign-in fails on a fresh checkout, and
+     * they otherwise surface as an unexplained OAuth error. Name them instead.
+     */
+    private fun showConfigurationProblems(problems: List<String>) {
+        btnGoogleSignIn.isEnabled = false
+        tvLoginStatus.text = buildString {
+            append("Sign-in is not configured:\n")
+            problems.forEach { append("• ").append(it).append('\n') }
+            append("\nSee supabase.properties.template.")
         }
     }
 
-    private fun saveSignedInAccount(account: GoogleSignInAccount) {
-        SessionManager.setSignedIn(this, true)
-        SessionManager.saveGoogleAccount(
-            context = this,
-            displayName = account.displayName,
-            email = account.email,
-            photoUrl = account.photoUrl?.toString()
-        )
+    private fun setBusy(busy: Boolean) {
+        btnGoogleSignIn.isEnabled = !busy
+        tvLoginStatus.visibility = View.VISIBLE
+        if (busy) tvLoginStatus.text = "Signing in…"
     }
 
     private fun goToNextScreen() {
@@ -101,9 +110,7 @@ class LoginActivity : AppCompatActivity() {
         } else {
             ProfileSetupActivity::class.java
         }
-
-        val intent = Intent(this, nextScreen)
-        startActivity(intent)
-        finish() // Destroys LoginActivity so the user can't hit "Back" to log out
+        startActivity(Intent(this, nextScreen))
+        finish()
     }
 }

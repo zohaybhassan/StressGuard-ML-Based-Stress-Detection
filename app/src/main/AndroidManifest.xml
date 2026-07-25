@@ -2,6 +2,11 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <!-- Supabase auth and data sync. Stress inference stays fully on-device and does not
+         depend on this: the app must keep predicting with no network. -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+
     <uses-permission android:name="android.permission.health.READ_SLEEP" />
 
     <queries>
