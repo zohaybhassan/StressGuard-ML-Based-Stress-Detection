@@ -11,19 +11,14 @@ captures/
 local.properties
 *.local
 
-# Android Studio / IntelliJ
+# Android Studio / IntelliJ.
+# The whole directory rather than a list of individual files. It was removed from this
+# repository deliberately, and Android Studio keeps generating new files in it (vcs.xml,
+# AndroidProjectSystem.xml and so on) that a per-file list never anticipates, so they creep
+# back one at a time.
 *.iml
-.idea/caches/
-.idea/libraries/
-.idea/modules.xml
-.idea/workspace.xml
-.idea/navEditor.xml
-.idea/assetWizardSettings.xml
-.idea/deploymentTargetSelector.xml
-.idea/compiler.xml
-.idea/jarRepositories.xml
-.idea/misc.xml
-.idea/runConfigurations.xml
+.idea/
+.vscode/
 
 # Generated APK / bundle artifacts
 *.apk
