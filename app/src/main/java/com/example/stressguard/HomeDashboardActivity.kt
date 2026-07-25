@@ -341,11 +341,14 @@ class HomeDashboardActivity : AppCompatActivity() {
                 steps = 11000,
                 sleepHours = 8.3f,
             ),
+            // Sits deliberately between the other two. The previous values (HR 84, 6200 steps,
+            // 6.5h) predicted "stressed" at ~0.60, because 6.5 hours is well below the training
+            // set's 7.75h mean -- so a scenario labelled "normal" displayed HIGH STRESS.
             DebugScenario(
                 name = "normal",
-                heartRate = 84,
-                steps = 6200,
-                sleepHours = 6.5f,
+                heartRate = 80,
+                steps = 5500,
+                sleepHours = 7.2f,
             ),
             // Kept inside the training set's ranges (heart rate 43-109, steps 1000-16036,
             // sleep 5.1-10.0). Beyond those the trees just clamp to their outermost leaf, so an
