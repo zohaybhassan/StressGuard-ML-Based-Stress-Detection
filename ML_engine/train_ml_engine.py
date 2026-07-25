@@ -167,7 +167,7 @@ def main() -> None:
     parser.add_argument(
         "--data-path",
         type=str,
-        default=str(Path(__file__).resolve().parents[1] / "StressGuard_Iteration1_Balanced_Data.csv"),
+        default=str(Path(__file__).resolve().parent / "data" / "StressGuard_Iteration1_Raw_Units.csv"),
         help="Path to balanced dataset CSV",
     )
     parser.add_argument(

@@ -4,11 +4,21 @@ Interactive terminal stress prediction for StressGuard.
 Loads the trained voting ensemble (mobile export joblib or best_tuned_model.joblib),
 prompts for inputs, and prints predicted stress level with class probabilities.
 
-Vitals in the training CSV are z-scores. You can either:
-  --input-mode z     Enter z-scores directly (typical range about -3 to +3).
-  --input-mode raw   Enter everyday units; they are converted with mean/std from
-                     --scaling-json, or vital_scaling.json beside this script if present,
-                     else built-in defaults (see help text; calibrate for accuracy).
+How vitals are entered depends on what the bundle was trained on, which its manifest states
+in `input_units`:
+
+  raw_physical  Current bundles. Enter years, bpm, steps and hours; they go to the model
+                unchanged, exactly as the Android app sends them. --input-mode is ignored.
+
+  (absent)      Bundles exported before the units fix, trained on standardized columns.
+                --input-mode z    enter z-scores directly (roughly -3 to +3)
+                --input-mode raw  enter everyday units, converted using --scaling-json,
+                                  or vital_scaling.json beside this script, else the
+                                  recovered constants below.
+
+Sending raw units to a standardized model, or the reverse, does not fail. It returns a
+confident, constant, wrong answer -- which is the defect diagnose_input_scale.py exists to
+demonstrate. That is why this script follows the manifest rather than a flag.
 """
 
 from __future__ import annotations
@@ -154,13 +164,14 @@ def _prompt_int_choice(prompt: str, low: int, high: int) -> int:
 
 VITAL_COLUMNS = ("Age", "Heart Rate", "Daily Steps", "Sleep Duration")
 
-# Only used when --input-mode raw and no JSON is supplied. Replace with your real
-# preprocessing stats (from the dataset *before* it was z-scored) for trustworthy raw input.
+# Only used for legacy z-scored bundles when no scaling JSON is supplied. These are the real
+# statistics of data/sleep_health_dataset.csv, recovered and verified against the z-scored CSV
+# by prepare_dataset.py -- not the guesses that were here before.
 _BUILTIN_RAW_SCALING: Dict[str, Tuple[float, float]] = {
-    "Age": (38.0, 12.0),
-    "Heart Rate": (72.0, 10.0),
-    "Daily Steps": (7000.0, 3500.0),
-    "Sleep Duration": (7.0, 1.2),
+    "Age": (48.394667, 18.154455),
+    "Heart Rate": (74.763333, 12.233260),
+    "Daily Steps": (6119.566000, 2822.060932),
+    "Sleep Duration": (7.751733, 0.900461),
 }
 
 _RAW_HINTS = {
@@ -196,11 +207,15 @@ def load_vital_scaling_json(path: Path) -> Dict[str, Tuple[float, float]]:
 def resolve_vital_scaling(
     input_mode: str,
     scaling_json: Optional[Path],
+    expects_raw: bool = False,
 ) -> Tuple[Dict[str, Tuple[float, float]], str]:
     """
     Returns (scaling_per_vital, source_description) for raw mode.
     For z mode returns empty dict and 'z_input'.
     """
+    # A raw-units bundle takes physical values directly; scaling them would be the bug.
+    if expects_raw:
+        return {}, "raw_physical (no conversion)"
     if input_mode == "z":
         return {}, "z_input"
 
@@ -223,10 +238,18 @@ def collect_base_features(
     vital_scaling: Dict[str, Tuple[float, float]],
     scaling_source: str,
     show_scaled: bool,
+    expects_raw: bool = False,
 ) -> Dict[str, float]:
     row: Dict[str, float] = {c: 0.0 for c in base_column_names}
 
-    if input_mode == "z":
+    if expects_raw:
+        print(
+            "\n--- Vitals (physical units) ---\n"
+            "This bundle was trained on raw units, so values go to the model unchanged.\n"
+            "Trained ranges: Age 18-80, Heart Rate 43-109 bpm, Daily Steps 1000-16036,\n"
+            "Sleep Duration 5.1-10.0 hours. Outside those the trees extrapolate.\n"
+        )
+    elif input_mode == "z":
         print(
             "\n--- Vitals (z-scores, same as training CSV; roughly -3 to +3) ---\n"
             "Use 0 for about average vs the training distribution.\n"
@@ -240,7 +263,9 @@ def collect_base_features(
     for col in VITAL_COLUMNS:
         if col not in base_column_names:
             continue
-        if input_mode == "z":
+        if expects_raw:
+            row[col] = _prompt_float(col, _RAW_HINTS.get(col, "raw value"))
+        elif input_mode == "z":
             row[col] = _prompt_float(col, "z-score")
         else:
             mean, std = vital_scaling[col]
@@ -315,7 +340,7 @@ def main() -> None:
         default=str(
             _here()
             / "mobile_export"
-            / "three_level_voting_wide_normal"
+            / "binary_voting_top3_raw"
             / "voting_top3_sklearn.joblib"
         ),
         help="Path to voting_top3_sklearn.joblib or best_tuned_model.joblib",
@@ -326,7 +351,7 @@ def main() -> None:
         default=str(
             _here()
             / "mobile_export"
-            / "three_level_voting_wide_normal"
+            / "binary_voting_top3_raw"
             / "stressguard_mobile_manifest.json"
         ),
         help="Optional manifest JSON for friendly class names (default: alongside mobile export)",
@@ -342,8 +367,9 @@ def main() -> None:
         "--scaling-json",
         type=str,
         default=None,
-        help="For --input-mode raw: JSON with mean/std per vital (see vital_scaling.example.json). "
-        "If omitted, uses vital_scaling.json beside this script if it exists, else built-in defaults.",
+        help="Legacy z-scored bundles only: JSON with mean/std per vital. If omitted, uses "
+        "vital_scaling.json beside this script if it exists, else the recovered constants. "
+        "Ignored for bundles declaring input_units=raw_physical.",
     )
     parser.add_argument(
         "--show-scaled",
@@ -374,20 +400,32 @@ def main() -> None:
     classes = getattr(model, "classes_", None)
     n_classes = int(len(classes)) if classes is not None else int(meta.get("n_classes") or 3)
 
+    # The manifest states what the model expects. Follow it, rather than trusting --input-mode
+    # to have been set correctly: a mismatch produces plausible numbers, not an error.
+    input_units = (manifest or {}).get("input_units")
+    expects_raw = bool(input_units and input_units.startswith("raw"))
+
     print("StressGuard - interactive predictor")
     print(f"Model: {joblib_path}")
     if manifest:
         print(f"Manifest: {args.manifest}")
-    print(f"Input mode: {args.input_mode}")
+    if expects_raw:
+        print(f"Input units: {input_units} (entered values are sent unchanged)")
+        if args.input_mode == "z":
+            print(
+                "NOTE: --input-mode z ignored. This bundle was trained on raw physical units.",
+                file=sys.stderr,
+            )
+    else:
+        print(f"Input mode: {args.input_mode}")
 
     scaling_path = Path(args.scaling_json) if args.scaling_json else None
-    vital_scaling, scaling_src = resolve_vital_scaling(args.input_mode, scaling_path)
-    if args.input_mode == "raw" and scaling_src == "built_in_defaults":
+    vital_scaling, scaling_src = resolve_vital_scaling(args.input_mode, scaling_path, expects_raw)
+    if not expects_raw and args.input_mode == "raw" and scaling_src == "built_in_defaults":
         print(
-            "WARNING: using built-in mean/std for raw vitals; predictions are only reliable if these "
-            "match the preprocessing used before your training CSV was z-scored.\n"
-            "Prefer: copy vital_scaling.example.json to vital_scaling.json (beside this script) "
-            "and set mean/std from your raw data, or pass --scaling-json PATH.\n",
+            "NOTE: this bundle declares no input_units, so it predates the units fix and is "
+            "assumed to expect z-scores. Converting with the statistics recovered from "
+            "data/sleep_health_dataset.csv. Pass --scaling-json PATH to override.\n",
             file=sys.stderr,
         )
 
@@ -409,6 +447,7 @@ def main() -> None:
         vital_scaling,
         scaling_src,
         args.show_scaled,
+        expects_raw,
     )
     x = build_dataframe(row, base_column_names, feature_mode, model, feature_names)
 
