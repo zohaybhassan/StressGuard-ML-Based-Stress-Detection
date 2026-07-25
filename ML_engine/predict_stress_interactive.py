@@ -7,7 +7,7 @@ prompts for inputs, and prints predicted stress level with class probabilities.
 Vitals in the training CSV are z-scores. You can either:
   --input-mode z     Enter z-scores directly (typical range about -3 to +3).
   --input-mode raw   Enter everyday units; they are converted with mean/std from
-                     --scaling-json, or ml_engine/vital_scaling.json if present,
+                     --scaling-json, or vital_scaling.json beside this script if present,
                      else built-in defaults (see help text; calibrate for accuracy).
 """
 
@@ -30,8 +30,9 @@ except ImportError:
     add_engineered_features = None  # type: ignore[misc, assignment]
 
 
-def _repo_root() -> Path:
-    return Path(__file__).resolve().parents[1]
+def _here() -> Path:
+    """This script's own directory, so paths hold regardless of the folder's name or case."""
+    return Path(__file__).resolve().parent
 
 
 def load_manifest(path: Path) -> Dict[str, Any]:
@@ -312,8 +313,7 @@ def main() -> None:
         "--joblib-path",
         type=str,
         default=str(
-            _repo_root()
-            / "ml_engine"
+            _here()
             / "mobile_export"
             / "three_level_voting_wide_normal"
             / "voting_top3_sklearn.joblib"
@@ -324,8 +324,7 @@ def main() -> None:
         "--manifest",
         type=str,
         default=str(
-            _repo_root()
-            / "ml_engine"
+            _here()
             / "mobile_export"
             / "three_level_voting_wide_normal"
             / "stressguard_mobile_manifest.json"
@@ -344,7 +343,7 @@ def main() -> None:
         type=str,
         default=None,
         help="For --input-mode raw: JSON with mean/std per vital (see vital_scaling.example.json). "
-        "If omitted, uses ml_engine/vital_scaling.json if it exists, else built-in defaults.",
+        "If omitted, uses vital_scaling.json beside this script if it exists, else built-in defaults.",
     )
     parser.add_argument(
         "--show-scaled",
@@ -387,13 +386,13 @@ def main() -> None:
         print(
             "WARNING: using built-in mean/std for raw vitals; predictions are only reliable if these "
             "match the preprocessing used before your training CSV was z-scored.\n"
-            "Prefer: copy ml_engine/vital_scaling.example.json to ml_engine/vital_scaling.json "
+            "Prefer: copy vital_scaling.example.json to vital_scaling.json (beside this script) "
             "and set mean/std from your raw data, or pass --scaling-json PATH.\n",
             file=sys.stderr,
         )
 
     if feature_mode == "engineered":
-        csv_default = _repo_root() / "StressGuard_Iteration1_Balanced_Data.csv"
+        csv_default = _here() / "data" / "StressGuard_Iteration1_Balanced_Data.csv"
         if not csv_default.is_file():
             print(
                 f"feature_mode=engineered requires {csv_default} to read base column names.",

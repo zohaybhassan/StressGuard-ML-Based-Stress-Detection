@@ -1,0 +1,1501 @@
+Person ID,Gender,Age,Occupation,Sleep Duration,Physical Activity Level,Stress Level,BMI Category,,Heart Rate,Daily Steps
+1,Male,41,Nurse,7,91,10,Normal,,56,9476
+2,Male,42,Software Engineer,6.7,123,5,Overweight,,67,10661
+3,Female,45,Doctor,8.7,49,7,Normal,,60,5033
+4,Male,24,Writer,8,4,5,Normal,,97,1610
+5,Female,18,Salesperson,8.8,66,4,Overweight,,71,6574
+6,Male,78,Manager,7.7,34,6,Normal,,76,6347
+7,Male,41,Lawyer,6.8,35,9,Normal,,56,3866
+8,Female,21,Artist,6.7,30,6,Overweight,,80,4009
+9,Female,50,Accountant,7.2,37,7,Underweight,,65,3605
+10,Female,68,Accountant,7.5,26,6,Obese,,89,2375
+11,Male,71,Artist,8.5,23,6,Overweight,,106,1808
+12,Male,46,Sales Representative,7.3,93,7,Normal,,76,9510
+13,Female,77,Engineer,7,7,3,Overweight,,72,2341
+14,Male,78,Software Engineer,8.2,59,4,Overweight,,62,6168
+15,Female,23,Scientist,7.8,65,3,Normal,,78,6174
+16,Female,30,Scientist,8.8,68,7,Obese,,78,7416
+17,Male,69,Chef,7.5,142,10,Underweight,,73,11731
+18,Male,56,Student,8.2,127,9,Normal,,63,10227
+19,Male,51,Doctor,7.7,51,8,Overweight,,66,7235
+20,Male,75,Teacher,7.7,106,10,Obese,,73,10450
+21,Female,69,Nurse,7.4,91,7,Overweight,,57,7936
+22,Male,24,Accountant,7.6,50,7,Overweight,,73,6423
+23,Male,61,Teacher,6.8,7,8,Normal,,99,1871
+24,Female,37,Engineer,7.5,30,7,Overweight,,65,5201
+25,Female,31,Lawyer,8,21,9,Obese,,82,4349
+26,Male,77,Manager,9.5,52,4,Underweight,,69,5654
+27,Female,31,Chef,7.1,99,8,Underweight,,62,11241
+28,Male,50,Writer,8.7,21,6,Normal,,81,1799
+29,Male,72,Scientist,8,0,2,Obese,,93,2039
+30,Female,19,Student,7.4,128,4,Normal,,61,11879
+31,Male,24,Lawyer,8.2,13,7,Overweight,,92,2341
+32,Female,60,Doctor,5.8,63,9,Overweight,,66,5693
+33,Female,37,Salesperson,7.4,157,4,Overweight,,53,11840
+34,Male,78,Sales Representative,8.6,45,3,Overweight,,57,3938
+35,Male,20,Artist,7.2,50,5,Underweight,,77,6125
+36,Female,46,Salesperson,6.8,31,7,Overweight,,65,3312
+37,Male,60,Accountant,7.1,51,8,Normal,,70,6153
+38,Female,21,Manager,10,20,4,Underweight,,76,3052
+39,Male,18,Lawyer,7.7,36,8,Normal,,84,3537
+40,Male,39,Manager,6.4,35,9,Normal,,79,4910
+41,Female,24,Chef,7.8,68,8,Normal,,77,5961
+42,Male,19,Scientist,7.4,65,2,Normal,,84,7686
+43,Male,35,Nurse,7.4,43,8,Overweight,,65,4879
+44,Female,24,Salesperson,8.3,63,1,Overweight,,68,6022
+45,Female,60,Salesperson,7.6,118,5,Normal,,91,9996
+46,Male,64,Accountant,7.4,52,6,Obese,,80,4401
+47,Male,58,Sales Representative,8.3,86,6,Normal,,68,7860
+48,Male,46,Salesperson,7.6,100,8,Overweight,,70,9485
+49,Female,33,Sales Representative,8.5,49,1,Overweight,,64,2968
+50,Male,73,Lawyer,7.3,22,9,Obese,,71,3486
+51,Female,79,Doctor,8.2,50,8,Normal,,83,5380
+52,Male,36,Teacher,8.6,16,3,Overweight,,87,1328
+53,Male,67,Manager,6.7,14,10,Obese,,99,2944
+54,Male,33,Student,9,79,5,Underweight,,69,6825
+55,Female,43,Engineer,8.5,53,3,Overweight,,76,5193
+56,Male,31,Writer,7.8,52,3,Underweight,,87,5613
+57,Female,49,Student,8,58,5,Overweight,,61,4979
+58,Female,75,Lawyer,7.4,42,9,Overweight,,65,4665
+59,Female,38,Software Engineer,7.3,2,3,Underweight,,77,2602
+60,Male,40,Accountant,8.4,67,7,Overweight,,75,6059
+61,Male,65,Artist,9.3,4,5,Underweight,,95,1415
+62,Male,75,Chef,9.4,79,5,Obese,,63,7345
+63,Female,44,Engineer,7.1,31,6,Normal,,69,4407
+64,Female,44,Teacher,6.3,12,5,Overweight,,94,3219
+65,Male,30,Nurse,8.2,28,7,Obese,,79,2510
+66,Female,49,Artist,8.2,77,5,Overweight,,80,6698
+67,Female,35,Accountant,8.4,58,6,Normal,,71,5359
+68,Female,56,Manager,7.3,54,8,Normal,,70,6285
+69,Female,57,Chef,6.6,107,8,Overweight,,75,10192
+70,Female,63,Chef,8,69,8,Normal,,67,8463
+71,Male,49,Artist,8.4,57,4,Normal,,66,7619
+72,Male,20,Scientist,8.6,50,3,Obese,,76,5217
+73,Male,64,Scientist,7.4,0,7,Overweight,,85,1920
+74,Male,51,Manager,8.5,20,3,Obese,,92,3470
+75,Male,42,Manager,7.8,29,7,Normal,,95,2810
+76,Male,53,Salesperson,6.5,98,3,Overweight,,68,7556
+77,Male,46,Sales Representative,7.4,54,10,Obese,,74,4780
+78,Female,60,Accountant,9.1,6,5,Normal,,94,3876
+79,Male,54,Accountant,7,45,5,Obese,,53,3663
+80,Male,26,Software Engineer,7.3,149,3,Obese,,72,10636
+81,Male,56,Chef,7.1,93,10,Overweight,,61,9595
+82,Male,29,Student,8.1,42,4,Normal,,73,4402
+83,Female,30,Writer,6.6,9,5,Obese,,72,3651
+84,Female,19,Teacher,7,35,8,Normal,,82,4915
+85,Male,49,Engineer,8.4,44,3,Underweight,,72,6102
+86,Female,62,Manager,8.1,0,7,Overweight,,82,1280
+87,Male,49,Accountant,8.8,12,8,Obese,,86,2062
+88,Male,40,Salesperson,6.9,42,4,Normal,,78,5728
+89,Female,68,Software Engineer,8.2,56,3,Underweight,,75,5041
+90,Male,46,Salesperson,6.3,46,10,Underweight,,68,5430
+91,Male,56,Lawyer,8.3,14,7,Overweight,,88,2689
+92,Female,66,Nurse,7.7,95,8,Normal,,62,8846
+93,Male,64,Doctor,7.3,75,8,Normal,,67,8124
+94,Female,52,Student,5.5,73,7,Underweight,,70,6022
+95,Male,21,Teacher,6.5,108,9,Obese,,63,11001
+96,Female,58,Student,8,122,7,Overweight,,49,11363
+97,Female,35,Sales Representative,7.9,74,6,Overweight,,82,6390
+98,Female,34,Artist,8.8,71,4,Overweight,,64,6820
+99,Male,79,Salesperson,9.2,68,8,Overweight,,65,6864
+100,Male,55,Doctor,6.8,5,7,Obese,,79,2830
+101,Male,19,Software Engineer,8.6,70,4,Normal,,78,6686
+102,Female,20,Engineer,8.1,78,6,Overweight,,69,7248
+103,Female,36,Accountant,7.1,67,7,Overweight,,69,6706
+104,Female,62,Chef,6.9,116,6,Obese,,58,9707
+105,Male,35,Doctor,8.1,23,8,Overweight,,78,5122
+106,Male,20,Chef,8.2,136,9,Normal,,63,10513
+107,Male,54,Student,7.6,134,6,Normal,,72,10697
+108,Female,18,Teacher,6.3,61,9,Normal,,69,8339
+109,Female,63,Teacher,7.4,180,10,Underweight,,66,14615
+110,Female,29,Lawyer,7.5,31,10,Overweight,,73,4624
+111,Female,54,Sales Representative,6.9,65,6,Normal,,63,6433
+112,Female,71,Accountant,7.5,9,6,Obese,,68,1427
+113,Male,39,Student,5.8,89,6,Overweight,,60,8827
+114,Female,46,Accountant,8.6,12,5,Obese,,89,1504
+115,Male,30,Scientist,9,53,3,Normal,,68,6244
+116,Female,60,Engineer,7.9,16,5,Obese,,91,3762
+117,Male,59,Artist,6.3,26,9,Overweight,,91,2287
+118,Female,53,Software Engineer,8,29,4,Overweight,,74,6460
+119,Female,31,Doctor,7.9,14,7,Normal,,83,2416
+120,Male,75,Writer,7.9,13,3,Overweight,,96,1000
+121,Male,37,Chef,5.7,96,10,Normal,,74,10075
+122,Female,25,Lawyer,7.3,12,8,Overweight,,99,3527
+123,Male,64,Artist,8.6,45,1,Normal,,71,6346
+124,Female,65,Scientist,10,24,2,Overweight,,100,2884
+125,Male,60,Teacher,8.1,63,7,Obese,,75,7770
+126,Male,40,Writer,9.9,57,1,Normal,,92,4271
+127,Female,19,Salesperson,8.4,72,7,Normal,,80,5923
+128,Female,70,Sales Representative,7.4,74,5,Normal,,67,5253
+129,Female,34,Manager,7.5,48,6,Overweight,,77,5201
+130,Female,63,Writer,7.5,25,3,Overweight,,68,1946
+131,Male,36,Nurse,7.4,120,8,Overweight,,64,9296
+132,Male,36,Nurse,8,104,8,Normal,,80,10661
+133,Male,31,Chef,7.9,89,8,Normal,,77,7366
+134,Male,39,Sales Representative,6.4,50,8,Overweight,,67,4614
+135,Female,58,Accountant,7.9,29,6,Overweight,,71,4114
+136,Male,20,Engineer,9.1,140,2,Normal,,49,11131
+137,Female,75,Teacher,7.6,39,9,Normal,,82,5433
+138,Male,80,Engineer,7.2,17,3,Normal,,91,2932
+139,Male,79,Writer,8.4,33,1,Normal,,73,1611
+140,Male,72,Nurse,6,128,9,Normal,,46,10120
+141,Male,65,Manager,8.2,38,6,Overweight,,93,5776
+142,Male,77,Sales Representative,6.4,40,7,Overweight,,74,6019
+143,Female,36,Teacher,7.3,56,8,Obese,,70,5302
+144,Male,46,Chef,7.5,94,5,Obese,,61,9140
+145,Male,74,Scientist,8.3,119,3,Underweight,,57,10146
+146,Male,47,Salesperson,7.2,56,9,Underweight,,63,6298
+147,Female,28,Accountant,7.4,23,7,Obese,,94,2724
+148,Female,25,Software Engineer,8,81,3,Obese,,77,8569
+149,Female,43,Nurse,7.2,51,9,Obese,,70,5156
+150,Female,35,Lawyer,7.7,10,9,Obese,,79,3232
+151,Male,38,Doctor,6.2,29,9,Normal,,79,4881
+152,Female,39,Nurse,7,46,8,Normal,,70,6147
+153,Male,38,Manager,7.1,69,7,Normal,,78,8603
+154,Male,51,Chef,7.2,107,8,Normal,,84,8300
+155,Male,31,Nurse,7.2,116,7,Obese,,90,10009
+156,Female,48,Writer,8.7,26,7,Obese,,104,3301
+157,Male,31,Teacher,9.7,134,9,Normal,,60,10560
+158,Female,34,Accountant,7.1,47,6,Normal,,73,4250
+159,Female,42,Writer,8.9,0,2,Overweight,,79,1793
+160,Male,41,Teacher,6.4,63,9,Overweight,,75,5422
+161,Male,70,Lawyer,8.5,32,9,Obese,,65,3907
+162,Female,37,Accountant,7,30,5,Underweight,,59,2771
+163,Female,23,Lawyer,6.1,27,10,Normal,,82,5133
+164,Female,71,Chef,7.8,152,8,Normal,,65,12411
+165,Male,21,Sales Representative,7.3,50,5,Normal,,69,3822
+166,Male,39,Teacher,7.1,76,10,Normal,,93,9391
+167,Male,55,Nurse,6.4,144,7,Normal,,55,13226
+168,Male,30,Engineer,8.3,0,6,Overweight,,97,1000
+169,Female,72,Sales Representative,7,105,7,Normal,,74,10003
+170,Female,78,Engineer,7.9,42,7,Overweight,,59,3837
+171,Female,78,Lawyer,7.2,14,8,Overweight,,92,1705
+172,Female,77,Sales Representative,9.1,25,3,Overweight,,76,2350
+173,Male,78,Nurse,6.6,101,7,Normal,,78,6956
+174,Female,26,Engineer,7.1,7,7,Overweight,,99,4269
+175,Male,49,Manager,5.7,13,9,Obese,,66,1173
+176,Female,42,Engineer,7.9,38,5,Overweight,,62,5558
+177,Female,77,Student,10,132,1,Overweight,,59,9128
+178,Female,43,Lawyer,7.1,0,10,Overweight,,104,3126
+179,Female,36,Sales Representative,6.6,92,8,Normal,,80,9807
+180,Male,30,Salesperson,7.3,40,6,Underweight,,62,4807
+181,Female,46,Engineer,9.1,29,2,Overweight,,100,4855
+182,Female,61,Doctor,6.8,38,8,Overweight,,67,4352
+183,Female,18,Artist,7.7,45,4,Underweight,,72,4583
+184,Male,67,Salesperson,6.3,61,8,Underweight,,68,6847
+185,Female,34,Chef,7.1,106,9,Obese,,69,9998
+186,Male,63,Student,8.8,121,4,Normal,,53,9182
+187,Female,62,Lawyer,7.2,30,7,Overweight,,84,5249
+188,Female,48,Artist,6.4,0,5,Normal,,71,1447
+189,Female,49,Salesperson,6.6,77,9,Obese,,60,9799
+190,Female,60,Artist,9.1,22,3,Overweight,,96,2127
+191,Male,66,Teacher,8.3,105,5,Overweight,,80,9961
+192,Female,23,Student,9.4,44,1,Normal,,59,3878
+193,Male,71,Student,7.3,33,9,Normal,,66,3685
+194,Male,42,Manager,7.1,62,8,Normal,,70,6783
+195,Female,78,Software Engineer,8.8,54,4,Overweight,,64,5220
+196,Male,66,Doctor,6.5,24,8,Underweight,,82,4059
+197,Male,51,Teacher,8.3,113,7,Obese,,78,10767
+198,Male,79,Manager,8.2,50,7,Obese,,82,6388
+199,Female,36,Doctor,7.1,28,9,Obese,,78,4138
+200,Male,79,Student,9.1,24,2,Overweight,,101,3547
+201,Female,28,Salesperson,6.9,85,10,Obese,,80,7168
+202,Female,59,Teacher,8,130,7,Normal,,71,12845
+203,Female,80,Teacher,7.7,82,7,Overweight,,82,9750
+204,Female,57,Software Engineer,7.8,72,4,Overweight,,81,7793
+205,Female,44,Scientist,9.4,56,1,Normal,,57,7564
+206,Female,28,Chef,7.4,150,7,Underweight,,59,13170
+207,Female,68,Teacher,8.1,33,8,Normal,,68,5549
+208,Female,54,Artist,8.1,22,4,Normal,,80,3837
+209,Female,76,Accountant,7.7,61,6,Obese,,76,6261
+210,Female,39,Lawyer,7.6,27,8,Normal,,92,2511
+211,Female,63,Accountant,8.5,15,6,Overweight,,84,4301
+212,Female,56,Teacher,6.7,109,6,Normal,,60,10377
+213,Male,26,Manager,7.5,51,8,Normal,,80,5259
+214,Female,76,Accountant,6.7,51,7,Overweight,,91,5403
+215,Male,41,Salesperson,7.7,80,5,Overweight,,72,7068
+216,Female,79,Salesperson,9.3,119,4,Normal,,79,12356
+217,Female,80,Software Engineer,7.1,34,6,Overweight,,87,4264
+218,Male,46,Software Engineer,8.8,56,3,Overweight,,57,4729
+219,Male,45,Student,7.1,33,8,Underweight,,65,4214
+220,Male,63,Writer,7.1,19,6,Obese,,69,3217
+221,Male,79,Salesperson,8.4,73,6,Normal,,59,7196
+222,Male,21,Lawyer,8.2,46,8,Normal,,75,5534
+223,Male,71,Student,5.6,56,6,Obese,,79,7347
+224,Male,36,Lawyer,7.2,13,8,Overweight,,81,2442
+225,Male,69,Engineer,7.5,54,4,Overweight,,78,6589
+226,Male,36,Artist,8.8,51,1,Overweight,,64,4494
+227,Female,26,Sales Representative,6.9,42,4,Overweight,,89,3853
+228,Female,77,Nurse,7.2,92,6,Normal,,88,9704
+229,Female,54,Student,8.5,15,2,Obese,,75,2705
+230,Male,64,Software Engineer,8.1,115,2,Normal,,67,10441
+231,Female,67,Sales Representative,8.3,60,6,Normal,,59,7704
+232,Male,20,Engineer,8.2,105,5,Normal,,68,9787
+233,Male,58,Doctor,8,57,8,Normal,,75,6465
+234,Female,29,Chef,8.7,57,5,Normal,,69,5058
+235,Male,49,Software Engineer,8.3,104,4,Normal,,86,8742
+236,Male,29,Writer,7.9,5,1,Overweight,,66,3601
+237,Male,30,Sales Representative,6.6,112,8,Overweight,,59,11281
+238,Male,27,Doctor,6.4,26,9,Obese,,87,4450
+239,Male,78,Chef,6.8,120,6,Normal,,70,10632
+240,Male,76,Teacher,8.4,104,5,Obese,,71,9016
+241,Female,77,Accountant,9.1,31,7,Normal,,87,3335
+242,Female,69,Salesperson,8.8,30,4,Normal,,59,3712
+243,Female,32,Doctor,8.2,22,8,Underweight,,61,3590
+244,Female,27,Artist,8.3,20,7,Overweight,,65,3290
+245,Female,66,Student,8,75,6,Normal,,78,6463
+246,Male,61,Software Engineer,7.3,94,5,Overweight,,89,8331
+247,Female,52,Student,8,106,6,Normal,,58,8970
+248,Female,19,Nurse,6.7,45,8,Overweight,,84,4211
+249,Female,61,Nurse,7.7,64,7,Overweight,,86,6653
+250,Female,53,Nurse,8.4,117,6,Normal,,69,10671
+251,Female,29,Engineer,6.8,24,6,Obese,,89,4553
+252,Male,18,Student,8.6,70,4,Underweight,,84,5136
+253,Male,45,Doctor,6.9,11,8,Normal,,94,3096
+254,Female,72,Scientist,7.2,30,3,Overweight,,89,5771
+255,Female,49,Artist,9,26,2,Normal,,87,4085
+256,Male,58,Manager,8.6,40,5,Normal,,89,4504
+257,Female,33,Sales Representative,8.3,101,6,Normal,,84,7763
+258,Male,32,Scientist,7.3,41,3,Overweight,,60,4976
+259,Male,61,Student,8.3,40,4,Overweight,,57,5243
+260,Female,41,Sales Representative,7.9,82,5,Normal,,79,7503
+261,Female,58,Artist,8.8,19,1,Normal,,103,2451
+262,Male,68,Manager,7.5,43,9,Normal,,72,4980
+263,Male,23,Salesperson,9,87,1,Obese,,84,8088
+264,Female,39,Software Engineer,9.5,54,4,Normal,,72,6907
+265,Female,19,Doctor,7.5,21,8,Obese,,96,2842
+266,Male,78,Sales Representative,8.2,95,6,Normal,,85,8999
+267,Male,39,Teacher,7,60,8,Normal,,85,5674
+268,Male,33,Artist,8.1,84,4,Normal,,94,7021
+269,Male,78,Chef,6.7,108,6,Overweight,,79,8691
+270,Male,45,Nurse,6.3,61,10,Overweight,,65,6445
+271,Female,45,Student,9.6,105,3,Overweight,,82,9344
+272,Female,56,Sales Representative,6.8,125,4,Normal,,74,9924
+273,Male,63,Nurse,7.7,110,6,Normal,,59,10772
+274,Female,50,Sales Representative,8.2,97,6,Overweight,,72,7910
+275,Female,20,Writer,8.2,43,1,Overweight,,76,4559
+276,Male,28,Writer,8,11,6,Underweight,,88,3542
+277,Female,68,Artist,9.6,64,1,Overweight,,54,6969
+278,Female,47,Writer,7.1,11,5,Normal,,77,1471
+279,Male,70,Manager,7.3,29,7,Overweight,,86,1769
+280,Male,33,Nurse,7.7,96,7,Overweight,,74,7492
+281,Male,45,Writer,9.4,30,4,Overweight,,63,2738
+282,Female,73,Salesperson,8.5,108,7,Overweight,,73,7906
+283,Female,49,Writer,8.8,20,1,Overweight,,84,1768
+284,Male,43,Accountant,7.4,52,6,Obese,,76,6195
+285,Male,34,Software Engineer,7.9,100,5,Underweight,,68,8567
+286,Male,46,Student,8,50,5,Normal,,60,6138
+287,Female,75,Writer,7.2,31,4,Normal,,69,5472
+288,Female,79,Engineer,8.2,73,6,Normal,,71,7337
+289,Female,75,Engineer,7.5,39,6,Overweight,,75,3436
+290,Male,26,Scientist,9.4,32,5,Normal,,81,3890
+291,Male,31,Sales Representative,8,21,7,Obese,,91,4844
+292,Female,26,Salesperson,8.5,79,4,Normal,,70,6517
+293,Female,62,Doctor,6.6,67,8,Overweight,,66,7165
+294,Female,59,Nurse,8.5,131,5,Overweight,,45,9070
+295,Male,76,Teacher,8.3,127,4,Normal,,75,10223
+296,Male,75,Teacher,7.2,39,7,Underweight,,70,4254
+297,Male,61,Student,6.3,33,10,Normal,,71,2968
+298,Male,59,Engineer,8.6,81,5,Underweight,,72,8401
+299,Female,78,Engineer,6.6,78,3,Obese,,60,7071
+300,Male,67,Student,7.1,81,3,Overweight,,65,6950
+301,Female,59,Doctor,6.4,59,10,Obese,,55,4038
+302,Male,60,Artist,8.4,42,4,Underweight,,74,4942
+303,Male,78,Chef,6.6,104,9,Overweight,,68,8446
+304,Female,79,Chef,7.6,106,7,Overweight,,67,10031
+305,Female,41,Software Engineer,7.7,72,2,Normal,,59,6683
+306,Male,29,Doctor,8.7,32,9,Obese,,91,4545
+307,Female,78,Scientist,7.9,65,7,Obese,,53,5425
+308,Female,20,Writer,8,6,3,Overweight,,82,2289
+309,Male,74,Student,6.8,104,5,Normal,,68,8540
+310,Female,37,Artist,7,77,10,Overweight,,53,7207
+311,Female,49,Writer,7.8,81,1,Obese,,71,8660
+312,Male,42,Writer,8,25,6,Underweight,,88,6327
+313,Male,27,Manager,6.9,47,9,Normal,,62,3991
+314,Female,54,Doctor,6.9,18,9,Overweight,,82,3703
+315,Male,26,Scientist,8.5,73,3,Normal,,66,7018
+316,Female,53,Artist,6.3,51,7,Obese,,61,6303
+317,Male,23,Software Engineer,7.4,11,5,Overweight,,109,2821
+318,Male,31,Chef,6.5,99,9,Normal,,60,8109
+319,Female,42,Accountant,7.5,41,7,Normal,,76,3305
+320,Male,63,Accountant,8,39,6,Overweight,,61,3958
+321,Male,45,Nurse,6.1,95,9,Normal,,75,9753
+322,Female,18,Engineer,8,92,6,Obese,,53,8639
+323,Female,46,Software Engineer,6.6,60,6,Underweight,,70,6695
+324,Male,68,Artist,6.9,3,9,Normal,,97,1168
+325,Male,65,Teacher,9.6,73,8,Normal,,94,6199
+326,Male,42,Scientist,8,5,6,Overweight,,88,4128
+327,Male,52,Manager,7.3,3,8,Normal,,85,1726
+328,Male,65,Chef,7.5,113,9,Overweight,,70,10410
+329,Male,33,Manager,8.9,45,5,Overweight,,87,4632
+330,Male,50,Chef,7,107,7,Underweight,,60,8736
+331,Female,55,Doctor,8.1,12,9,Normal,,73,1707
+332,Female,72,Nurse,7.2,83,7,Normal,,74,8196
+333,Female,76,Chef,8,108,7,Obese,,72,10375
+334,Male,74,Accountant,8.2,24,7,Normal,,82,3031
+335,Male,34,Chef,7.4,67,8,Overweight,,53,8588
+336,Male,34,Sales Representative,8.9,29,6,Obese,,66,2347
+337,Male,39,Scientist,8.3,51,4,Normal,,76,6514
+338,Male,39,Software Engineer,7.9,97,4,Overweight,,66,8445
+339,Female,31,Chef,8.3,106,10,Normal,,77,10866
+340,Female,68,Doctor,8.2,8,9,Obese,,96,1674
+341,Male,67,Chef,7.5,103,7,Normal,,81,9424
+342,Female,61,Writer,9.6,0,5,Normal,,78,1000
+343,Male,42,Nurse,8.2,113,10,Normal,,83,9681
+344,Male,64,Teacher,7.6,75,9,Normal,,83,6342
+345,Male,76,Lawyer,6.7,62,8,Normal,,75,7065
+346,Male,57,Software Engineer,9,47,4,Normal,,72,6272
+347,Male,53,Engineer,8.5,55,3,Overweight,,73,5601
+348,Female,70,Chef,7.8,104,10,Obese,,75,9655
+349,Male,19,Doctor,7.9,0,6,Obese,,84,2198
+350,Female,35,Manager,6.9,16,5,Obese,,89,3915
+351,Female,61,Writer,8.7,20,7,Overweight,,97,2236
+352,Female,50,Scientist,8.8,63,5,Normal,,56,8733
+353,Male,65,Accountant,7.9,78,5,Overweight,,62,8591
+354,Female,51,Accountant,6,73,6,Normal,,64,6445
+355,Female,58,Student,5.8,96,9,Obese,,70,8954
+356,Female,24,Chef,7.5,98,10,Normal,,76,10068
+357,Female,34,Salesperson,7.8,76,5,Overweight,,62,5928
+358,Female,56,Software Engineer,7.6,37,5,Obese,,59,3880
+359,Female,42,Lawyer,8.3,12,7,Obese,,91,4374
+360,Female,54,Manager,8.3,83,6,Normal,,85,8453
+361,Male,59,Scientist,7.3,65,4,Normal,,75,5682
+362,Male,37,Salesperson,8.6,155,6,Normal,,63,11461
+363,Male,21,Salesperson,6.8,87,8,Obese,,68,7711
+364,Male,26,Writer,7.5,10,7,Obese,,71,3796
+365,Female,33,Doctor,7.2,45,9,Underweight,,81,4666
+366,Female,59,Accountant,8.5,0,5,Obese,,80,2714
+367,Female,71,Chef,7.3,112,8,Obese,,72,11044
+368,Female,57,Artist,8.7,60,4,Normal,,76,6122
+369,Female,62,Manager,6.8,56,8,Normal,,85,5814
+370,Male,54,Writer,9,62,3,Underweight,,75,7694
+371,Male,73,Accountant,7.8,44,7,Obese,,56,5742
+372,Female,67,Sales Representative,8.1,76,7,Obese,,73,7994
+373,Male,55,Lawyer,6.9,45,8,Underweight,,80,5459
+374,Female,32,Teacher,8.5,83,6,Obese,,82,8802
+375,Male,37,Doctor,7,44,10,Obese,,75,4783
+376,Female,60,Nurse,6.9,113,10,Obese,,79,9474
+377,Female,27,Teacher,6.8,52,10,Overweight,,90,8272
+378,Male,25,Manager,8.3,63,6,Obese,,91,5242
+379,Male,63,Manager,7.7,61,10,Overweight,,70,7862
+380,Female,77,Lawyer,6,27,8,Normal,,79,2935
+381,Male,78,Student,6.2,13,10,Obese,,89,4536
+382,Male,22,Writer,8,56,1,Normal,,70,6300
+383,Male,19,Software Engineer,7.5,36,6,Obese,,63,4102
+384,Female,52,Manager,8.1,57,7,Obese,,52,5266
+385,Male,80,Artist,7.8,39,1,Obese,,84,4802
+386,Male,69,Nurse,7.9,78,7,Normal,,88,7279
+387,Male,22,Nurse,7,121,9,Normal,,67,10061
+388,Female,30,Chef,7.3,113,7,Normal,,68,9280
+389,Male,61,Software Engineer,6.2,98,5,Overweight,,62,10421
+390,Female,61,Manager,7,21,7,Overweight,,68,2732
+391,Female,61,Artist,8.4,85,1,Normal,,87,8932
+392,Female,44,Sales Representative,9,110,5,Normal,,84,9866
+393,Male,75,Student,6.7,123,8,Normal,,55,11094
+394,Female,60,Writer,8.6,54,3,Overweight,,84,4180
+395,Female,57,Software Engineer,8.3,20,3,Obese,,84,2897
+396,Male,18,Scientist,8.4,12,4,Obese,,83,1623
+397,Male,37,Artist,9.1,16,3,Obese,,76,3779
+398,Male,38,Lawyer,8.3,6,9,Normal,,104,1694
+399,Female,30,Sales Representative,7.7,17,7,Obese,,88,3689
+400,Female,25,Manager,7.4,29,9,Obese,,83,3636
+401,Male,43,Lawyer,7.1,23,8,Obese,,90,5825
+402,Female,32,Sales Representative,7.8,93,5,Overweight,,57,9007
+403,Female,43,Chef,9.4,129,6,Normal,,43,10913
+404,Male,48,Nurse,6,85,7,Overweight,,89,6767
+405,Male,48,Manager,6.7,83,5,Normal,,66,8252
+406,Female,60,Nurse,7.4,99,10,Overweight,,82,9276
+407,Female,71,Teacher,8.9,88,5,Normal,,71,8786
+408,Female,34,Salesperson,7.4,87,4,Normal,,73,7669
+409,Female,45,Nurse,7.8,114,8,Normal,,72,11702
+410,Male,30,Accountant,8.1,26,4,Overweight,,87,3820
+411,Female,53,Salesperson,7,157,3,Normal,,60,12956
+412,Male,32,Accountant,7.9,37,5,Obese,,57,4275
+413,Female,27,Software Engineer,8.1,67,3,Overweight,,69,6105
+414,Male,80,Student,8.3,80,3,Normal,,77,9079
+415,Female,45,Artist,8.2,0,2,Overweight,,83,1969
+416,Male,35,Salesperson,8.8,32,4,Obese,,74,4976
+417,Female,32,Engineer,8.1,11,3,Normal,,101,3246
+418,Female,61,Writer,9.2,27,3,Overweight,,72,3851
+419,Female,50,Salesperson,7.2,97,7,Overweight,,89,9881
+420,Male,32,Accountant,7.6,81,6,Normal,,72,7503
+421,Male,63,Doctor,9,39,9,Underweight,,77,4844
+422,Female,42,Teacher,7.7,59,8,Overweight,,60,7477
+423,Female,34,Teacher,6.8,121,10,Underweight,,56,8492
+424,Female,64,Nurse,7.3,108,5,Normal,,75,9069
+425,Female,61,Artist,8.8,46,1,Normal,,77,5905
+426,Female,75,Student,7.5,0,9,Normal,,67,2561
+427,Female,64,Manager,8.5,21,5,Normal,,97,4078
+428,Female,35,Accountant,7.2,16,5,Overweight,,82,1663
+429,Female,67,Scientist,8.1,68,2,Normal,,74,5897
+430,Female,70,Student,8.7,101,7,Normal,,65,10119
+431,Female,51,Teacher,8.5,104,9,Normal,,90,9548
+432,Male,38,Manager,7.5,26,9,Obese,,98,3680
+433,Female,59,Salesperson,8.2,57,3,Overweight,,56,5253
+434,Male,25,Teacher,7.7,48,4,Overweight,,79,5658
+435,Male,74,Artist,8.8,160,1,Overweight,,45,12234
+436,Female,25,Engineer,9.6,78,3,Normal,,78,8590
+437,Male,47,Teacher,6.1,64,7,Overweight,,73,6407
+438,Male,31,Sales Representative,8.1,98,7,Normal,,74,7260
+439,Male,70,Writer,8.2,65,5,Overweight,,90,5936
+440,Male,27,Engineer,8,47,4,Normal,,74,5363
+441,Male,36,Student,8.5,43,6,Underweight,,62,5583
+442,Male,52,Engineer,7.7,53,6,Underweight,,73,5840
+443,Male,36,Manager,8.6,0,5,Obese,,62,1000
+444,Female,20,Manager,5.7,82,10,Normal,,74,7597
+445,Male,51,Scientist,8.2,50,1,Normal,,72,6642
+446,Male,35,Writer,7.4,59,5,Overweight,,86,8138
+447,Male,58,Nurse,7.5,128,9,Normal,,63,9792
+448,Male,39,Software Engineer,7.5,22,3,Overweight,,93,1975
+449,Male,29,Writer,7.9,23,1,Underweight,,93,2412
+450,Male,52,Lawyer,7.7,38,8,Overweight,,59,7089
+451,Male,76,Accountant,6.5,47,5,Overweight,,61,5813
+452,Female,69,Sales Representative,8,73,7,Normal,,86,7034
+453,Female,69,Writer,7.7,45,4,Overweight,,77,4866
+454,Male,74,Lawyer,8.4,17,8,Normal,,80,2494
+455,Female,21,Scientist,6.6,38,2,Normal,,63,4352
+456,Female,28,Salesperson,6.3,17,7,Overweight,,66,3363
+457,Male,69,Engineer,7.9,50,5,Overweight,,78,5765
+458,Female,37,Teacher,6.6,90,10,Overweight,,85,7727
+459,Female,77,Scientist,9.1,43,3,Normal,,60,4456
+460,Female,20,Manager,7.9,52,7,Normal,,80,4535
+461,Female,43,Doctor,8.3,6,7,Overweight,,70,2387
+462,Male,69,Salesperson,7.2,180,9,Obese,,70,14047
+463,Male,34,Doctor,7.8,0,9,Obese,,97,3831
+464,Male,45,Scientist,8.8,29,5,Obese,,100,2485
+465,Female,35,Salesperson,8.8,87,3,Overweight,,70,8922
+466,Male,52,Manager,7.3,28,7,Overweight,,81,5447
+467,Female,49,Teacher,6.9,101,6,Normal,,89,8955
+468,Male,41,Accountant,7.3,46,6,Normal,,81,4106
+469,Female,32,Teacher,8.6,68,5,Overweight,,71,7514
+470,Female,32,Writer,7.1,65,6,Normal,,63,6841
+471,Male,80,Teacher,8.5,100,7,Overweight,,70,8843
+472,Male,19,Scientist,8.6,15,5,Normal,,77,2698
+473,Female,67,Software Engineer,7.1,92,5,Normal,,79,10738
+474,Male,46,Lawyer,8.4,59,7,Normal,,71,6745
+475,Male,33,Chef,6.2,87,8,Normal,,74,7193
+476,Male,33,Software Engineer,7.2,40,5,Obese,,78,5183
+477,Female,29,Nurse,5.5,126,10,Underweight,,66,10761
+478,Female,78,Doctor,5.5,11,8,Overweight,,86,2194
+479,Female,47,Chef,7.9,153,7,Normal,,59,11336
+480,Female,35,Software Engineer,8.6,0,2,Obese,,79,1326
+481,Female,47,Scientist,7.5,43,3,Normal,,60,5092
+482,Male,49,Scientist,7.7,0,5,Obese,,75,1743
+483,Female,77,Teacher,7,85,8,Overweight,,66,7936
+484,Male,31,Scientist,8.4,36,3,Overweight,,72,4339
+485,Male,33,Artist,8.5,72,3,Obese,,81,7708
+486,Male,30,Scientist,10,49,1,Obese,,86,5290
+487,Female,19,Software Engineer,8.9,20,1,Overweight,,97,4826
+488,Male,40,Sales Representative,9.3,65,5,Overweight,,77,5953
+489,Male,46,Accountant,7.8,2,6,Overweight,,74,1870
+490,Female,26,Sales Representative,8.9,141,5,Normal,,66,12207
+491,Female,63,Artist,8.3,73,5,Underweight,,72,5826
+492,Male,63,Scientist,8.5,76,4,Normal,,87,7124
+493,Female,71,Teacher,8.1,129,6,Normal,,50,10329
+494,Male,31,Nurse,8.3,138,9,Overweight,,58,10905
+495,Male,37,Nurse,5.5,109,8,Normal,,71,7205
+496,Male,52,Writer,8.5,0,4,Obese,,104,1000
+497,Female,57,Salesperson,7.6,51,4,Normal,,86,3400
+498,Female,42,Writer,8.2,38,5,Normal,,83,3988
+499,Male,61,Writer,7.4,66,7,Overweight,,60,6995
+500,Female,47,Teacher,9.1,70,4,Normal,,61,6974
+501,Male,64,Salesperson,7.5,74,5,Normal,,65,8203
+502,Female,22,Teacher,7.9,83,9,Obese,,77,7258
+503,Male,56,Student,6.8,120,5,Normal,,90,10397
+504,Female,21,Chef,7.6,77,9,Normal,,75,7415
+505,Male,68,Scientist,9.3,60,3,Obese,,69,7941
+506,Female,30,Manager,9.4,67,1,Overweight,,82,6411
+507,Male,30,Accountant,7.8,0,6,Overweight,,74,2759
+508,Female,60,Salesperson,9.6,30,3,Obese,,86,4277
+509,Male,48,Manager,8.6,13,7,Normal,,80,2874
+510,Female,40,Salesperson,7.4,137,10,Normal,,67,10698
+511,Female,73,Chef,8.6,56,7,Obese,,67,5069
+512,Female,39,Engineer,8.5,17,7,Overweight,,68,2954
+513,Female,59,Writer,7.6,57,7,Overweight,,64,5585
+514,Female,44,Writer,9,10,5,Obese,,70,3288
+515,Male,58,Sales Representative,6.8,0,7,Underweight,,98,1000
+516,Female,78,Writer,8.3,86,5,Overweight,,71,7082
+517,Female,47,Salesperson,8,77,7,Overweight,,81,7476
+518,Male,52,Teacher,6.6,74,6,Overweight,,54,6550
+519,Female,63,Student,7,123,6,Overweight,,60,9309
+520,Male,44,Artist,9.2,37,5,Underweight,,58,4287
+521,Male,71,Teacher,7,29,9,Overweight,,79,3461
+522,Male,47,Software Engineer,8.5,48,3,Normal,,74,4680
+523,Male,74,Chef,7.4,52,9,Normal,,72,6553
+524,Female,47,Manager,7.3,83,10,Overweight,,83,6504
+525,Female,19,Student,8.5,57,6,Normal,,61,7326
+526,Female,62,Artist,8.3,36,3,Normal,,57,4069
+527,Female,57,Student,7,131,5,Obese,,64,10640
+528,Female,76,Accountant,7.8,9,7,Normal,,77,2954
+529,Female,49,Software Engineer,8.2,65,4,Underweight,,82,4735
+530,Female,60,Lawyer,7.7,11,9,Obese,,106,5122
+531,Male,66,Software Engineer,9.4,10,4,Normal,,71,4182
+532,Female,53,Student,6.8,68,6,Normal,,60,5624
+533,Male,26,Engineer,8.4,88,7,Normal,,70,7911
+534,Female,63,Software Engineer,8,85,5,Overweight,,62,8345
+535,Female,76,Software Engineer,7.9,116,4,Normal,,61,11115
+536,Male,38,Manager,6.6,68,10,Underweight,,57,5402
+537,Male,61,Teacher,7.2,109,7,Normal,,69,9541
+538,Male,27,Writer,7.3,0,5,Underweight,,87,1000
+539,Female,33,Nurse,7.6,105,9,Normal,,89,9671
+540,Female,42,Salesperson,8.1,162,6,Normal,,74,14835
+541,Male,33,Chef,8.1,89,5,Normal,,74,8256
+542,Female,53,Nurse,7.6,42,6,Obese,,69,5441
+543,Female,37,Salesperson,8.9,88,2,Overweight,,63,7248
+544,Male,52,Chef,8.5,37,5,Normal,,88,4973
+545,Female,42,Scientist,7.3,24,7,Obese,,85,4326
+546,Male,40,Scientist,9.2,80,5,Obese,,83,8523
+547,Female,74,Engineer,7.3,43,5,Obese,,57,2800
+548,Female,78,Teacher,7.3,55,9,Underweight,,75,4449
+549,Female,50,Artist,7.7,65,6,Overweight,,56,5149
+550,Male,20,Engineer,6.3,16,7,Overweight,,95,4037
+551,Male,47,Accountant,7.6,34,5,Obese,,69,3742
+552,Male,58,Software Engineer,8.6,40,7,Normal,,74,4791
+553,Female,63,Nurse,7,98,10,Obese,,78,8468
+554,Female,19,Lawyer,7.9,0,10,Overweight,,86,2989
+555,Male,30,Accountant,7.6,59,6,Underweight,,78,7119
+556,Male,79,Scientist,7,67,1,Underweight,,67,8389
+557,Male,43,Writer,8.7,16,2,Normal,,68,5298
+558,Female,75,Doctor,7.7,82,8,Overweight,,69,7736
+559,Male,46,Teacher,6.7,118,6,Normal,,76,10665
+560,Male,75,Teacher,6.6,41,10,Normal,,77,3961
+561,Male,48,Nurse,7.3,69,8,Overweight,,79,5822
+562,Male,58,Nurse,8.9,67,6,Normal,,84,4979
+563,Male,33,Student,7.8,111,7,Underweight,,62,10583
+564,Male,25,Salesperson,8.8,144,7,Normal,,47,11005
+565,Female,56,Scientist,7,58,9,Normal,,71,6915
+566,Female,73,Chef,7.6,13,9,Normal,,98,3775
+567,Male,39,Nurse,8.1,147,10,Normal,,71,11799
+568,Female,79,Artist,9.1,96,1,Overweight,,87,8015
+569,Female,61,Salesperson,9.5,69,1,Overweight,,58,5221
+570,Female,43,Salesperson,5.7,102,9,Overweight,,60,8901
+571,Female,39,Accountant,7.3,9,6,Obese,,98,2716
+572,Male,59,Artist,8.4,0,5,Obese,,77,1483
+573,Male,49,Teacher,7.7,18,6,Obese,,74,2332
+574,Female,36,Sales Representative,8.8,89,6,Overweight,,62,6217
+575,Female,32,Writer,7.4,42,5,Overweight,,75,4090
+576,Male,31,Nurse,8,39,4,Underweight,,79,5048
+577,Female,58,Chef,7.2,145,7,Overweight,,64,11568
+578,Male,54,Teacher,7.7,60,8,Overweight,,56,5624
+579,Male,22,Software Engineer,6.4,131,6,Normal,,62,10136
+580,Female,62,Writer,8.3,22,4,Overweight,,79,1530
+581,Female,20,Salesperson,6.5,36,9,Overweight,,57,2630
+582,Male,51,Sales Representative,9,107,4,Normal,,67,9581
+583,Male,20,Scientist,6.5,37,9,Underweight,,73,5515
+584,Female,19,Doctor,6.8,0,8,Overweight,,84,2116
+585,Female,27,Engineer,8.7,88,3,Normal,,60,8180
+586,Female,56,Accountant,8.7,63,7,Normal,,75,6372
+587,Male,54,Scientist,7.8,62,6,Normal,,82,3970
+588,Male,64,Doctor,7.4,22,10,Overweight,,71,3731
+589,Female,32,Scientist,7.5,55,5,Overweight,,59,6649
+590,Female,30,Student,7.5,85,9,Underweight,,73,8799
+591,Female,19,Sales Representative,6.5,47,9,Normal,,64,5648
+592,Male,76,Sales Representative,9,34,5,Normal,,65,6346
+593,Female,30,Doctor,6.6,35,8,Obese,,74,3649
+594,Female,21,Doctor,8.8,90,7,Normal,,67,8503
+595,Female,43,Teacher,6.8,15,7,Overweight,,89,3385
+596,Female,79,Manager,8,3,8,Underweight,,64,1587
+597,Male,70,Sales Representative,8.7,86,3,Overweight,,68,6956
+598,Female,20,Student,8.8,132,3,Normal,,46,10435
+599,Female,28,Student,7.8,106,6,Underweight,,58,7182
+600,Female,42,Scientist,7.3,70,4,Overweight,,63,6850
+601,Female,32,Manager,8,62,6,Normal,,60,6379
+602,Female,80,Salesperson,7.6,66,6,Overweight,,72,6239
+603,Male,44,Writer,6.7,46,6,Overweight,,69,5014
+604,Male,21,Chef,6.5,122,7,Normal,,47,13069
+605,Female,77,Scientist,7.8,0,3,Obese,,109,1931
+606,Male,20,Teacher,8.2,52,10,Obese,,57,6768
+607,Female,23,Nurse,8.2,93,7,Normal,,56,9391
+608,Male,63,Sales Representative,6.3,51,10,Overweight,,60,4396
+609,Female,63,Accountant,7.6,71,5,Normal,,79,6871
+610,Male,20,Chef,7.8,136,6,Underweight,,46,9768
+611,Male,44,Student,7.7,35,10,Obese,,87,6356
+612,Male,18,Doctor,8.4,25,7,Obese,,84,2084
+613,Female,43,Nurse,7.3,61,6,Overweight,,61,6308
+614,Female,43,Engineer,6.5,31,6,Overweight,,76,5155
+615,Female,48,Lawyer,7.5,46,8,Normal,,86,4067
+616,Male,62,Software Engineer,7.4,40,7,Normal,,70,5440
+617,Male,26,Lawyer,7.5,44,8,Normal,,77,4969
+618,Male,58,Writer,8,43,3,Overweight,,65,4178
+619,Female,68,Sales Representative,7,2,7,Normal,,80,1570
+620,Female,45,Manager,7,37,7,Overweight,,88,4789
+621,Male,28,Lawyer,6.7,9,9,Overweight,,90,4321
+622,Female,59,Software Engineer,7.6,53,9,Normal,,69,3968
+623,Female,80,Scientist,9.6,51,1,Overweight,,59,4840
+624,Female,36,Teacher,8.3,45,4,Overweight,,85,3604
+625,Male,78,Doctor,7.9,67,7,Normal,,75,6154
+626,Male,35,Writer,6.7,41,6,Obese,,69,5220
+627,Male,46,Accountant,7.9,20,7,Normal,,98,3387
+628,Female,62,Student,7.8,62,10,Normal,,77,5606
+629,Female,66,Nurse,7.4,130,7,Normal,,63,9955
+630,Female,55,Artist,7.7,75,6,Overweight,,68,6125
+631,Female,51,Sales Representative,9.6,124,3,Normal,,43,10879
+632,Female,28,Writer,8.2,0,6,Normal,,90,2787
+633,Male,61,Artist,8.8,29,1,Normal,,103,3567
+634,Female,48,Accountant,8.9,23,6,Overweight,,78,2374
+635,Female,58,Accountant,9,38,6,Underweight,,72,4583
+636,Male,54,Nurse,6.6,10,10,Overweight,,75,3423
+637,Female,37,Lawyer,8,12,7,Overweight,,87,1975
+638,Male,58,Manager,8.5,23,4,Overweight,,96,3795
+639,Female,64,Accountant,7.8,22,5,Obese,,94,4346
+640,Male,34,Artist,8.6,43,4,Underweight,,60,5563
+641,Male,57,Nurse,7.6,43,8,Normal,,74,5141
+642,Male,58,Salesperson,7.4,103,5,Normal,,66,10708
+643,Female,26,Salesperson,7.5,128,4,Overweight,,54,11373
+644,Female,38,Engineer,8.8,36,2,Normal,,67,5542
+645,Male,43,Writer,7.8,32,4,Overweight,,64,4159
+646,Male,78,Doctor,6.1,54,8,Overweight,,72,6480
+647,Female,74,Artist,8,104,5,Normal,,74,11009
+648,Female,44,Engineer,8.4,32,7,Obese,,58,6425
+649,Male,63,Software Engineer,8.4,49,4,Obese,,75,4029
+650,Female,27,Scientist,9.3,53,5,Normal,,66,6719
+651,Female,18,Writer,8.6,79,4,Overweight,,72,8571
+652,Female,48,Student,6.1,137,6,Normal,,50,10251
+653,Male,46,Doctor,7.1,0,8,Overweight,,88,4538
+654,Female,63,Student,7.5,84,5,Normal,,84,9252
+655,Male,67,Nurse,8.7,73,7,Obese,,56,8985
+656,Male,46,Salesperson,7.6,86,4,Overweight,,71,9033
+657,Female,64,Sales Representative,9,48,5,Overweight,,84,4146
+658,Female,23,Lawyer,8.2,39,8,Overweight,,73,5314
+659,Female,78,Sales Representative,7.9,19,6,Overweight,,82,5165
+660,Female,72,Lawyer,6.4,3,9,Obese,,94,2796
+661,Female,74,Doctor,7.7,7,9,Normal,,78,2633
+662,Female,54,Doctor,7.4,55,9,Normal,,78,6880
+663,Female,71,Artist,8.8,30,3,Overweight,,61,3575
+664,Male,29,Artist,7.6,18,5,Normal,,71,1535
+665,Female,35,Manager,6.8,114,8,Normal,,68,9513
+666,Female,42,Scientist,8.7,66,2,Obese,,73,7032
+667,Female,20,Chef,7.3,83,8,Obese,,84,8320
+668,Male,67,Doctor,7.5,19,7,Underweight,,91,4143
+669,Male,60,Chef,6.4,104,9,Overweight,,77,8025
+670,Male,55,Doctor,7.3,60,8,Normal,,53,7865
+671,Female,73,Salesperson,7.6,73,4,Normal,,79,7632
+672,Female,76,Engineer,8.6,92,5,Normal,,76,9465
+673,Male,67,Lawyer,7.6,32,7,Normal,,70,3063
+674,Female,47,Doctor,9.3,27,8,Underweight,,98,3190
+675,Female,47,Scientist,7.9,24,3,Overweight,,66,4819
+676,Male,54,Chef,6.8,115,9,Normal,,73,7816
+677,Female,36,Nurse,6.2,148,6,Normal,,50,13263
+678,Male,73,Teacher,9.5,131,10,Normal,,74,11319
+679,Female,41,Engineer,8.1,0,6,Overweight,,90,3627
+680,Female,74,Chef,8.1,93,5,Normal,,67,7516
+681,Male,31,Artist,9.1,0,2,Overweight,,76,1928
+682,Male,65,Teacher,8.5,84,7,Normal,,56,5574
+683,Female,24,Teacher,7.7,55,6,Normal,,77,4937
+684,Male,68,Manager,8.3,0,10,Obese,,82,3541
+685,Male,67,Nurse,7.2,78,8,Normal,,68,6038
+686,Female,70,Nurse,7.9,42,7,Overweight,,66,5334
+687,Male,56,Lawyer,7.1,21,8,Normal,,109,3786
+688,Female,71,Accountant,6.7,37,6,Obese,,80,6152
+689,Female,29,Chef,6.8,108,7,Normal,,79,10410
+690,Female,20,Doctor,8.4,68,6,Obese,,65,6345
+691,Female,62,Teacher,6.8,57,8,Normal,,86,5323
+692,Male,35,Scientist,10,55,5,Normal,,83,5473
+693,Male,42,Lawyer,9.6,35,7,Normal,,77,4833
+694,Male,41,Teacher,9,109,3,Overweight,,69,10343
+695,Female,24,Software Engineer,6.3,81,3,Normal,,69,7849
+696,Male,44,Manager,8.1,83,7,Normal,,63,6592
+697,Female,31,Manager,8.2,60,7,Overweight,,72,5411
+698,Male,46,Accountant,6.9,12,5,Obese,,86,2208
+699,Male,77,Scientist,8.6,52,1,Overweight,,61,6180
+700,Male,19,Teacher,7.7,61,9,Obese,,87,6847
+701,Female,39,Scientist,7.3,58,5,Obese,,79,6801
+702,Female,28,Salesperson,8.3,141,4,Underweight,,61,11530
+703,Male,72,Lawyer,5.7,4,9,Overweight,,68,2424
+704,Male,31,Chef,6.8,71,7,Overweight,,80,6219
+705,Male,27,Teacher,6.8,116,7,Normal,,89,9364
+706,Female,57,Lawyer,6,9,9,Normal,,102,2390
+707,Male,58,Nurse,8.1,122,8,Normal,,47,11539
+708,Male,19,Manager,7.5,42,5,Underweight,,62,4508
+709,Male,72,Student,7.1,70,5,Normal,,70,6743
+710,Female,53,Scientist,7.3,57,4,Normal,,78,5243
+711,Male,80,Manager,6.9,40,6,Overweight,,65,3586
+712,Male,50,Artist,8.1,65,4,Overweight,,62,5622
+713,Male,26,Manager,7.2,4,8,Overweight,,101,2205
+714,Male,39,Doctor,7.8,37,8,Normal,,54,5514
+715,Female,63,Salesperson,9.2,96,1,Normal,,73,8284
+716,Female,80,Sales Representative,7.7,18,5,Obese,,95,3173
+717,Male,52,Lawyer,5.7,56,10,Underweight,,83,5634
+718,Female,23,Chef,7.7,81,4,Underweight,,86,8287
+719,Female,34,Doctor,7.2,38,7,Overweight,,71,4630
+720,Male,22,Doctor,7.7,0,7,Underweight,,87,3045
+721,Male,38,Accountant,6.5,51,6,Overweight,,66,4942
+722,Male,79,Artist,8.7,77,4,Overweight,,52,8309
+723,Female,52,Scientist,7.8,14,6,Overweight,,106,2478
+724,Male,47,Lawyer,7.9,33,10,Overweight,,55,4114
+725,Female,45,Doctor,6.8,45,10,Obese,,85,6578
+726,Male,29,Lawyer,7.8,21,8,Normal,,91,3129
+727,Male,47,Student,7,47,5,Obese,,85,5206
+728,Male,32,Manager,6.9,48,5,Obese,,88,7054
+729,Female,19,Engineer,7,56,5,Obese,,75,5979
+730,Female,52,Nurse,7.2,100,9,Normal,,75,9356
+731,Female,28,Salesperson,7,115,8,Obese,,74,10347
+732,Female,77,Teacher,9.4,85,3,Underweight,,80,7167
+733,Male,63,Chef,5.2,108,10,Overweight,,89,7899
+734,Male,53,Software Engineer,9.3,52,7,Overweight,,61,7740
+735,Female,23,Sales Representative,7.1,134,7,Overweight,,53,10499
+736,Female,70,Student,8.2,54,6,Overweight,,78,5872
+737,Female,22,Teacher,7.4,35,6,Overweight,,80,2652
+738,Female,46,Nurse,9.2,59,7,Overweight,,66,5359
+739,Male,58,Chef,7.6,98,9,Normal,,77,9954
+740,Female,70,Artist,7.5,102,2,Normal,,61,10243
+741,Male,80,Writer,9.9,40,6,Overweight,,73,5692
+742,Female,27,Writer,8.3,3,3,Normal,,85,1011
+743,Female,64,Chef,6.6,92,8,Obese,,80,9078
+744,Male,35,Artist,7.9,124,3,Overweight,,58,11649
+745,Female,41,Nurse,7.9,88,7,Overweight,,84,8473
+746,Female,79,Scientist,6.7,52,7,Overweight,,88,5026
+747,Male,47,Scientist,5.2,45,7,Obese,,61,4457
+748,Female,73,Accountant,6.3,29,7,Overweight,,91,3636
+749,Female,37,Engineer,8.4,19,7,Obese,,102,4725
+750,Female,55,Nurse,7.5,86,8,Underweight,,74,7628
+751,Female,45,Writer,7.4,13,4,Obese,,78,2591
+752,Male,69,Software Engineer,7.7,62,4,Overweight,,67,8039
+753,Male,23,Chef,9.3,173,3,Normal,,58,13212
+754,Female,32,Nurse,8.1,68,7,Obese,,60,9211
+755,Male,48,Scientist,7.6,47,4,Obese,,66,6463
+756,Female,69,Student,8.6,61,1,Normal,,71,7173
+757,Female,57,Teacher,7.1,58,8,Normal,,91,5055
+758,Male,67,Software Engineer,9.2,0,1,Normal,,65,3362
+759,Male,19,Salesperson,6.2,0,9,Overweight,,102,2984
+760,Female,27,Scientist,8.1,36,2,Overweight,,53,5125
+761,Male,46,Student,7.7,67,8,Obese,,65,5806
+762,Female,25,Engineer,7.8,70,5,Overweight,,63,7514
+763,Female,27,Nurse,7.6,160,5,Normal,,77,12700
+764,Male,42,Sales Representative,6.5,153,9,Normal,,72,12727
+765,Female,74,Salesperson,6.8,29,8,Normal,,81,3874
+766,Female,22,Accountant,5.4,33,6,Underweight,,88,4227
+767,Female,32,Doctor,8.8,26,7,Normal,,83,2850
+768,Female,66,Doctor,7.3,85,6,Normal,,80,9175
+769,Male,18,Student,7.7,97,8,Underweight,,62,9876
+770,Male,39,Sales Representative,9.5,88,5,Obese,,68,7166
+771,Female,53,Student,7.5,0,5,Obese,,89,2232
+772,Female,77,Teacher,8.2,100,5,Normal,,71,7562
+773,Female,70,Lawyer,6.9,13,9,Obese,,88,2792
+774,Female,24,Teacher,6,180,7,Normal,,68,13798
+775,Female,31,Accountant,8.9,25,5,Obese,,94,4616
+776,Female,66,Sales Representative,7.7,57,6,Overweight,,81,7237
+777,Female,79,Scientist,7.5,8,4,Normal,,107,3506
+778,Male,49,Teacher,6.7,123,9,Normal,,63,8589
+779,Female,38,Artist,7.3,25,7,Overweight,,96,3189
+780,Female,40,Artist,8.1,0,1,Overweight,,68,2719
+781,Female,39,Student,8.7,180,6,Normal,,47,13861
+782,Female,78,Lawyer,8.2,29,8,Obese,,72,5642
+783,Female,18,Scientist,8.9,20,7,Overweight,,102,2989
+784,Female,73,Accountant,6.5,93,6,Underweight,,68,7698
+785,Male,80,Manager,8.7,52,10,Underweight,,90,5064
+786,Male,47,Teacher,8,83,8,Normal,,64,7396
+787,Male,20,Teacher,7.8,127,7,Normal,,57,12219
+788,Male,39,Writer,8.5,55,1,Normal,,72,5409
+789,Male,37,Writer,8.2,23,4,Underweight,,98,2105
+790,Male,28,Manager,7.7,65,8,Normal,,62,5090
+791,Female,19,Writer,8.3,54,7,Obese,,92,3958
+792,Male,68,Writer,8.5,34,5,Underweight,,51,4722
+793,Female,53,Sales Representative,7.4,87,4,Normal,,63,8342
+794,Male,66,Manager,7,28,8,Overweight,,97,3903
+795,Female,24,Student,6.1,19,7,Overweight,,85,3307
+796,Female,40,Chef,7.2,46,5,Overweight,,86,4868
+797,Female,60,Doctor,8.2,0,8,Normal,,80,1000
+798,Female,48,Chef,7.2,114,7,Normal,,68,11651
+799,Male,75,Teacher,8.1,53,8,Normal,,74,6829
+800,Female,63,Accountant,7.8,37,7,Overweight,,89,5467
+801,Female,69,Sales Representative,8.9,65,5,Overweight,,60,8085
+802,Female,79,Scientist,9,57,5,Overweight,,80,4289
+803,Male,23,Student,7.8,53,6,Normal,,70,7790
+804,Male,59,Software Engineer,8.7,70,4,Overweight,,59,6135
+805,Male,57,Student,8.9,99,6,Overweight,,60,8318
+806,Female,38,Lawyer,7.3,0,8,Overweight,,62,2052
+807,Female,34,Nurse,7.6,19,7,Overweight,,109,3841
+808,Female,47,Writer,8.4,55,2,Normal,,74,4152
+809,Female,34,Manager,8.4,42,6,Overweight,,69,5667
+810,Female,40,Writer,8.2,10,5,Obese,,71,1773
+811,Male,71,Salesperson,7.3,117,7,Overweight,,61,9672
+812,Male,48,Lawyer,6.6,7,8,Obese,,102,4317
+813,Male,39,Salesperson,6.6,98,10,Obese,,67,8561
+814,Female,67,Teacher,8.7,140,6,Normal,,55,11273
+815,Male,35,Manager,9.4,33,6,Overweight,,68,3515
+816,Male,40,Lawyer,7.7,0,8,Underweight,,71,2142
+817,Female,47,Chef,6.8,96,7,Normal,,58,9728
+818,Male,42,Accountant,8.4,40,7,Normal,,83,5332
+819,Male,54,Salesperson,6.5,161,7,Normal,,45,13652
+820,Male,37,Doctor,7.6,18,8,Overweight,,99,3675
+821,Male,26,Artist,9.4,58,1,Overweight,,90,4813
+822,Male,28,Software Engineer,8,93,5,Normal,,74,9015
+823,Female,80,Software Engineer,8.8,35,3,Overweight,,69,4392
+824,Male,20,Teacher,8.3,46,8,Normal,,86,5931
+825,Female,55,Engineer,6.9,95,8,Normal,,69,9617
+826,Female,28,Engineer,6.7,59,7,Overweight,,72,7737
+827,Female,24,Sales Representative,8.7,136,7,Normal,,60,10879
+828,Female,38,Scientist,8.3,70,8,Normal,,81,6055
+829,Male,36,Manager,7.5,64,5,Overweight,,75,5451
+830,Male,56,Scientist,9.7,88,2,Normal,,89,9242
+831,Female,80,Scientist,7.9,0,2,Obese,,100,1576
+832,Female,45,Salesperson,8.4,16,8,Overweight,,91,1888
+833,Female,29,Salesperson,8.5,85,9,Overweight,,78,10273
+834,Male,56,Software Engineer,8.3,37,5,Normal,,80,6663
+835,Female,32,Doctor,7.6,44,8,Overweight,,94,5237
+836,Female,50,Doctor,8.2,20,7,Overweight,,92,3025
+837,Male,40,Doctor,8,31,8,Overweight,,82,4240
+838,Male,29,Engineer,9.1,44,5,Overweight,,78,6822
+839,Male,45,Nurse,6.8,106,6,Normal,,66,8734
+840,Female,43,Scientist,7.7,50,5,Normal,,86,5696
+841,Female,80,Artist,7.3,0,6,Overweight,,101,2448
+842,Female,79,Chef,5.8,80,8,Overweight,,74,8998
+843,Male,30,Nurse,7.3,29,9,Overweight,,83,4040
+844,Male,53,Manager,8.5,70,5,Overweight,,59,7841
+845,Male,42,Sales Representative,9.2,27,4,Overweight,,68,4416
+846,Female,24,Writer,8.1,64,3,Obese,,52,6829
+847,Male,71,Lawyer,7.8,0,7,Obese,,66,1000
+848,Male,20,Software Engineer,7.4,40,4,Overweight,,60,3910
+849,Male,55,Salesperson,6.5,137,5,Normal,,56,9525
+850,Female,59,Engineer,7,20,7,Underweight,,73,3098
+851,Female,19,Artist,8.5,56,4,Underweight,,71,5440
+852,Female,23,Sales Representative,7.8,33,6,Normal,,72,3958
+853,Female,23,Sales Representative,7.2,29,5,Overweight,,77,4863
+854,Male,22,Manager,7.7,26,8,Overweight,,97,2471
+855,Female,44,Teacher,8.5,31,9,Normal,,86,3940
+856,Female,38,Nurse,8.9,90,9,Normal,,71,7024
+857,Female,47,Sales Representative,6.8,85,6,Normal,,76,7199
+858,Male,49,Chef,7.5,89,9,Obese,,60,8192
+859,Female,71,Artist,8.3,2,1,Underweight,,70,1852
+860,Male,37,Salesperson,8.3,108,6,Overweight,,71,7819
+861,Female,30,Student,8.2,117,1,Normal,,81,10104
+862,Male,60,Engineer,7.7,62,5,Overweight,,81,6345
+863,Male,26,Sales Representative,7.2,46,5,Normal,,79,4813
+864,Female,18,Artist,7.4,73,2,Obese,,53,6605
+865,Male,44,Doctor,6.8,85,9,Underweight,,82,8045
+866,Female,27,Student,8.9,139,1,Underweight,,72,12002
+867,Female,35,Accountant,8.4,68,5,Overweight,,75,5866
+868,Female,21,Nurse,6.6,32,8,Normal,,60,4229
+869,Male,49,Nurse,6.9,133,9,Normal,,70,11597
+870,Male,79,Nurse,6.5,101,6,Normal,,82,11388
+871,Female,79,Chef,7.2,82,8,Overweight,,75,6988
+872,Female,62,Student,7.7,66,7,Normal,,76,6087
+873,Male,77,Scientist,6.1,71,6,Overweight,,71,5985
+874,Male,48,Manager,7.3,42,7,Overweight,,56,5981
+875,Female,50,Manager,8.9,25,9,Obese,,79,3952
+876,Male,30,Software Engineer,8.3,102,2,Obese,,85,11445
+877,Female,26,Teacher,7.9,146,9,Normal,,59,12416
+878,Female,29,Lawyer,7.1,25,10,Overweight,,81,2018
+879,Male,68,Engineer,9.7,24,1,Normal,,92,3419
+880,Female,74,Lawyer,7.4,21,8,Obese,,99,3475
+881,Female,59,Engineer,6.4,18,3,Underweight,,79,1891
+882,Male,24,Chef,7.9,137,7,Normal,,76,13141
+883,Female,26,Manager,8.1,25,6,Normal,,83,2280
+884,Male,68,Manager,7.3,38,5,Normal,,76,4628
+885,Male,39,Software Engineer,8.2,88,5,Normal,,72,8344
+886,Female,65,Chef,8.4,119,6,Overweight,,59,11596
+887,Female,33,Teacher,7.5,59,10,Normal,,72,5395
+888,Male,61,Sales Representative,6.3,0,6,Normal,,93,1870
+889,Male,58,Writer,7.9,42,2,Normal,,66,6260
+890,Female,43,Salesperson,7.8,51,5,Underweight,,70,3938
+891,Male,24,Software Engineer,7.6,19,5,Overweight,,98,3375
+892,Female,23,Salesperson,7.2,103,7,Underweight,,71,10700
+893,Male,74,Software Engineer,8.2,70,1,Underweight,,63,7285
+894,Female,68,Chef,7.7,73,8,Overweight,,73,6413
+895,Male,26,Scientist,8,51,2,Overweight,,82,6159
+896,Female,67,Writer,7.2,0,3,Normal,,95,1000
+897,Male,46,Scientist,7.3,34,8,Normal,,73,4662
+898,Male,42,Lawyer,7.3,48,8,Underweight,,75,6752
+899,Female,26,Engineer,7.9,31,6,Overweight,,71,5184
+900,Male,73,Software Engineer,8.8,27,4,Overweight,,71,4442
+901,Female,19,Software Engineer,8.5,83,2,Normal,,73,8859
+902,Male,75,Lawyer,7.9,22,9,Obese,,79,4922
+903,Female,58,Chef,7.5,90,7,Normal,,81,9970
+904,Male,31,Software Engineer,7.8,55,1,Overweight,,78,6992
+905,Male,75,Lawyer,6.1,56,8,Overweight,,81,5269
+906,Male,61,Accountant,8.7,35,6,Normal,,86,1000
+907,Female,45,Software Engineer,10,114,1,Obese,,58,11105
+908,Male,34,Nurse,7.9,75,6,Normal,,83,6441
+909,Male,33,Artist,8.7,94,4,Overweight,,59,10709
+910,Female,74,Manager,8.5,52,6,Normal,,65,5227
+911,Male,42,Engineer,7.6,22,5,Overweight,,93,4076
+912,Male,29,Doctor,6.4,25,10,Obese,,106,3013
+913,Male,57,Accountant,7.2,64,6,Obese,,76,7710
+914,Male,80,Artist,9.3,60,1,Obese,,64,6855
+915,Male,42,Nurse,7.4,120,6,Obese,,71,10237
+916,Male,32,Software Engineer,8,89,6,Normal,,81,7944
+917,Female,67,Chef,6.4,171,8,Normal,,70,13858
+918,Male,75,Accountant,6.6,47,5,Obese,,82,5475
+919,Female,57,Manager,7.3,10,8,Underweight,,82,2234
+920,Female,31,Salesperson,8.6,64,3,Obese,,76,6293
+921,Male,34,Student,5.3,89,10,Underweight,,51,7575
+922,Male,27,Student,7.3,88,7,Normal,,71,8934
+923,Female,64,Writer,6.3,40,4,Overweight,,58,3633
+924,Male,21,Software Engineer,7.6,0,4,Overweight,,85,1312
+925,Female,64,Chef,7,81,6,Overweight,,76,8852
+926,Male,20,Accountant,7.6,40,5,Normal,,83,5343
+927,Male,26,Nurse,5.7,113,9,Overweight,,67,10572
+928,Male,78,Salesperson,7.6,76,3,Underweight,,70,7214
+929,Female,28,Manager,8,68,7,Normal,,77,4882
+930,Female,31,Student,7.2,108,6,Overweight,,69,10069
+931,Female,55,Chef,6.9,110,6,Underweight,,74,9128
+932,Male,62,Teacher,8,124,7,Normal,,54,10177
+933,Male,75,Writer,8,9,5,Normal,,79,2386
+934,Male,52,Accountant,8.2,31,6,Overweight,,68,7421
+935,Male,30,Engineer,7.6,87,6,Normal,,63,8004
+936,Male,24,Doctor,7.6,55,8,Normal,,72,5199
+937,Male,25,Lawyer,7,31,9,Obese,,61,3669
+938,Female,78,Artist,7.6,73,6,Overweight,,77,7377
+939,Male,39,Salesperson,10,85,2,Underweight,,85,6815
+940,Female,45,Engineer,7.4,48,7,Obese,,56,6401
+941,Male,43,Doctor,8.9,43,9,Normal,,59,4198
+942,Male,26,Salesperson,7.8,126,7,Normal,,68,9819
+943,Female,33,Doctor,8.2,59,7,Normal,,65,5262
+944,Male,54,Chef,7.3,97,9,Obese,,75,8868
+945,Female,41,Nurse,6.7,135,8,Underweight,,59,11289
+946,Male,44,Doctor,7.2,34,8,Normal,,67,4703
+947,Female,48,Accountant,8,42,6,Overweight,,68,5459
+948,Female,18,Doctor,7.8,8,7,Normal,,98,3251
+949,Male,61,Manager,8.2,45,10,Obese,,58,4437
+950,Female,64,Engineer,8.5,60,4,Obese,,70,4454
+951,Female,37,Student,8.3,62,1,Obese,,68,7483
+952,Female,53,Software Engineer,8.1,147,5,Normal,,50,12900
+953,Female,69,Lawyer,6.7,0,9,Normal,,76,2233
+954,Female,57,Accountant,8.9,30,5,Normal,,69,4717
+955,Male,20,Doctor,7.8,47,8,Obese,,58,6348
+956,Male,51,Software Engineer,7,114,5,Normal,,73,9748
+957,Female,45,Doctor,7.2,82,7,Underweight,,60,8227
+958,Female,73,Doctor,7.4,8,9,Underweight,,90,3606
+959,Female,27,Software Engineer,8.5,0,4,Overweight,,78,1000
+960,Female,70,Artist,9.5,31,4,Normal,,71,4606
+961,Male,47,Teacher,7.4,36,7,Underweight,,83,3454
+962,Male,73,Accountant,7.3,31,7,Underweight,,54,2362
+963,Female,75,Salesperson,6.5,27,8,Obese,,94,5395
+964,Male,31,Artist,7.8,73,6,Overweight,,60,7477
+965,Female,68,Artist,10,32,1,Obese,,72,4571
+966,Male,58,Writer,8.3,54,3,Overweight,,59,5371
+967,Male,58,Software Engineer,7.4,8,3,Normal,,86,2799
+968,Female,67,Salesperson,7,49,10,Normal,,72,3517
+969,Female,35,Chef,7.1,112,9,Underweight,,80,10500
+970,Male,43,Student,7.6,61,4,Overweight,,68,5413
+971,Female,45,Engineer,7.8,62,5,Overweight,,68,7109
+972,Male,36,Accountant,7.3,22,6,Obese,,79,3620
+973,Male,43,Sales Representative,8.9,57,5,Obese,,81,7312
+974,Male,40,Chef,7.3,97,9,Normal,,88,9414
+975,Female,65,Salesperson,7.4,111,6,Obese,,79,9410
+976,Male,23,Student,7.1,41,6,Normal,,65,4234
+977,Male,24,Chef,6.8,78,8,Obese,,74,8545
+978,Male,75,Engineer,7.4,99,6,Normal,,64,9670
+979,Female,74,Sales Representative,8.9,113,6,Normal,,76,9142
+980,Male,59,Teacher,8,87,4,Underweight,,88,7019
+981,Male,65,Lawyer,8.7,48,7,Underweight,,87,5262
+982,Female,48,Doctor,6.1,88,7,Overweight,,86,7333
+983,Male,45,Software Engineer,6.9,80,4,Normal,,69,7030
+984,Male,67,Doctor,6.5,26,7,Overweight,,96,3091
+985,Female,45,Teacher,8,76,7,Normal,,61,7288
+986,Male,53,Engineer,8.6,71,6,Normal,,61,8378
+987,Male,74,Artist,7.5,53,5,Normal,,51,4849
+988,Male,31,Salesperson,9.8,71,4,Normal,,88,6985
+989,Female,35,Scientist,8.3,0,3,Overweight,,103,2167
+990,Male,34,Doctor,6.7,35,9,Normal,,76,4824
+991,Male,60,Doctor,7.2,38,7,Underweight,,58,2561
+992,Male,65,Chef,7.3,128,8,Normal,,50,10981
+993,Female,31,Doctor,6,19,8,Obese,,92,2674
+994,Male,43,Salesperson,7.9,84,1,Normal,,57,8413
+995,Female,29,Engineer,7.1,13,4,Overweight,,76,3839
+996,Female,78,Nurse,7.4,0,8,Overweight,,81,2163
+997,Female,67,Lawyer,8.2,37,7,Obese,,70,5655
+998,Female,63,Nurse,8,54,6,Overweight,,81,6211
+999,Male,79,Software Engineer,7.6,38,5,Normal,,64,3460
+1000,Male,18,Scientist,8.4,70,6,Obese,,83,7142
+1001,Male,29,Engineer,8.1,58,5,Normal,,75,6585
+1002,Male,44,Software Engineer,9.5,34,2,Overweight,,89,2911
+1003,Male,47,Scientist,6.3,34,8,Normal,,76,3143
+1004,Male,79,Software Engineer,8.4,47,4,Obese,,74,6223
+1005,Female,47,Sales Representative,6.4,102,8,Normal,,82,9702
+1006,Female,60,Teacher,6.5,26,7,Normal,,75,4020
+1007,Male,77,Doctor,8.6,56,7,Normal,,56,5321
+1008,Female,28,Manager,8.5,63,5,Underweight,,85,5744
+1009,Female,41,Engineer,8.5,51,2,Overweight,,67,5894
+1010,Male,19,Student,8.6,133,7,Normal,,65,11729
+1011,Male,28,Nurse,7.8,61,9,Normal,,71,6649
+1012,Female,25,Manager,8.9,67,6,Normal,,71,7424
+1013,Male,34,Lawyer,7,29,9,Obese,,90,4971
+1014,Male,27,Lawyer,8.3,3,8,Overweight,,78,2719
+1015,Female,57,Software Engineer,8.8,22,3,Overweight,,103,2618
+1016,Female,58,Teacher,7.5,47,10,Normal,,61,3852
+1017,Female,35,Manager,8.4,34,7,Obese,,75,4967
+1018,Male,53,Sales Representative,7.4,128,4,Underweight,,68,9131
+1019,Male,77,Student,6.9,49,10,Overweight,,70,4352
+1020,Male,36,Scientist,7.8,47,5,Obese,,88,4183
+1021,Male,23,Sales Representative,7.5,87,8,Obese,,78,8052
+1022,Male,21,Student,6.8,15,10,Overweight,,72,2518
+1023,Male,48,Scientist,9.5,36,4,Normal,,61,4585
+1024,Male,28,Scientist,9.6,89,2,Obese,,82,7719
+1025,Female,31,Artist,7.1,64,5,Normal,,64,5349
+1026,Male,38,Student,7.1,91,3,Overweight,,88,7961
+1027,Male,66,Chef,7.2,101,8,Normal,,91,8167
+1028,Male,22,Scientist,8.6,52,2,Underweight,,63,6269
+1029,Female,37,Writer,8.1,56,3,Obese,,85,5365
+1030,Female,57,Artist,6.8,82,6,Obese,,78,7224
+1031,Female,51,Writer,8.4,27,3,Overweight,,82,4054
+1032,Male,72,Student,8.3,74,2,Overweight,,78,6592
+1033,Male,20,Scientist,8,30,5,Overweight,,63,3668
+1034,Female,77,Salesperson,6.3,40,8,Overweight,,69,4347
+1035,Female,24,Scientist,9.3,68,5,Obese,,76,6552
+1036,Female,79,Writer,7,20,5,Underweight,,93,2073
+1037,Female,41,Manager,6.4,50,5,Normal,,79,5088
+1038,Female,80,Scientist,7.4,67,8,Overweight,,75,5847
+1039,Female,76,Software Engineer,8.7,28,3,Obese,,94,2701
+1040,Female,27,Manager,7.8,30,7,Normal,,74,3492
+1041,Female,72,Student,8,51,5,Normal,,80,5671
+1042,Male,56,Writer,10,70,1,Normal,,79,6098
+1043,Male,26,Teacher,8.4,43,6,Obese,,55,4219
+1044,Male,43,Lawyer,7.7,61,8,Normal,,78,7414
+1045,Male,30,Artist,8.7,97,2,Normal,,74,8324
+1046,Male,19,Teacher,7.6,26,7,Obese,,79,4654
+1047,Male,24,Writer,7.7,0,3,Underweight,,76,3047
+1048,Female,60,Student,6.2,75,8,Normal,,67,8301
+1049,Female,21,Accountant,8.8,59,6,Overweight,,79,6637
+1050,Male,59,Software Engineer,9.8,47,4,Underweight,,78,5442
+1051,Male,45,Artist,8.5,66,2,Obese,,79,6345
+1052,Female,68,Teacher,5.9,152,9,Normal,,55,12277
+1053,Female,23,Doctor,7.1,49,9,Overweight,,69,5576
+1054,Male,40,Software Engineer,9.7,10,2,Overweight,,66,3787
+1055,Female,60,Artist,8.1,117,6,Overweight,,69,10129
+1056,Male,23,Sales Representative,8.9,85,4,Overweight,,90,8556
+1057,Male,42,Software Engineer,8.8,38,1,Overweight,,68,5022
+1058,Female,60,Accountant,6.8,0,6,Obese,,93,1000
+1059,Female,60,Doctor,7.5,0,8,Obese,,72,1000
+1060,Female,54,Scientist,8.6,64,2,Overweight,,83,7702
+1061,Female,53,Teacher,6.3,26,5,Overweight,,92,2368
+1062,Male,56,Accountant,8.8,32,5,Obese,,70,3126
+1063,Male,52,Artist,7.5,89,2,Normal,,79,7758
+1064,Female,52,Software Engineer,7.6,32,4,Normal,,93,4691
+1065,Female,66,Salesperson,8.2,60,4,Normal,,79,6850
+1066,Male,33,Writer,9.1,67,1,Obese,,75,4984
+1067,Female,55,Salesperson,8.4,102,5,Underweight,,82,9488
+1068,Female,63,Sales Representative,5.7,0,7,Obese,,94,1591
+1069,Male,76,Lawyer,7,0,9,Underweight,,73,1486
+1070,Female,32,Accountant,7.5,44,5,Overweight,,65,5394
+1071,Female,27,Lawyer,7,5,9,Overweight,,90,2565
+1072,Female,66,Lawyer,8.7,19,8,Obese,,91,2707
+1073,Female,65,Software Engineer,9.1,70,1,Overweight,,79,7167
+1074,Female,51,Lawyer,6.7,21,9,Overweight,,98,2423
+1075,Female,53,Student,6.3,86,10,Normal,,77,6615
+1076,Male,47,Sales Representative,7.6,105,7,Obese,,79,9479
+1077,Female,62,Artist,9.6,67,1,Normal,,63,6077
+1078,Male,30,Accountant,9,71,6,Normal,,76,6954
+1079,Female,39,Engineer,7.7,85,7,Overweight,,84,7636
+1080,Male,65,Sales Representative,7.5,82,7,Obese,,54,8530
+1081,Female,40,Software Engineer,9.9,42,3,Overweight,,76,4452
+1082,Male,76,Chef,7,94,8,Overweight,,72,8558
+1083,Male,26,Lawyer,5.9,62,9,Obese,,81,7816
+1084,Female,54,Sales Representative,8.4,0,5,Overweight,,86,1000
+1085,Male,35,Writer,8,62,1,Obese,,54,7558
+1086,Male,36,Teacher,7.5,35,8,Obese,,83,2707
+1087,Male,50,Software Engineer,8.4,34,4,Obese,,79,4671
+1088,Male,68,Manager,7.9,59,8,Normal,,83,6473
+1089,Male,50,Artist,8.1,46,4,Normal,,67,5073
+1090,Female,30,Software Engineer,7,32,7,Overweight,,87,4172
+1091,Female,34,Accountant,8.8,21,5,Normal,,78,3900
+1092,Male,38,Doctor,6.9,54,8,Overweight,,79,7390
+1093,Male,56,Engineer,8.4,42,3,Normal,,75,4592
+1094,Male,22,Sales Representative,9.7,81,2,Underweight,,69,7952
+1095,Male,80,Nurse,6.8,117,8,Overweight,,59,11134
+1096,Female,31,Writer,7.5,42,4,Normal,,77,6507
+1097,Female,68,Nurse,5.1,79,8,Overweight,,64,6896
+1098,Female,79,Nurse,6,83,7,Overweight,,65,8687
+1099,Female,50,Doctor,8.7,29,9,Normal,,83,3180
+1100,Female,70,Chef,6.4,92,6,Normal,,64,7359
+1101,Male,52,Software Engineer,7.4,43,6,Obese,,63,4739
+1102,Male,52,Artist,8.2,62,5,Underweight,,90,7049
+1103,Female,47,Manager,5.4,39,8,Overweight,,68,4117
+1104,Male,47,Engineer,6.4,35,8,Overweight,,72,3839
+1105,Female,78,Scientist,9.4,73,2,Normal,,55,8138
+1106,Female,28,Lawyer,7.3,5,8,Underweight,,102,2234
+1107,Female,75,Manager,7.4,1,8,Obese,,70,1000
+1108,Male,49,Student,7.8,121,4,Underweight,,60,9998
+1109,Male,62,Software Engineer,6.5,56,5,Normal,,71,4779
+1110,Male,37,Lawyer,7.9,42,8,Obese,,88,4476
+1111,Female,56,Teacher,7.4,98,9,Overweight,,62,8069
+1112,Female,68,Student,8.5,169,2,Normal,,67,12884
+1113,Female,63,Nurse,7.5,160,8,Overweight,,61,14325
+1114,Male,80,Lawyer,7.2,8,10,Obese,,75,2746
+1115,Female,60,Nurse,7.8,162,7,Overweight,,75,13256
+1116,Male,21,Doctor,7.3,8,8,Obese,,109,2884
+1117,Female,20,Lawyer,7,2,9,Normal,,82,2928
+1118,Female,33,Student,8.5,0,5,Overweight,,73,3226
+1119,Male,34,Salesperson,7.1,132,7,Overweight,,66,9917
+1120,Male,24,Lawyer,7.5,48,9,Normal,,88,5243
+1121,Male,18,Artist,9.2,63,2,Obese,,68,6698
+1122,Female,45,Sales Representative,8.1,80,3,Overweight,,84,6609
+1123,Male,58,Engineer,7,9,6,Normal,,80,1558
+1124,Female,27,Chef,8.6,163,7,Overweight,,56,11161
+1125,Female,65,Lawyer,7,9,9,Obese,,96,4328
+1126,Female,71,Sales Representative,7.9,72,7,Obese,,82,7398
+1127,Male,53,Artist,7.2,43,3,Obese,,86,3991
+1128,Male,54,Teacher,6.5,49,9,Overweight,,71,6304
+1129,Female,62,Salesperson,8.6,22,10,Normal,,96,2315
+1130,Female,26,Artist,9.1,10,1,Overweight,,86,2951
+1131,Female,77,Nurse,7.2,45,10,Obese,,82,5933
+1132,Male,62,Writer,8.5,13,4,Obese,,100,2059
+1133,Female,45,Artist,7.2,0,7,Obese,,63,2739
+1134,Female,71,Software Engineer,7.5,79,1,Normal,,78,5826
+1135,Female,66,Scientist,8.2,42,5,Overweight,,81,5429
+1136,Male,80,Lawyer,7.6,43,7,Obese,,78,3345
+1137,Female,72,Doctor,6.4,15,8,Obese,,81,3025
+1138,Female,42,Sales Representative,8.4,51,3,Overweight,,69,5904
+1139,Female,38,Scientist,7.9,69,5,Normal,,69,6136
+1140,Female,45,Scientist,8.3,39,4,Overweight,,79,4321
+1141,Female,73,Lawyer,7.3,44,9,Normal,,83,4854
+1142,Male,65,Salesperson,6.8,99,9,Normal,,73,9308
+1143,Male,33,Doctor,7.9,70,7,Normal,,87,7264
+1144,Male,50,Chef,7.3,115,6,Normal,,61,11862
+1145,Male,55,Salesperson,8,122,3,Underweight,,58,9029
+1146,Male,62,Manager,7.9,71,5,Underweight,,85,6580
+1147,Female,48,Chef,7,117,9,Overweight,,79,11269
+1148,Male,47,Lawyer,6.8,0,8,Overweight,,72,3692
+1149,Female,64,Scientist,6.7,27,5,Normal,,75,4108
+1150,Female,23,Lawyer,7.8,17,8,Overweight,,92,2255
+1151,Female,69,Manager,8.2,102,7,Obese,,78,8723
+1152,Female,79,Lawyer,7.1,37,10,Obese,,81,3278
+1153,Female,58,Manager,7.9,67,7,Overweight,,70,6478
+1154,Female,55,Software Engineer,8.3,101,6,Obese,,71,10100
+1155,Male,33,Writer,10,0,1,Obese,,81,1000
+1156,Male,47,Doctor,6.3,63,9,Obese,,57,6275
+1157,Female,20,Accountant,7.9,29,6,Overweight,,79,3635
+1158,Male,24,Doctor,7.1,2,8,Overweight,,81,4077
+1159,Female,22,Salesperson,6.5,51,8,Obese,,92,7123
+1160,Female,43,Engineer,8.4,67,5,Overweight,,85,7094
+1161,Male,30,Manager,8.7,15,5,Obese,,86,3693
+1162,Female,48,Accountant,8.3,33,6,Obese,,56,3299
+1163,Female,76,Student,7.1,98,3,Normal,,86,7659
+1164,Female,76,Lawyer,7.2,45,10,Overweight,,73,5502
+1165,Male,29,Accountant,8.3,0,7,Obese,,87,1561
+1166,Male,42,Sales Representative,8,97,5,Normal,,56,8041
+1167,Male,65,Student,6.5,54,9,Underweight,,58,5636
+1168,Male,68,Doctor,6.7,72,8,Overweight,,90,9851
+1169,Male,50,Teacher,6.3,65,6,Overweight,,63,6854
+1170,Female,19,Engineer,7,51,5,Normal,,80,3954
+1171,Male,46,Chef,6.3,126,9,Normal,,54,10612
+1172,Female,37,Lawyer,6.1,0,10,Obese,,80,2746
+1173,Male,37,Doctor,7.6,68,9,Overweight,,88,6626
+1174,Female,47,Teacher,7.5,0,8,Obese,,73,4639
+1175,Female,66,Doctor,6.2,68,10,Obese,,70,6806
+1176,Female,68,Nurse,6,120,7,Overweight,,73,9438
+1177,Male,35,Engineer,9,89,5,Overweight,,64,9429
+1178,Female,65,Engineer,9.4,23,5,Underweight,,87,3613
+1179,Male,33,Salesperson,6.1,65,8,Normal,,51,5042
+1180,Male,79,Sales Representative,7.6,68,7,Underweight,,65,5131
+1181,Female,49,Teacher,7.5,114,9,Normal,,60,10723
+1182,Female,54,Teacher,8.4,81,5,Overweight,,65,7446
+1183,Female,73,Doctor,7.9,38,6,Normal,,71,4853
+1184,Male,28,Lawyer,8.5,48,8,Normal,,84,5862
+1185,Female,22,Doctor,6.9,46,8,Overweight,,68,4385
+1186,Male,41,Software Engineer,7,60,6,Obese,,51,5278
+1187,Female,61,Doctor,7.7,54,6,Overweight,,68,6040
+1188,Female,21,Scientist,7.7,93,4,Overweight,,54,8525
+1189,Female,39,Manager,6.3,54,8,Normal,,92,5149
+1190,Female,69,Chef,7,67,9,Underweight,,53,6038
+1191,Male,35,Student,8.2,77,6,Obese,,79,8293
+1192,Male,40,Student,8.9,62,6,Obese,,70,5905
+1193,Male,20,Chef,5.4,63,10,Underweight,,68,7058
+1194,Female,74,Artist,9.2,130,1,Normal,,56,10909
+1195,Male,23,Student,7.9,55,3,Normal,,77,6131
+1196,Female,71,Artist,8.6,39,2,Normal,,72,5462
+1197,Female,48,Artist,7.9,127,3,Normal,,54,11390
+1198,Male,20,Software Engineer,8.5,66,3,Normal,,63,6762
+1199,Male,42,Artist,9.1,90,5,Underweight,,92,8549
+1200,Male,43,Artist,9.1,43,3,Normal,,71,3684
+1201,Female,42,Doctor,6.8,36,7,Overweight,,65,5878
+1202,Male,41,Writer,8.3,41,1,Normal,,78,4504
+1203,Male,49,Engineer,8.2,38,3,Normal,,62,4107
+1204,Male,54,Artist,7.7,126,5,Overweight,,60,11798
+1205,Female,30,Sales Representative,6.8,74,7,Overweight,,51,6244
+1206,Female,36,Sales Representative,7.4,97,5,Obese,,77,9178
+1207,Female,45,Teacher,8.4,41,4,Normal,,74,3133
+1208,Male,73,Writer,7.5,0,4,Overweight,,75,2809
+1209,Female,58,Writer,8.6,38,1,Overweight,,60,4469
+1210,Female,24,Accountant,8.3,65,6,Normal,,72,7228
+1211,Male,35,Scientist,8.5,4,4,Obese,,92,1997
+1212,Male,57,Manager,9.5,25,7,Normal,,89,3838
+1213,Female,29,Artist,6.6,54,10,Normal,,58,5196
+1214,Female,41,Manager,7.9,44,8,Normal,,84,6720
+1215,Female,64,Nurse,6.7,81,7,Underweight,,67,9144
+1216,Female,22,Chef,6.7,71,7,Normal,,79,7382
+1217,Female,27,Manager,8,15,10,Overweight,,84,3906
+1218,Female,34,Salesperson,8.9,73,1,Normal,,87,8013
+1219,Male,30,Doctor,7.7,59,8,Overweight,,79,6181
+1220,Male,57,Doctor,8,0,8,Obese,,107,1000
+1221,Female,66,Manager,8,51,7,Obese,,76,5392
+1222,Male,46,Lawyer,5.9,44,9,Normal,,83,4819
+1223,Female,68,Software Engineer,7.7,80,5,Obese,,77,7452
+1224,Male,65,Student,8.5,81,7,Obese,,61,9656
+1225,Male,32,Manager,7.5,51,5,Obese,,53,5347
+1226,Male,59,Chef,8,65,8,Normal,,84,6824
+1227,Male,25,Writer,8.1,10,4,Overweight,,101,3163
+1228,Male,52,Engineer,8,41,3,Normal,,73,5189
+1229,Male,72,Scientist,7.3,82,7,Overweight,,59,8600
+1230,Male,60,Writer,9.6,67,1,Normal,,63,5889
+1231,Female,75,Artist,7.2,69,4,Overweight,,77,5205
+1232,Male,28,Salesperson,8.3,74,3,Normal,,84,5713
+1233,Female,21,Lawyer,6.7,15,9,Normal,,83,3038
+1234,Male,45,Chef,7.3,65,8,Overweight,,77,5681
+1235,Male,57,Accountant,7.9,59,4,Obese,,66,6318
+1236,Male,68,Manager,7.6,73,6,Overweight,,77,8010
+1237,Female,36,Scientist,6.6,37,5,Obese,,62,4484
+1238,Female,72,Scientist,7.8,32,6,Normal,,61,5503
+1239,Male,42,Software Engineer,8.4,50,2,Normal,,79,6739
+1240,Female,51,Writer,9.1,3,3,Obese,,72,3603
+1241,Male,48,Student,8,77,2,Normal,,75,7832
+1242,Female,29,Doctor,8,27,8,Overweight,,79,2659
+1243,Female,64,Doctor,6.3,8,9,Normal,,85,1000
+1244,Female,39,Engineer,6.6,83,5,Underweight,,62,6429
+1245,Male,62,Salesperson,9,74,5,Overweight,,76,7333
+1246,Male,63,Doctor,7.5,35,9,Obese,,87,5251
+1247,Female,48,Teacher,5.8,107,9,Obese,,87,8883
+1248,Female,22,Artist,8.1,25,3,Overweight,,99,4939
+1249,Male,72,Chef,6.4,105,9,Underweight,,81,8689
+1250,Female,26,Accountant,8,80,6,Obese,,75,6970
+1251,Male,63,Sales Representative,6.5,50,8,Overweight,,82,6895
+1252,Female,53,Lawyer,6.9,11,7,Overweight,,70,2723
+1253,Female,75,Software Engineer,7.5,64,7,Normal,,72,5047
+1254,Female,66,Student,7.6,76,8,Normal,,92,9536
+1255,Female,66,Manager,7.5,24,8,Obese,,98,4985
+1256,Female,33,Teacher,7.6,83,7,Normal,,81,8370
+1257,Male,28,Student,9,0,4,Obese,,88,3493
+1258,Male,48,Engineer,6.8,64,6,Normal,,67,5501
+1259,Male,61,Accountant,7.6,43,7,Normal,,83,5780
+1260,Male,60,Chef,7.1,72,10,Overweight,,85,5805
+1261,Male,28,Manager,9.6,96,8,Overweight,,76,9108
+1262,Female,43,Chef,6.8,96,10,Normal,,76,9977
+1263,Female,52,Accountant,8.6,82,4,Normal,,67,8318
+1264,Female,20,Accountant,8.6,16,6,Normal,,77,3857
+1265,Female,58,Writer,8.2,1,5,Underweight,,71,2176
+1266,Male,54,Lawyer,8.6,0,8,Obese,,88,1420
+1267,Female,38,Chef,8,78,7,Obese,,90,4342
+1268,Female,62,Sales Representative,6.3,37,8,Overweight,,81,3446
+1269,Female,73,Manager,9.1,0,4,Overweight,,89,1000
+1270,Male,32,Doctor,7.4,44,7,Normal,,76,5633
+1271,Female,78,Student,7.3,41,8,Obese,,89,4018
+1272,Female,48,Nurse,7,120,10,Underweight,,78,9559
+1273,Female,78,Artist,9.1,34,2,Obese,,69,3036
+1274,Male,39,Teacher,8.8,64,6,Overweight,,65,6075
+1275,Male,72,Manager,6.5,0,8,Normal,,93,2477
+1276,Male,23,Student,8,114,6,Overweight,,66,10530
+1277,Female,43,Doctor,7.1,20,6,Overweight,,90,4652
+1278,Female,34,Scientist,8.2,94,2,Overweight,,82,6898
+1279,Female,32,Sales Representative,9.4,66,4,Overweight,,64,7164
+1280,Male,26,Software Engineer,9.2,0,4,Underweight,,100,1383
+1281,Male,64,Artist,8.9,77,1,Obese,,60,8551
+1282,Female,60,Artist,8.5,37,2,Overweight,,76,4797
+1283,Female,22,Lawyer,7,16,8,Overweight,,95,4498
+1284,Male,69,Accountant,7.4,78,5,Normal,,61,6145
+1285,Male,61,Engineer,8.6,44,5,Overweight,,78,4947
+1286,Male,66,Chef,7.9,101,6,Normal,,73,9868
+1287,Male,26,Nurse,6.9,126,6,Overweight,,71,10027
+1288,Male,30,Engineer,7.6,82,6,Normal,,67,5967
+1289,Male,73,Writer,7.5,8,4,Overweight,,72,3073
+1290,Male,34,Chef,8.5,133,3,Overweight,,65,11664
+1291,Male,20,Sales Representative,9.2,109,4,Normal,,84,11190
+1292,Male,40,Chef,6.8,95,10,Overweight,,78,9851
+1293,Female,51,Lawyer,5.9,12,9,Obese,,100,4226
+1294,Female,80,Accountant,8.1,41,6,Normal,,59,4855
+1295,Female,63,Chef,8.5,127,9,Overweight,,64,12650
+1296,Male,74,Sales Representative,8.4,32,5,Normal,,58,3813
+1297,Male,72,Writer,7.1,59,6,Obese,,82,5910
+1298,Female,43,Salesperson,7.3,65,10,Overweight,,85,6643
+1299,Female,69,Software Engineer,8.8,74,5,Obese,,77,8399
+1300,Female,31,Manager,8.5,67,7,Normal,,87,4729
+1301,Female,42,Salesperson,8,75,9,Overweight,,65,6976
+1302,Male,34,Lawyer,8.7,39,9,Overweight,,57,4447
+1303,Female,73,Manager,6.7,27,7,Normal,,76,5790
+1304,Male,59,Accountant,5.5,19,7,Obese,,92,2230
+1305,Male,67,Salesperson,7.5,33,3,Overweight,,72,3474
+1306,Male,68,Scientist,7.3,29,3,Underweight,,77,3718
+1307,Female,37,Salesperson,7.8,85,5,Normal,,69,8821
+1308,Male,66,Writer,7.7,0,5,Overweight,,74,3569
+1309,Male,52,Student,7.4,58,7,Overweight,,66,6439
+1310,Female,53,Manager,8.9,56,6,Normal,,57,6439
+1311,Male,80,Accountant,7.3,43,7,Obese,,78,5625
+1312,Female,36,Accountant,7.2,73,5,Normal,,70,5242
+1313,Female,63,Writer,8.5,48,4,Overweight,,79,5620
+1314,Female,75,Lawyer,7.1,20,10,Overweight,,77,4120
+1315,Female,64,Student,6.5,72,6,Normal,,84,5581
+1316,Female,44,Engineer,9,0,3,Obese,,90,2480
+1317,Male,20,Student,7.6,99,5,Overweight,,63,8849
+1318,Male,51,Engineer,7.6,52,5,Normal,,66,5133
+1319,Female,78,Manager,5.7,18,10,Overweight,,78,5258
+1320,Female,67,Salesperson,7.2,22,5,Normal,,80,4218
+1321,Female,71,Accountant,8,0,7,Obese,,75,1785
+1322,Male,60,Software Engineer,9.7,71,2,Normal,,88,7607
+1323,Male,73,Sales Representative,6.7,9,10,Obese,,88,3043
+1324,Female,35,Doctor,6.4,43,8,Normal,,64,6749
+1325,Female,20,Accountant,6,68,6,Obese,,70,7575
+1326,Female,45,Nurse,6.9,93,8,Obese,,77,7742
+1327,Male,72,Student,8.1,82,2,Normal,,82,8134
+1328,Male,54,Artist,7.4,74,3,Normal,,71,5860
+1329,Male,26,Sales Representative,8,61,6,Normal,,58,6583
+1330,Male,31,Artist,8,82,9,Obese,,90,5161
+1331,Female,25,Nurse,8.3,54,8,Obese,,75,5645
+1332,Male,32,Lawyer,7.2,21,9,Overweight,,88,4391
+1333,Female,39,Doctor,7.8,54,9,Overweight,,57,4983
+1334,Female,56,Artist,8.6,82,3,Normal,,64,7382
+1335,Female,66,Engineer,8.8,73,4,Overweight,,63,6706
+1336,Male,46,Engineer,8.8,61,4,Obese,,88,4886
+1337,Female,29,Doctor,7.5,20,7,Overweight,,95,3433
+1338,Male,62,Manager,6.7,40,10,Underweight,,86,3856
+1339,Female,59,Engineer,7.7,42,6,Obese,,67,7641
+1340,Female,59,Salesperson,7.9,89,7,Normal,,74,9057
+1341,Male,44,Engineer,8,79,7,Underweight,,79,7742
+1342,Male,78,Accountant,7.1,64,7,Underweight,,74,7204
+1343,Female,34,Engineer,8.4,85,4,Overweight,,63,8455
+1344,Female,43,Teacher,7.5,24,3,Normal,,87,4896
+1345,Male,67,Doctor,9,58,8,Normal,,63,5846
+1346,Male,20,Software Engineer,9.1,0,5,Obese,,75,1000
+1347,Male,57,Engineer,9.7,9,6,Obese,,71,2911
+1348,Female,59,Salesperson,7.1,114,8,Obese,,74,9466
+1349,Female,63,Doctor,7.2,32,7,Normal,,63,2571
+1350,Female,47,Sales Representative,7.3,38,6,Obese,,72,4270
+1351,Female,38,Accountant,6,34,8,Normal,,69,4744
+1352,Female,71,Lawyer,6.4,14,10,Normal,,71,3090
+1353,Female,69,Sales Representative,6.6,76,8,Overweight,,84,7158
+1354,Male,42,Sales Representative,5.6,83,5,Overweight,,73,6186
+1355,Female,38,Artist,9.6,55,1,Overweight,,89,5553
+1356,Male,58,Manager,7.5,56,9,Underweight,,86,5759
+1357,Female,64,Student,7.6,86,3,Obese,,90,7624
+1358,Female,79,Writer,8.2,66,1,Overweight,,79,5913
+1359,Female,53,Lawyer,6.5,50,10,Normal,,58,7078
+1360,Male,18,Manager,7.3,90,10,Normal,,80,7902
+1361,Male,30,Teacher,7.2,105,10,Obese,,78,9124
+1362,Male,44,Engineer,8.3,68,3,Obese,,79,7563
+1363,Female,79,Chef,8.7,143,5,Normal,,66,12210
+1364,Female,33,Student,5.6,67,7,Normal,,73,6941
+1365,Male,35,Salesperson,7.9,67,8,Obese,,71,4627
+1366,Male,19,Chef,8,116,8,Overweight,,67,10424
+1367,Female,50,Manager,7.7,44,3,Normal,,70,6533
+1368,Male,31,Software Engineer,9.2,76,5,Obese,,69,7122
+1369,Male,71,Artist,8.4,21,4,Normal,,86,3299
+1370,Female,44,Chef,6.2,93,8,Obese,,80,10755
+1371,Female,62,Accountant,9.5,0,5,Obese,,108,2238
+1372,Male,46,Scientist,9,94,3,Underweight,,75,7773
+1373,Female,50,Accountant,7.6,61,6,Overweight,,57,6023
+1374,Male,42,Nurse,7.8,48,9,Normal,,61,4303
+1375,Male,42,Writer,8.7,0,5,Overweight,,89,2766
+1376,Female,72,Software Engineer,8.1,115,4,Normal,,67,10187
+1377,Female,18,Chef,8,105,9,Normal,,69,9417
+1378,Female,46,Nurse,7.7,73,9,Overweight,,69,5371
+1379,Male,21,Writer,8.4,0,1,Overweight,,94,2546
+1380,Female,74,Software Engineer,8,127,4,Normal,,74,11264
+1381,Female,54,Writer,7.3,64,5,Obese,,61,8037
+1382,Male,18,Nurse,7.5,111,9,Normal,,64,8737
+1383,Female,22,Lawyer,7.1,37,8,Normal,,53,6640
+1384,Male,41,Engineer,7.5,38,5,Overweight,,77,5057
+1385,Female,70,Software Engineer,8.7,124,4,Overweight,,56,9524
+1386,Male,23,Salesperson,7.5,92,4,Overweight,,65,8717
+1387,Female,28,Sales Representative,7.1,67,8,Normal,,84,6018
+1388,Female,20,Nurse,7.4,34,8,Overweight,,80,4220
+1389,Female,67,Student,9.9,139,5,Normal,,67,11919
+1390,Female,54,Scientist,7.1,73,5,Normal,,88,8443
+1391,Male,48,Engineer,8.3,25,6,Obese,,91,5744
+1392,Female,27,Accountant,7.2,17,8,Overweight,,66,4020
+1393,Female,29,Artist,8.4,81,4,Normal,,69,6328
+1394,Female,34,Lawyer,7.7,23,9,Overweight,,91,2835
+1395,Male,18,Sales Representative,7.8,109,6,Normal,,78,10111
+1396,Female,31,Nurse,8.4,145,6,Normal,,64,11640
+1397,Female,51,Lawyer,6.7,67,9,Normal,,68,6125
+1398,Female,69,Writer,8,0,4,Overweight,,83,1513
+1399,Male,26,Scientist,8,70,4,Overweight,,81,6684
+1400,Female,45,Chef,6.4,117,6,Normal,,64,10190
+1401,Male,23,Engineer,7.4,22,3,Underweight,,83,2031
+1402,Female,34,Nurse,7.5,120,6,Overweight,,88,10765
+1403,Male,41,Writer,7.6,57,4,Normal,,83,5197
+1404,Male,32,Writer,9.4,0,1,Normal,,107,1000
+1405,Female,39,Chef,8.2,118,10,Normal,,68,10239
+1406,Female,29,Artist,7.2,0,4,Overweight,,106,1069
+1407,Male,74,Engineer,8.5,32,8,Overweight,,79,5264
+1408,Female,71,Accountant,7.9,36,5,Obese,,78,5438
+1409,Female,35,Student,8.6,176,4,Underweight,,53,16036
+1410,Male,77,Lawyer,8.8,20,8,Obese,,102,2665
+1411,Male,19,Writer,8.1,0,4,Overweight,,88,2528
+1412,Male,80,Writer,9.4,36,4,Obese,,70,3912
+1413,Female,22,Sales Representative,8.9,64,6,Underweight,,68,7875
+1414,Male,30,Chef,6.3,78,4,Underweight,,57,8469
+1415,Female,51,Teacher,7.1,75,5,Normal,,80,6613
+1416,Female,40,Nurse,7.5,120,8,Normal,,87,11236
+1417,Female,43,Accountant,8.8,45,6,Obese,,54,4364
+1418,Male,55,Sales Representative,7,109,8,Normal,,71,9573
+1419,Female,43,Scientist,7.2,41,6,Underweight,,76,3086
+1420,Female,73,Scientist,9,72,6,Overweight,,56,7269
+1421,Female,59,Sales Representative,7.4,80,4,Obese,,75,6875
+1422,Male,27,Artist,8.8,53,1,Normal,,66,5632
+1423,Male,49,Artist,9.2,26,3,Overweight,,107,3339
+1424,Female,74,Software Engineer,7.1,70,5,Overweight,,76,6427
+1425,Male,78,Teacher,6.8,31,9,Overweight,,89,3597
+1426,Female,43,Software Engineer,8.1,100,3,Normal,,85,9645
+1427,Male,41,Engineer,7.2,103,4,Normal,,87,8323
+1428,Male,31,Software Engineer,7.8,33,3,Overweight,,59,4429
+1429,Female,56,Nurse,7,82,7,Overweight,,80,9620
+1430,Male,35,Writer,7.8,37,1,Normal,,77,5840
+1431,Male,52,Student,8.5,43,4,Overweight,,71,4416
+1432,Male,22,Student,7.5,102,5,Underweight,,75,9479
+1433,Female,78,Salesperson,8.5,66,8,Overweight,,71,6945
+1434,Female,19,Lawyer,7.9,14,8,Overweight,,85,2559
+1435,Male,55,Accountant,8.3,19,7,Underweight,,82,3622
+1436,Male,51,Sales Representative,7.5,60,7,Normal,,53,5364
+1437,Male,19,Writer,8.1,47,3,Normal,,80,3286
+1438,Male,32,Scientist,7.7,37,5,Obese,,73,6918
+1439,Male,76,Student,7.2,16,5,Obese,,84,3381
+1440,Male,34,Writer,8.9,39,5,Normal,,68,3050
+1441,Female,69,Scientist,8.8,89,4,Normal,,79,9704
+1442,Male,79,Accountant,8.6,11,5,Underweight,,76,3469
+1443,Female,53,Sales Representative,8.7,110,5,Overweight,,75,10488
+1444,Male,80,Writer,8,14,1,Normal,,97,1822
+1445,Female,34,Engineer,7.8,53,5,Normal,,84,6592
+1446,Male,60,Accountant,8.9,64,6,Normal,,77,6623
+1447,Female,45,Software Engineer,7.6,100,3,Normal,,86,9186
+1448,Male,70,Nurse,7.2,123,8,Underweight,,56,10602
+1449,Female,64,Teacher,8.5,76,6,Overweight,,80,6740
+1450,Female,31,Engineer,7.5,49,3,Normal,,67,6807
+1451,Female,74,Writer,7.5,14,7,Obese,,63,4034
+1452,Female,19,Engineer,6.7,6,7,Normal,,81,1325
+1453,Male,54,Salesperson,7.3,0,8,Obese,,79,1552
+1454,Female,49,Nurse,7.9,180,7,Normal,,55,13606
+1455,Male,68,Nurse,7.4,81,8,Normal,,63,6436
+1456,Male,67,Writer,8.5,28,2,Underweight,,67,4443
+1457,Female,47,Nurse,7.2,111,6,Normal,,75,9190
+1458,Male,28,Artist,9,79,1,Overweight,,70,6896
+1459,Male,22,Engineer,7.3,22,6,Obese,,90,5328
+1460,Male,40,Scientist,9.4,23,1,Overweight,,76,3371
+1461,Female,43,Student,8.7,0,5,Normal,,90,1314
+1462,Female,59,Sales Representative,7.4,48,8,Normal,,94,4868
+1463,Male,46,Nurse,7.7,103,7,Underweight,,89,8334
+1464,Male,74,Sales Representative,8.5,2,9,Overweight,,91,1844
+1465,Female,40,Sales Representative,7.9,91,7,Overweight,,76,8602
+1466,Female,29,Engineer,8.3,64,6,Obese,,72,6116
+1467,Female,38,Nurse,7.7,49,6,Normal,,74,6266
+1468,Male,36,Accountant,7.6,8,6,Overweight,,78,2137
+1469,Male,79,Accountant,6.5,31,6,Overweight,,79,3812
+1470,Female,40,Nurse,8.1,128,10,Normal,,61,11636
+1471,Male,74,Sales Representative,8.5,61,7,Underweight,,71,7672
+1472,Male,79,Scientist,8.4,92,4,Obese,,75,8289
+1473,Female,60,Salesperson,5.8,154,10,Normal,,50,10876
+1474,Female,34,Artist,8.2,121,3,Obese,,65,10445
+1475,Female,43,Engineer,8.4,72,4,Normal,,72,5672
+1476,Female,33,Salesperson,6.4,117,9,Normal,,82,10988
+1477,Female,26,Engineer,6.6,82,7,Obese,,75,6407
+1478,Female,68,Scientist,8.7,69,7,Normal,,80,7808
+1479,Female,57,Lawyer,7.9,49,9,Normal,,67,5776
+1480,Male,30,Artist,8,58,4,Overweight,,82,4911
+1481,Female,42,Sales Representative,7.7,180,7,Normal,,60,13309
+1482,Male,63,Nurse,7.3,87,10,Obese,,77,9751
+1483,Female,40,Salesperson,8.9,100,6,Normal,,92,8760
+1484,Female,57,Engineer,6.8,0,7,Underweight,,109,2304
+1485,Female,36,Sales Representative,8,105,5,Overweight,,58,10314
+1486,Female,18,Artist,8,86,3,Underweight,,90,8039
+1487,Female,34,Salesperson,7.1,64,7,Obese,,92,5683
+1488,Female,42,Sales Representative,7.6,147,6,Normal,,51,13417
+1489,Female,33,Engineer,8.4,48,6,Normal,,64,6085
+1490,Male,28,Lawyer,8,0,7,Overweight,,76,2046
+1491,Female,57,Scientist,7.3,104,5,Overweight,,53,8517
+1492,Female,44,Scientist,8.8,35,1,Normal,,74,5620
+1493,Female,73,Sales Representative,9.4,60,4,Obese,,76,4900
+1494,Female,37,Scientist,7.7,82,6,Normal,,80,6878
+1495,Female,28,Lawyer,8.4,38,8,Overweight,,89,5026
+1496,Male,63,Engineer,9.1,34,4,Obese,,70,4830
+1497,Male,70,Lawyer,8.6,26,9,Normal,,104,3576
+1498,Male,23,Engineer,7.3,62,9,Overweight,,67,6785
+1499,Male,76,Engineer,8.1,36,5,Overweight,,54,3751
+1500,Female,22,Engineer,5.8,50,5,Normal,,63,4556

@@ -189,6 +189,43 @@ def _label_block(
     return {"type": label_mode, "n_classes": n_classes}
 
 
+def _resolve_dataset(override: str | None, recorded: str | None, root: Path) -> Path:
+    """
+    Locate the training CSV.
+
+    Tuning reports record an absolute dataset_path from whichever machine ran the tuning
+    (e.g. D:\\FYP\\...), so that path is usually dead on any other checkout. Prefer an
+    explicit --dataset, then the recorded path if it still resolves, then this script's
+    own data/ directory.
+    """
+    if override:
+        path = Path(override)
+        if not path.is_file():
+            raise FileNotFoundError(f"--dataset not found: {path}")
+        return path
+
+    # Prefer this checkout's own data/ over the recorded absolute path. The recorded path may
+    # still resolve on the original machine (e.g. D:\FYP\...) while pointing at a copy that
+    # is not the one under version control here, which would silently train on other data.
+    candidates: List[Path] = []
+    if recorded:
+        candidates.append(root / "data" / Path(recorded).name)
+    candidates.append(root / "data" / "StressGuard_Iteration1_Balanced_Data.csv")
+    if recorded:
+        candidates.append(Path(recorded))
+
+    for candidate in candidates:
+        if candidate.is_file():
+            if recorded and candidate != Path(recorded):
+                print(f"NOTE: ignoring recorded dataset_path {recorded!r}; using {candidate}")
+            return candidate
+
+    tried = "\n  ".join(str(c) for c in candidates)
+    raise FileNotFoundError(
+        f"Could not locate the training CSV. Tried:\n  {tried}\nPass --dataset PATH explicitly."
+    )
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Export StressGuard Voting_top3 for Android ONNX")
     parser.add_argument(
@@ -203,6 +240,13 @@ def main() -> None:
         choices=["binary", "three_level_wide_normal"],
         default="binary",
         help="Preset: which tuned run to export",
+    )
+    parser.add_argument(
+        "--dataset",
+        type=str,
+        default=None,
+        help="Training CSV. Overrides the dataset_path recorded in the tuning report, which "
+        "may point at a stale absolute path from the machine that ran the tuning.",
     )
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--test-size", type=float, default=0.2)
@@ -241,7 +285,7 @@ def main() -> None:
         )
 
     report = json.loads(report_path.read_text(encoding="utf-8"))
-    data_path = Path(report["dataset_path"])
+    data_path = _resolve_dataset(args.dataset, report.get("dataset_path"), root)
     label_mode = report["label_mode"]
     scheme = report.get("three_level_scheme", "classic")
     binary_threshold = int(report.get("binary_threshold", 7))
