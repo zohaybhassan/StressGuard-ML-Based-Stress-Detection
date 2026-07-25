@@ -37,6 +37,16 @@ local.properties
 *.keystore
 keystore.properties
 app/google-services.json
+.env
+.env.*
+!.env.example
+
+# Supabase CLI scratch. The migrations themselves are schema definitions and MUST stay
+# tracked: they carry no secrets, and versioning them is what makes the database
+# reproducible. Only the CLI's local state is ignored here.
+supabase/.temp/
+supabase/.branches/
+supabase/config.toml
 
 # Logs and reports
 *.log

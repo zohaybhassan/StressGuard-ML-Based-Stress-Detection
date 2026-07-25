@@ -16,6 +16,8 @@ import io.github.jan.supabase.auth.user.UserInfo
 import java.security.MessageDigest
 import java.security.SecureRandom
 import kotlinx.coroutines.flow.Flow
+import kotlinx.serialization.json.contentOrNull
+import kotlinx.serialization.json.jsonPrimitive
 
 sealed interface SignInResult {
     data class Success(val user: UserInfo) : SignInResult
@@ -51,6 +53,19 @@ object AuthRepository {
     val sessionStatus: Flow<SessionStatus> get() = SupabaseProvider.auth.sessionStatus
 
     val currentUser: UserInfo? get() = SupabaseProvider.auth.currentUserOrNull()
+
+    /**
+     * Name as supplied by the identity provider, for prefilling the profile form.
+     * Google puts it in user metadata under full_name, occasionally name.
+     */
+    val displayName: String?
+        get() = currentUser?.userMetadata?.let { metadata ->
+            listOf("full_name", "name")
+                .firstNotNullOfOrNull { key -> metadata[key]?.jsonPrimitive?.contentOrNull }
+                ?.takeIf { it.isNotBlank() }
+        }
+
+    val email: String? get() = currentUser?.email?.takeIf { it.isNotBlank() }
 
     suspend fun signInWithGoogle(activityContext: Context): SignInResult {
         val problems = SupabaseConfig.problems()

@@ -6,6 +6,7 @@ import android.widget.ArrayAdapter
 import android.widget.AutoCompleteTextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import com.example.stressguard.data.AuthRepository
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.textfield.TextInputEditText
 
@@ -23,10 +24,9 @@ class ProfileSetupActivity : AppCompatActivity() {
         val dropdownBmi = findViewById<AutoCompleteTextView>(R.id.dropdownBmi)
         val btnSaveProfile = findViewById<MaterialButton>(R.id.btnSaveProfile)
 
-        val googleName = SessionManager.getGoogleDisplayName(this)
-        if (!googleName.isNullOrBlank()) {
-            etName.setText(googleName)
-        }
+        // Prefill from the signed-in identity. This comes from the Supabase session rather
+        // than local storage, so it reflects the account actually authenticated.
+        AuthRepository.displayName?.let { etName.setText(it) }
 
         // 2. Define the exact lists for the ML Model choices.
         // These must use the dataset's own category names, because StressFeatureBuilder
@@ -85,7 +85,6 @@ class ProfileSetupActivity : AppCompatActivity() {
                 occupation = occupation,
                 bmi = bmi
             )
-            SessionManager.setSignedIn(this, true)
 
             // 6. Navigate to the next screen (e.g., MainActivity or Dashboard)
             Toast.makeText(this, "Profile Saved!", Toast.LENGTH_SHORT).show()
