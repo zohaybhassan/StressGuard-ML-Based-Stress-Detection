@@ -153,7 +153,7 @@ def main() -> None:
         row["expectedLabel"] = class_labels[int(np.argmax(p))]
 
     payload = {
-        "generatedBy": "ML_engine/make_parity_samples.py",
+        "generatedBy": "ml_engine/make_parity_samples.py",
         "bundle": bundle.name,
         "modelVersion": f"{manifest['selected_model']}/{manifest['export_kind']}",
         "inputUnits": manifest.get("input_units", "raw_physical"),

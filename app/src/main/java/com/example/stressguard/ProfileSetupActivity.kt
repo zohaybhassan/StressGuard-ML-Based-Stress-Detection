@@ -95,7 +95,7 @@ class ProfileSetupActivity : AppCompatActivity() {
     }
 
     companion object {
-        // Age range covered by the training dataset (ML_engine/data/sleep_health_dataset.csv).
+        // Age range covered by the training dataset (ml_engine/data/sleep_health_dataset.csv).
         private const val MIN_AGE = 18
         private const val MAX_AGE = 80
     }

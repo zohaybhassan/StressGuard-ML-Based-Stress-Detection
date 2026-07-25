@@ -16,7 +16,7 @@ create table if not exists public.profiles (
 
     -- Model inputs. Constraints match what the model was trained on, so the database
     -- rejects a profile the model could only extrapolate from. Ranges and category names
-    -- come from ML_engine/data/sleep_health_dataset.csv; see ML_engine/prepare_dataset.py.
+    -- come from ml_engine/data/sleep_health_dataset.csv; see ml_engine/prepare_dataset.py.
     age           integer check (age between 18 and 80),
     gender        text    check (gender in ('Male', 'Female')),
     occupation    text    check (occupation in (

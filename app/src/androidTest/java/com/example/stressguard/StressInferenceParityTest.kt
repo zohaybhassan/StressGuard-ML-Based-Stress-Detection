@@ -13,7 +13,7 @@ import org.junit.runner.RunWith
 /**
  * Python-vs-Android validation.
  *
- * `ML_engine/make_parity_samples.py` runs fixed samples through the same .onnx files this app
+ * `ml_engine/make_parity_samples.py` runs fixed samples through the same .onnx files this app
  * ships and records the resulting probabilities. This test reproduces both halves on-device:
  * the feature vector built from each profile, and the probabilities from running the ensemble.
  *
@@ -53,7 +53,7 @@ class StressInferenceParityTest {
     fun samplesWereGeneratedFromTheInstalledBundle() {
         assertEquals(
             "parity_samples.json was generated from a different model build; " +
-                "re-run ML_engine/make_parity_samples.py",
+                "re-run ml_engine/make_parity_samples.py",
             expected.getString("modelVersion"),
             service.modelInfo.version,
         )

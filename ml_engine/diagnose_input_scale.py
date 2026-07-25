@@ -100,7 +100,7 @@ def main() -> None:
         "--bundle",
         type=str,
         default="mobile_export/three_level_voting_wide_normal",
-        help="Bundle directory, relative to ML_engine/ or absolute",
+        help="Bundle directory, relative to ml_engine/ or absolute",
     )
     args = parser.parse_args()
 

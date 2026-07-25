@@ -21,7 +21,7 @@ data class StressVitals(
  * Turns a profile and a sensor reading into the feature vector the exported ONNX models expect.
  *
  * Values are passed in raw physical units. The models are tree ensembles, which are
- * scale-invariant, and are trained on raw units directly -- see ML_engine/prepare_dataset.py.
+ * scale-invariant, and are trained on raw units directly -- see ml_engine/prepare_dataset.py.
  * Do not standardize here: an earlier version of the pipeline trained on z-scored columns while
  * this builder sent raw units, which pushed every sample past the largest split threshold in
  * every tree so all readings collapsed to one prediction.

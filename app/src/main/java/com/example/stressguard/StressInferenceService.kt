@@ -47,7 +47,7 @@ data class StressPrediction(
  * Nothing here adjusts the model's output. An earlier version blended in a hand-written
  * "sensor risk" score at 45% weight to make the gauge respond to heart rate, because the models
  * were being fed raw units while trained on z-scores and so returned a constant vector. The
- * models are now trained on raw units (ML_engine/prepare_dataset.py), which fixes the cause,
+ * models are now trained on raw units (ml_engine/prepare_dataset.py), which fixes the cause,
  * and the displayed score is the model's own output.
  *
  * Sessions are created lazily on first use. Loading all three graphs costs roughly 23 MB, so
