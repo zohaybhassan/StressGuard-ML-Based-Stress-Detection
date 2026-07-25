@@ -5,6 +5,7 @@ import android.util.Log
 import com.example.stressguard.SessionManager
 import com.example.stressguard.StressProfile
 import io.github.jan.supabase.postgrest.from
+import kotlinx.coroutines.withTimeoutOrNull
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -50,6 +51,7 @@ object ProfileRepository {
 
     private const val TABLE = "profiles"
     private const val TAG = "PROFILE_SYNC"
+    private const val PULL_TIMEOUT_MS = 4_000L
 
     /**
      * Sends the locally saved profile to Supabase.
@@ -82,6 +84,21 @@ object ProfileRepository {
             Log.w(TAG, "profile push failed; local copy is unaffected", error)
             false
         }
+    }
+
+    /**
+     * Whether a usable profile is available locally, recovering it from Supabase if not.
+     *
+     * Every post-authentication route must go through this rather than reading the local flag
+     * directly. Checking the flag alone sends a reinstalled user to the setup form even though
+     * their profile is sitting in the database -- which is exactly what happened when only one
+     * of the two entry points did the recovery.
+     *
+     * Time-bounded: with no network the user fills in the form, the same outcome as before.
+     */
+    suspend fun ensureLocalProfile(context: Context, timeoutMs: Long = PULL_TIMEOUT_MS): Boolean {
+        if (SessionManager.isProfileComplete(context)) return true
+        return withTimeoutOrNull(timeoutMs) { pull(context) } ?: false
     }
 
     /**

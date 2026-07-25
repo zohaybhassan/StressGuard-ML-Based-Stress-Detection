@@ -9,6 +9,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.example.stressguard.data.AuthRepository
+import com.example.stressguard.data.ProfileRepository
 import com.example.stressguard.data.SignInResult
 import com.example.stressguard.data.SupabaseConfig
 import kotlinx.coroutines.launch
@@ -104,13 +105,24 @@ class LoginActivity : AppCompatActivity() {
         if (busy) tvLoginStatus.text = "Signing in…"
     }
 
+    /**
+     * A fresh install has no stored session, so this screen -- not MainActivity -- is where a
+     * reinstalling user lands. The profile recovery therefore has to happen here too, which is
+     * why both routes share [ProfileRepository.ensureLocalProfile].
+     */
     private fun goToNextScreen() {
-        val nextScreen = if (SessionManager.isProfileComplete(this)) {
-            HomeDashboardActivity::class.java
-        } else {
-            ProfileSetupActivity::class.java
+        lifecycleScope.launch {
+            tvLoginStatus.text = "Restoring your profile…"
+            val hasProfile = ProfileRepository.ensureLocalProfile(this@LoginActivity)
+
+            startActivity(
+                Intent(
+                    this@LoginActivity,
+                    if (hasProfile) HomeDashboardActivity::class.java
+                    else ProfileSetupActivity::class.java,
+                )
+            )
+            finish()
         }
-        startActivity(Intent(this, nextScreen))
-        finish()
     }
 }

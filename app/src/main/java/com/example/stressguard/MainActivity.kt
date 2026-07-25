@@ -10,7 +10,6 @@ import com.example.stressguard.data.SupabaseConfig
 import io.github.jan.supabase.auth.status.SessionStatus
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withTimeoutOrNull
 
 /**
  * Splash router.
@@ -40,15 +39,9 @@ class MainActivity : AppCompatActivity() {
                 return@launch
             }
 
-            // No local profile can mean a reinstall or a new device rather than a new user, so
-            // try to recover it before asking again. Bounded: with no network the user just
-            // fills the form, which is the same outcome as before.
-            var hasProfile = SessionManager.isProfileComplete(this@MainActivity)
-            if (!hasProfile) {
-                hasProfile = withTimeoutOrNull(PROFILE_PULL_TIMEOUT_MS) {
-                    ProfileRepository.pull(this@MainActivity)
-                } ?: false
-            }
+            // Shared with LoginActivity: no local profile usually means a reinstall rather
+            // than a new user, so recover it before asking again.
+            val hasProfile = ProfileRepository.ensureLocalProfile(this@MainActivity)
 
             route(
                 if (hasProfile) HomeDashboardActivity::class.java
@@ -60,9 +53,5 @@ class MainActivity : AppCompatActivity() {
     private fun route(destination: Class<*>) {
         startActivity(Intent(this, destination))
         finish()
-    }
-
-    companion object {
-        private const val PROFILE_PULL_TIMEOUT_MS = 4_000L
     }
 }
