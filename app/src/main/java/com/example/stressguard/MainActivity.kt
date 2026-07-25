@@ -5,10 +5,12 @@ import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.example.stressguard.data.AuthRepository
+import com.example.stressguard.data.ProfileRepository
 import com.example.stressguard.data.SupabaseConfig
 import io.github.jan.supabase.auth.status.SessionStatus
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeoutOrNull
 
 /**
  * Splash router.
@@ -33,13 +35,24 @@ class MainActivity : AppCompatActivity() {
             val signedIn = AuthRepository.sessionStatus
                 .first { it !is SessionStatus.Initializing } is SessionStatus.Authenticated
 
+            if (!signedIn) {
+                route(LoginActivity::class.java)
+                return@launch
+            }
+
+            // No local profile can mean a reinstall or a new device rather than a new user, so
+            // try to recover it before asking again. Bounded: with no network the user just
+            // fills the form, which is the same outcome as before.
+            var hasProfile = SessionManager.isProfileComplete(this@MainActivity)
+            if (!hasProfile) {
+                hasProfile = withTimeoutOrNull(PROFILE_PULL_TIMEOUT_MS) {
+                    ProfileRepository.pull(this@MainActivity)
+                } ?: false
+            }
+
             route(
-                when {
-                    !signedIn -> LoginActivity::class.java
-                    !SessionManager.isProfileComplete(this@MainActivity) ->
-                        ProfileSetupActivity::class.java
-                    else -> HomeDashboardActivity::class.java
-                }
+                if (hasProfile) HomeDashboardActivity::class.java
+                else ProfileSetupActivity::class.java
             )
         }
     }
@@ -47,5 +60,9 @@ class MainActivity : AppCompatActivity() {
     private fun route(destination: Class<*>) {
         startActivity(Intent(this, destination))
         finish()
+    }
+
+    companion object {
+        private const val PROFILE_PULL_TIMEOUT_MS = 4_000L
     }
 }

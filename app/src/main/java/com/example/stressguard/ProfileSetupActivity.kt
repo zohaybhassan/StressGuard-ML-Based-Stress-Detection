@@ -6,9 +6,13 @@ import android.widget.ArrayAdapter
 import android.widget.AutoCompleteTextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
 import com.example.stressguard.data.AuthRepository
+import com.example.stressguard.data.ProfileRepository
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.textfield.TextInputEditText
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeoutOrNull
 
 class ProfileSetupActivity : AppCompatActivity() {
 
@@ -77,6 +81,8 @@ class ProfileSetupActivity : AppCompatActivity() {
                 return@setOnClickListener
             }
 
+            // Save locally first. This is what inference reads, so it must not depend on the
+            // network succeeding.
             SessionManager.saveProfile(
                 context = this,
                 name = name,
@@ -86,11 +92,24 @@ class ProfileSetupActivity : AppCompatActivity() {
                 bmi = bmi
             )
 
-            // 6. Navigate to the next screen (e.g., MainActivity or Dashboard)
-            Toast.makeText(this, "Profile Saved!", Toast.LENGTH_SHORT).show()
-            val intent = Intent(this, HomeDashboardActivity::class.java)
-            startActivity(intent)
-            finish() // Prevent user from going back to setup
+            btnSaveProfile.isEnabled = false
+            lifecycleScope.launch {
+                // Bounded, because a dead network must not leave the user staring at a
+                // disabled button. Either outcome proceeds: the profile is already saved, and
+                // a later launch retries the push.
+                val synced = withTimeoutOrNull(SYNC_TIMEOUT_MS) {
+                    ProfileRepository.push(this@ProfileSetupActivity)
+                } ?: false
+
+                Toast.makeText(
+                    this@ProfileSetupActivity,
+                    if (synced) "Profile saved" else "Profile saved on this device",
+                    Toast.LENGTH_SHORT,
+                ).show()
+
+                startActivity(Intent(this@ProfileSetupActivity, HomeDashboardActivity::class.java))
+                finish() // Prevent user from going back to setup
+            }
         }
     }
 
@@ -98,5 +117,7 @@ class ProfileSetupActivity : AppCompatActivity() {
         // Age range covered by the training dataset (ml_engine/data/sleep_health_dataset.csv).
         private const val MIN_AGE = 18
         private const val MAX_AGE = 80
+
+        private const val SYNC_TIMEOUT_MS = 5_000L
     }
 }
