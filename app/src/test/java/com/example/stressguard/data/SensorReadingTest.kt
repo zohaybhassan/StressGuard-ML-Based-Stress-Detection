@@ -105,7 +105,12 @@ class SensorReadingTest {
         assertEquals(88, result!!.heartRate)
     }
 
-    /** Extra fields would mean a newer watch build; the first two are still valid. */
+    /**
+     * An unrecognised third field must not cost us the reading.
+     *
+     * The vitals are the payload and the age is metadata about them, so a watch build sending
+     * something else there still produces a usable reading rather than a dropped one.
+     */
     @Test
     fun extraFieldsInThePayloadAreIgnored() {
         val result = SensorReading.parse("88|4200|somethingNew", elapsed, epoch)
@@ -113,5 +118,55 @@ class SensorReadingTest {
         assertNotNull(result)
         assertEquals(88, result!!.heartRate)
         assertEquals(4200, result.dailySteps)
+        assertEquals(0L, result.sampleAgeMs)
+    }
+
+    /**
+     * Passive monitoring batches deliveries, so a sample can be minutes old on arrival. The age
+     * is what stops the phone dating a whole batch "now".
+     */
+    @Test
+    fun sampleAgeIsReadFromTheThirdField() {
+        val result = SensorReading.parse("88|4200|240000", elapsed, epoch)
+
+        assertNotNull(result)
+        assertEquals(240_000L, result!!.sampleAgeMs)
+        assertEquals(epoch - 240_000L, result.measuredAtEpochMs)
+    }
+
+    /** A watch build without the age field is read as fresh, which is what it used to imply. */
+    @Test
+    fun missingSampleAgeMeansFresh() {
+        val result = SensorReading.parse("88|4200", elapsed, epoch)
+
+        assertNotNull(result)
+        assertEquals(0L, result!!.sampleAgeMs)
+        assertEquals(epoch, result.measuredAtEpochMs)
+    }
+
+    /**
+     * A negative age would place the measurement in the future, which is a watch-side bug rather
+     * than a measurement. Clamped, so it cannot propagate into stored history or a staleness
+     * check that then reads as permanently fresh.
+     */
+    @Test
+    fun negativeSampleAgeIsClampedToZero() {
+        val result = SensorReading.parse("88|4200|-5000", elapsed, epoch)
+
+        assertNotNull(result)
+        assertEquals(0L, result!!.sampleAgeMs)
+        assertEquals(epoch, result.measuredAtEpochMs)
+    }
+
+    @Test
+    fun aFreshSampleIsNotConsideredStale() {
+        val fresh = SensorReading.parse("88|4200|1000", elapsed, epoch)!!
+        assertEquals(true, fresh.sampleAgeMs < SensorReading.STALE_SAMPLE_MS)
+    }
+
+    @Test
+    fun aBatchedSampleIsConsideredStale() {
+        val batched = SensorReading.parse("88|4200|300000", elapsed, epoch)!!
+        assertEquals(true, batched.sampleAgeMs >= SensorReading.STALE_SAMPLE_MS)
     }
 }

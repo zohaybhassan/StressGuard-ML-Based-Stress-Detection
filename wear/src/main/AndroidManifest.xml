@@ -17,7 +17,23 @@
         android:maxSdkVersion="34" />
     <uses-permission android:name="android.permission.health.READ_HEART_RATE" />
 
+    <!--
+        Reading heart rate while the app is not in the foreground is a separate grant from reading
+        it at all, in the same way background location is separate from location. Without it
+        Health Services accepts a capabilities query but refuses setPassiveListenerService with
+        "SecurityException: Missing permissions", so the app can ask what the watch supports and
+        then not be allowed to use it.
+
+        BODY_SENSORS_BACKGROUND is what Android 16 offers here. The health-permission equivalent,
+        READ_HEALTH_DATA_IN_BACKGROUND, is not present on this platform (checked with
+        `pm list permissions`), so there is nothing newer to prefer and no maxSdkVersion cap.
+    -->
+    <uses-permission android:name="android.permission.BODY_SENSORS_BACKGROUND" />
+
     <uses-permission android:name="android.permission.ACTIVITY_RECOGNITION"/>
+
+    <!-- So background collection can be restored after a restart; see PassiveVitalsBootReceiver. -->
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
     <uses-feature android:name="android.hardware.type.watch" />
 
@@ -53,6 +69,35 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <!--
+            Bound by Health Services to deliver batched vitals, including while the app is closed.
+            This is what makes background monitoring work; MeasureClient in the Activity only
+            measures in the foreground.
+
+            exported="true" is required because the binder comes from another process, and is safe
+            because android:permission restricts binding to holders of PASSIVE_DATA_BINDING, which
+            only Health Services has.
+        -->
+        <service
+            android:name=".presentation.PassiveVitalsService"
+            android:exported="true"
+            android:permission="com.google.android.wearable.healthservices.permission.PASSIVE_DATA_BINDING">
+            <intent-filter>
+                <action android:name="androidx.health.services.action.PASSIVE_LISTENER_SERVICE" />
+            </intent-filter>
+        </service>
+
+        <!-- A passive registration does not reliably survive a reboot or an upgrade. -->
+        <receiver
+            android:name=".presentation.PassiveVitalsBootReceiver"
+            android:enabled="true"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
+            </intent-filter>
+        </receiver>
     </application>
 
 </manifest>

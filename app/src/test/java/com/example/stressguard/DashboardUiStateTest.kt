@@ -1,5 +1,6 @@
 package com.example.stressguard
 
+import com.example.stressguard.data.SensorReading
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -26,12 +27,12 @@ class DashboardUiStateTest {
 
     @Test
     fun `a reading just under the threshold is not stale`() {
-        assertFalse(watchState(DashboardViewModel.STALE_READING_MS - 1).isReadingStale)
+        assertFalse(watchState(SensorReading.STALE_SAMPLE_MS - 1).isReadingStale)
     }
 
     @Test
     fun `a reading at the threshold is stale`() {
-        assertTrue(watchState(DashboardViewModel.STALE_READING_MS).isReadingStale)
+        assertTrue(watchState(SensorReading.STALE_SAMPLE_MS).isReadingStale)
     }
 
     @Test

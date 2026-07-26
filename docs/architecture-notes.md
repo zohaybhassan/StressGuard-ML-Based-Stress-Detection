@@ -21,42 +21,61 @@
 
 ## Data Flow Today
 
-1. Watch sends heart rate and step data.
-2. `VitalReceiverService` stamps the arrival time, decrypts, and parses into a `SensorReading`.
-   Implausible values are dropped; values outside the model's training ranges are kept and
-   flagged, because live heart rate exceeds the trained maximum during ordinary activity.
-3. The reading is published on `SensorRepository`, a `StateFlow`. Both the service and the
-   dashboard are in one process, so no broadcast is involved.
-4. Sleep data is requested from Health Connect when available, otherwise an assumed value is
-   used so inference is not blocked.
+1. Health Services delivers a batch of vitals to `PassiveVitalsService` on the watch, whether or
+   not the watch app is open. The newest usable heart rate is forwarded with the daily step total
+   and the age of the sample.
+2. `VitalReceiverService` on the phone stamps the arrival time, decrypts, and parses into a
+   `SensorReading`. Implausible values are dropped; values outside the model's training ranges are
+   kept and flagged, because live heart rate exceeds the trained maximum during ordinary activity.
+3. The service hands the reading to `StressPipeline`, blocking until the pass completes so it is
+   not torn down partway through.
+4. Sleep comes from `SleepCache`, last written by the dashboard from Health Connect; a
+   training-set-mean default is substituted if there is none, and labelled as assumed.
 5. `StressFeatureBuilder` builds a 22-value vector in the order the model manifest declares.
 6. `StressInferenceService` runs the three ONNX graphs and averages their probabilities.
-7. `DashboardViewModel` stores the prediction, pushes its class into the smoothing window, and
-   asks `StressAlertManager` whether to alert.
+7. The pipeline stores the prediction, pushes its class into the smoothing window, and asks
+   `StressAlertManager` whether to alert.
 8. `LatencyTracker` records the timings for the whole pass.
+9. `DashboardViewModel` renders the result if a dashboard happens to be open. Nothing above this
+   step depends on one existing.
 
-## Sampling cadence: nothing polls
+## Background collection, and why there is no sampling interval
 
-There is no measurement interval, and this is worth stating plainly because the obvious
-assumption — that the app samples heart rate every *n* seconds — is wrong in a way that changes
-how the numbers should be read.
+The app monitors with nothing open. That takes two APIs rather than one, and neither is a timer,
+so the obvious assumption — that the app samples heart rate every *n* seconds — is wrong in a way
+that changes how the numbers should be read.
 
-Three separate mechanisms decide when a reading reaches the phone:
+| Path | API | When it runs | Cadence |
+|---|---|---|---|
+| Background | `PassiveMonitoringClient` → `PassiveVitalsService` | Always, app closed or killed | Batched by Health Services, minutes apart |
+| Foreground | `MeasureClient` in `MainActivity` | Only while the watch app is open | Pushed per sample, floored at 5 s |
 
-| Mechanism | Behaviour |
-|---|---|
-| Health Services `MeasureClient` | Pushes heart rate samples on its own schedule. There is no API to request a rate. |
-| `TYPE_STEP_COUNTER` at `SENSOR_DELAY_UI` | Fires only when the step count actually changes. |
-| `MIN_SEND_INTERVAL_MS` (5 s) | A **floor** on transmissions. There is no ceiling. |
+`MeasureClient` alone was the original design and it is unusable as a data source: it is the
+**on-demand** API and measures only while an Activity is in the foreground, so closing the app or
+letting the screen time out ended collection silently. A stress monitor the user has to hold open
+measures nothing about their day.
 
-So the cadence is whatever the sensor offers, thinned to at most one message per five seconds.
-Observed gaps on a Galaxy Watch 4 ranged from 5 s to 45 s. Two consequences follow:
+`PassiveMonitoringClient` is the API for this. The registration is held by Health Services, not by
+the app's process, so `PassiveVitalsService` is bound on demand to take delivery of each batch even
+after the process has been killed. The cost is granularity: Health Services batches deliveries to
+save power, so samples arrive every few minutes rather than every second. For stress that is the
+right trade — the signal does not change second to second, and the optical sensor is the most
+expensive component on the watch to run continuously. The alternative, a foreground service holding
+`MeasureClient` open, buys per-second data for a permanent notification and heavy battery drain.
 
-- **Silence is normal, not exceptional.** Heart rate needs skin contact, and `MeasureClient`
-  measures only while the watch app is in the foreground, so a screen timeout ends measurement.
-  Either one stops the stream with no error anywhere.
-- **A reading therefore has an age**, and both devices show it once it passes 30 s. Before this,
-  the last value stayed on screen indefinitely and read as current.
+Consequences worth stating in the report:
+
+- **Silence is normal, not exceptional.** Heart rate needs skin contact, so a watch off the wrist
+  produces nothing, with no error anywhere.
+- **A reading has an age.** A batched sample can be minutes old on arrival, so the watch sends the
+  age it measured (`"<hr>|<steps>|<ageMs>"`) and the phone dates the reading from when the sensor
+  took it. A duration, not a timestamp: the two devices do not share a clock, but an elapsed time
+  measured on either means the same thing on both. Both UIs label a reading once it passes 30 s.
+- **Registration is re-established** on every app start, on `BOOT_COMPLETED` and on
+  `MY_PACKAGE_REPLACED`, because a passive registration does not reliably survive any of those.
+- `DataType.STEPS_DAILY` supplies steps since midnight directly, which is what the model's "Daily
+  Steps" feature means. `DailyStepCounter` exists only because `TYPE_STEP_COUNTER` counts from boot
+  and needed a stored baseline; the passive path has no such problem.
 
 Only a heart rate sample triggers a transmission. Step events update the watch display and ride
 along with the next sample. Letting them transmit meant the payload — built from the last known
@@ -65,6 +84,27 @@ value of each field — re-sent a stale heart rate: the logs show 89 BPM sent fi
 independent reading, so that single measurement became five stored predictions, five latency
 samples, and five entries in a five-slot alert window whose entire purpose is to require a
 sustained trend.
+
+## Why the pipeline is not in the ViewModel
+
+`StressPipeline` is process-scoped and owns inference, storage, smoothing and alerting.
+`VitalReceiverService` drives it directly; `DashboardViewModel` only renders what it produced.
+
+This is required by background collection, not a matter of taste. When the work lived in the
+ViewModel, a reading arriving with no dashboard open was received, published and then dropped —
+and since most readings now arrive with the app closed, that is most readings. Two pieces of state
+also have to outlive any Activity to be correct at all:
+
+- the **smoothing window**, because "3 of the last 5 predictions are high stress" is meaningless if
+  the window empties whenever the user closes the app; sustained stress across a morning has to be
+  able to accumulate.
+- the **loaded model**, roughly 13.8 MB of ONNX graphs, which would otherwise dominate the latency
+  figures by reloading per reading.
+
+Sleep is the one input the pipeline cannot read for itself. Health Connect is consulted by the
+dashboard, so the figure is cached (`SleepCache`, expiring after 18 hours) for background
+predictions to use. Without it every background prediction would substitute the training-set mean
+and flatten a third of the live signal.
 
 ## Latency: what is and is not measured
 
@@ -135,21 +175,32 @@ claim, so it is worth demonstrating in airplane mode rather than merely assertin
   AES/ECB key committed to the repository
 - `AuthRepository.signOut()` has no caller; there is no sign-out anywhere in the UI
 - Watch-side sleep is a hardcoded placeholder; only the phone's Health Connect read is real
-- Heart rate is measured only while the watch app is in the foreground, because `MeasureClient`
-  is the on-demand API. Continuous background measurement needs `PassiveMonitoringClient`, or an
-  `ExerciseClient` behind a foreground service. Until then the watch screen must stay awake to
-  collect a session.
-- A **Health Services permission rejection is undetectable by the app.**
-  `registerMeasureCallback` returns `void` and the refusal is logged in the Health Services
-  system process (`WHS_PermissionPolicy: SecurityException ... doesn't have permission to access
-  android.permission.health.READ_HEART_RATE`), not raised to the caller. Observed after a
-  reinstall while `dumpsys package` reported `READ_HEART_RATE: granted=true` with `USER_SET`, so
-  `checkSelfPermission` also said yes — the app cannot tell this apart from a watch that is
-  simply not being worn. Rebooting the watch clears it. The 30-second staleness message is the
-  only signal the app can give.
-- The phone predicts only while the dashboard is open. `VitalReceiverService` receives and
-  publishes regardless, but with no Activity there is no `DashboardViewModel`, so readings are
-  neither predicted nor stored.
+- **`checkSelfPermission` is not authoritative for health permissions.** On Wear OS 5+ these are
+  managed by the Health Connect permission controller, not the platform runtime-permission store.
+  The two can disagree: `dumpsys package` reporting
+  `android.permission.health.READ_HEART_RATE: granted=true, flags=[USER_SET]` while Health Services
+  logs `WHS_PermissionPolicy: SecurityException: ... doesn't have permission to access
+  android.permission.health.READ_HEART_RATE`.
+
+  `adb shell pm grant` produces exactly this split, and it is worse than useless during
+  development: it writes to the platform store only, so `checkSelfPermission` returns GRANTED, the
+  app therefore stops asking, and Health Services keeps refusing. Grant the permission through the
+  app's own runtime request instead, and revoke any `pm grant` first or the request will never be
+  shown. A reinstall revokes the real grant, so the dialog has to be answered again each time.
+
+  The refusal is also not reported to the caller: `registerMeasureCallback` returns `void`, so the
+  app cannot tell a permission problem apart from a watch that is not being worn. Passive
+  registration is better behaved and does throw `SecurityException: Missing permissions`, which is
+  why `PassiveVitals.register` returns a boolean the caller records.
+- `BODY_SENSORS_BACKGROUND` is declared because reading heart rate outside the foreground is a
+  separate grant. Android 16 on this watch has no `READ_HEALTH_DATA_IN_BACKGROUND`, checked with
+  `pm list permissions`, so there is no newer health permission to prefer.
+- Background readings are dropped rather than queued when the phone is out of Bluetooth range.
+  A stress reading is only useful promptly, and a replayed one would be stamped with the wrong
+  arrival time. Losing a window of readings is the accepted cost.
+- Passive batches can arrive minutes apart, so the phone process is often killed in between and
+  each batch pays the cold-start model load. This is why `LatencyMetricEntity.coldStart` is
+  recorded separately — in background operation cold starts are common, not exceptional.
 - Nothing syncs to Supabase yet except the profile, so local history stays on the device
 - Dead UI declared in `activity_home_dashboard.xml` with no listeners: `btnEmergency`,
   `bottomNavigation`, and the `nav_trends` / `nav_assistant` menu entries

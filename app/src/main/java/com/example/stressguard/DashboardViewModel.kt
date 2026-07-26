@@ -6,26 +6,20 @@ import android.os.SystemClock
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.stressguard.data.AlertDecision
-import com.example.stressguard.data.LatencySample
 import com.example.stressguard.data.LatencySummary
-import com.example.stressguard.data.LatencyTracker
+import com.example.stressguard.data.PipelineResult
 import com.example.stressguard.data.SensorReading
-import com.example.stressguard.data.SensorRepository
-import com.example.stressguard.data.StressAlertManager
-import com.example.stressguard.data.StressAlertPolicy
+import com.example.stressguard.data.StressPipeline
 import com.example.stressguard.data.local.RETENTION_DAYS
 import com.example.stressguard.data.local.StressGuardDatabase
-import com.example.stressguard.data.local.StressPredictionEntity
 import com.example.stressguard.data.local.purgeOlderThan
 import com.google.android.gms.wearable.Wearable
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 /** Where the current reading came from, so the dashboard can label it honestly. */
 enum class ReadingSource { WAITING, WATCH, SIMULATED }
@@ -55,8 +49,11 @@ data class DashboardUiState(
     /** The model extrapolated for this reading; see SensorReading.outOfTrainingRange. */
     val outOfTrainingRange: Boolean = false,
     /**
-     * How long ago the displayed watch reading arrived, refreshed on a timer. Null for debug
+     * How long ago the displayed watch reading was measured, refreshed on a timer. Null for debug
      * samples, where an age would be meaningless.
+     *
+     * Measured, not received: background readings arrive in batches and can already be minutes
+     * old, so this counts from when the sensor took the sample.
      */
     val readingAgeMs: Long? = null,
     val latency: LatencySummary = LatencySummary.EMPTY,
@@ -67,66 +64,36 @@ data class DashboardUiState(
     /** True when the displayed watch reading is too old to describe the wearer's present state. */
     val isReadingStale: Boolean
         get() = source == ReadingSource.WATCH &&
-            (readingAgeMs ?: 0L) >= DashboardViewModel.STALE_READING_MS
+            (readingAgeMs ?: 0L) >= SensorReading.STALE_SAMPLE_MS
 }
 
 /**
- * Owns the real-time path: reading in, prediction out, stored, timed, and possibly alerted.
+ * Presents what [StressPipeline] produced, and nothing more.
  *
- * This exists because two pieces of state must outlive the Activity. The smoothing window
- * ([StressAlertPolicy.WINDOW] recent predictions) would reset on every rotation if it lived in
- * the Activity, so turning the screen would silently postpone an alert. The ONNX service would
- * likewise be closed and reloaded — 13.8 MB — on each configuration change.
- *
- * Nothing here needs the network. That is the point: plan §3 requires the whole
- * receive → inference → alert path to work offline, and Supabase syncs from the local store
- * afterwards.
+ * The pipeline does the work — inference, storage, smoothing, alerting — because it has to run
+ * with no Activity in existence, now that the watch delivers vitals in the background. This class
+ * exists to turn its output into something the dashboard can draw, to age that output so a stalled
+ * watch is visible, and to answer the separate question of whether a watch is reachable at all.
  */
 class DashboardViewModel(application: Application) : AndroidViewModel(application) {
 
+    private val pipeline = StressPipeline.get(application)
     private val database = StressGuardDatabase.get(application)
-    private val latencyTracker = LatencyTracker(database.latencyMetrics())
-    private val alertManager = StressAlertManager(application, database.alertEvents())
-
-    /** Created once and kept, rather than per-Activity. */
-    private var inference: StressInferenceService? = null
-
-    /** Smoothing window. Survives rotation, which is the whole reason this class exists. */
-    private val recentClassIndices = ArrayDeque<Int>()
-
-    /** Arrival time of the displayed watch reading, for [tickReadingAge]. */
-    private var lastWatchReadingAtElapsedMs: Long? = null
 
     private val _state = MutableStateFlow(DashboardUiState())
     val state: StateFlow<DashboardUiState> = _state.asStateFlow()
 
+    /** When the displayed reading was measured on the watch, for [tickReadingAge]. */
+    private var measuredAtElapsedMs: Long? = null
+
     init {
         viewModelScope.launch {
-            SensorRepository.latest.filterNotNull().collect { onWatchReading(it) }
+            pipeline.latest.filterNotNull().collect { render(it) }
         }
         viewModelScope.launch { refreshDerivedState() }
         viewModelScope.launch { purgeOldHistory() }
         viewModelScope.launch { tickReadingAge() }
         refreshWatchLink()
-    }
-
-    /**
-     * Ages the displayed reading on a timer.
-     *
-     * State is otherwise only emitted when a reading arrives, so a watch that stops sending
-     * leaves its last heart rate on screen indefinitely, reading as current. The watch stops
-     * sending for ordinary reasons -- it comes off the wrist, or its screen times out, since
-     * Health Services only measures heart rate while the watch app is in the foreground -- so
-     * this is the normal case rather than an error case, and it needs to be visible.
-     */
-    private suspend fun tickReadingAge() {
-        while (true) {
-            delay(AGE_TICK_MS)
-            val arrivedAt = lastWatchReadingAtElapsedMs ?: continue
-            _state.value = _state.value.copy(
-                readingAgeMs = SystemClock.elapsedRealtime() - arrivedAt
-            )
-        }
     }
 
     /**
@@ -159,23 +126,15 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
             }
     }
 
-    /** Called by the Activity once Health Connect has been consulted. */
+    /**
+     * Called by the Activity once Health Connect has been consulted.
+     *
+     * The figure is cached as well as displayed, because background predictions have no Activity
+     * to read Health Connect for them and would otherwise fall back to the training-set mean.
+     */
     fun setSleepHours(hours: Float?, assumed: Boolean = false) {
+        if (hours != null && !assumed) pipeline.cacheSleepHours(hours)
         _state.value = _state.value.copy(sleepHours = hours, sleepAssumed = assumed)
-    }
-
-    private suspend fun onWatchReading(reading: SensorReading) {
-        lastWatchReadingAtElapsedMs = reading.receivedAtElapsedMs
-        _state.value = _state.value.copy(
-            heartRate = reading.heartRate,
-            steps = reading.dailySteps,
-            source = ReadingSource.WATCH,
-            sourceDetail = "Watch data live",
-            watchLink = WatchLink.STREAMING,
-            outOfTrainingRange = reading.outOfTrainingRange,
-            readingAgeMs = 0L,
-        )
-        predict(reading)
     }
 
     /**
@@ -193,8 +152,8 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
             return
         }
 
-        // A debug sample has no watch behind it, so there is no arrival to age.
-        lastWatchReadingAtElapsedMs = null
+        // A debug sample has no watch behind it, so there is no measurement to age.
+        measuredAtElapsedMs = null
         _state.value = _state.value.copy(
             heartRate = heartRate,
             steps = steps,
@@ -205,93 +164,74 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
             outOfTrainingRange = reading.outOfTrainingRange,
             readingAgeMs = null,
         )
-        viewModelScope.launch { predict(reading, sleepOverride = sleepHours) }
+        viewModelScope.launch {
+            pipeline.process(reading, sleepOverride = sleepHours, simulated = true)
+        }
     }
 
-    private suspend fun predict(reading: SensorReading, sleepOverride: Float? = null) {
-        val profile = SessionManager.readProfile(getApplication()) ?: run {
-            _state.value = _state.value.copy(error = "PROFILE NEEDED")
-            return
-        }
-
-        val sleepHours = sleepOverride ?: _state.value.sleepHours ?: DEFAULT_SLEEP_HOURS
-        val vitals = StressVitals(reading.heartRate, reading.dailySteps, sleepHours)
-
-        try {
-            val service = inference ?: withContext(Dispatchers.Default) {
-                StressInferenceService(getApplication())
-            }.also { inference = it }
-
-            val sample = LatencySample(
-                receivedAtElapsedMs = reading.receivedAtElapsedMs,
-                receivedAtEpochMs = reading.receivedAtEpochMs,
-                coldStart = !service.isWarm,
-            )
-
-            val prediction = withContext(Dispatchers.Default) {
-                val features = StressFeatureBuilder.buildVector(
-                    profile, vitals, service.modelInfo.featureNames
-                )
-                sample.markPreprocessed()
-                service.predict(features).also { sample.markInferred() }
+    private suspend fun render(result: PipelineResult) {
+        when (result) {
+            is PipelineResult.Failed -> {
+                _state.value = _state.value.copy(error = result.message)
+                return
             }
 
-            _state.value = _state.value.copy(prediction = prediction, error = null)
-            sample.markUiUpdated()
+            is PipelineResult.Predicted -> {
+                val reading = result.reading
+                val current = _state.value
 
-            store(prediction, reading, sleepHours)
+                // In phone-elapsed terms, when the sensor took this sample. Derived by
+                // subtracting the age the watch measured, so the age shown afterwards includes
+                // the batching delay and the transit rather than restarting at arrival.
+                val measuredAt = reading.receivedAtElapsedMs - reading.sampleAgeMs
+                if (!result.simulated) measuredAtElapsedMs = measuredAt
 
-            recentClassIndices.addLast(prediction.classIndex)
-            while (recentClassIndices.size > StressAlertPolicy.WINDOW) recentClassIndices.removeFirst()
-
-            val decision = alertManager.onPrediction(
-                recentClassIndices = recentClassIndices.toList(),
-                highStressClassIndex = service.modelInfo.classCount - 1,
-                modelVersion = prediction.modelVersion,
-            )
-            if (decision is AlertDecision.Fire) sample.markAlertFired()
-
-            latencyTracker.record(sample)
-            _state.value = _state.value.copy(lastDecision = decision)
-            refreshDerivedState()
-        } catch (error: Exception) {
-            Log.e(StressInferenceService.TAG, "prediction failed", error)
-            _state.value = _state.value.copy(error = "MODEL ERROR")
+                _state.value = current.copy(
+                    heartRate = reading.heartRate,
+                    steps = reading.dailySteps,
+                    sleepHours = result.sleepHours,
+                    sleepAssumed = result.sleepAssumed,
+                    source = if (result.simulated) ReadingSource.SIMULATED else ReadingSource.WATCH,
+                    sourceDetail =
+                        if (result.simulated) current.sourceDetail else "Watch data live",
+                    watchLink =
+                        if (result.simulated) current.watchLink else WatchLink.STREAMING,
+                    prediction = result.prediction,
+                    outOfTrainingRange = reading.outOfTrainingRange,
+                    readingAgeMs =
+                        if (result.simulated) null
+                        else SystemClock.elapsedRealtime() - measuredAt,
+                    lastDecision = result.decision,
+                    error = null,
+                )
+                refreshDerivedState()
+            }
         }
     }
 
-    private suspend fun store(
-        prediction: StressPrediction,
-        reading: SensorReading,
-        sleepHours: Float,
-    ) {
-        runCatching {
-            database.stressPredictions().insert(
-                StressPredictionEntity(
-                    recordedAtEpochMs = reading.receivedAtEpochMs,
-                    label = prediction.label,
-                    classIndex = prediction.classIndex,
-                    confidence = prediction.confidence,
-                    probabilities = prediction.probabilities.toList(),
-                    modelVersion = prediction.modelVersion,
-                    heartRate = reading.heartRate,
-                    dailySteps = reading.dailySteps,
-                    sleepHours = sleepHours,
-                    outOfTrainingRange = reading.outOfTrainingRange,
-                )
+    /**
+     * Ages the displayed reading on a timer.
+     *
+     * State is otherwise only emitted when a reading arrives, and with background collection the
+     * gap between readings is minutes. A watch that stops sending — off the wrist, out of
+     * Bluetooth range — would leave its last heart rate on screen indefinitely, reading as
+     * current, so this is the normal case rather than an error case.
+     */
+    private suspend fun tickReadingAge() {
+        while (true) {
+            delay(AGE_TICK_MS)
+            val measuredAt = measuredAtElapsedMs ?: continue
+            _state.value = _state.value.copy(
+                readingAgeMs = SystemClock.elapsedRealtime() - measuredAt
             )
-        }.onFailure {
-            // A failed write must not lose the prediction the user is looking at.
-            Log.w(StressInferenceService.TAG, "could not store the prediction", it)
         }
     }
 
     private suspend fun refreshDerivedState() {
-        runCatching {
-            val summary = latencyTracker.summary()
-            val lastAlert = database.alertEvents().mostRecent()?.firedAtEpochMs
-            _state.value = _state.value.copy(latency = summary, lastAlertAtEpochMs = lastAlert)
-        }
+        _state.value = _state.value.copy(
+            latency = pipeline.latencySummary(),
+            lastAlertAtEpochMs = pipeline.lastAlertAtEpochMs(),
+        )
     }
 
     private suspend fun purgeOldHistory() {
@@ -301,28 +241,13 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
         }
     }
 
-    override fun onCleared() {
-        inference?.close()
-        inference = null
-        super.onCleared()
-    }
-
     companion object {
         private const val TAG = "VITALS"
 
         /** How often [tickReadingAge] recomputes the on-screen age. */
         private const val AGE_TICK_MS = 5_000L
 
-        /**
-         * Past this, the reading on screen is labelled with its age. Matches the watch's own
-         * staleness threshold so the two devices do not disagree about what counts as current.
-         */
-        const val STALE_READING_MS = 30_000L
-
-        /**
-         * Used when Health Connect holds no sleep record, so a missing provider does not stop
-         * the app predicting. Close to the training set's mean of 7.75 hours.
-         */
-        const val DEFAULT_SLEEP_HOURS = 7.5f
+        /** Kept for the Activity's Health Connect fallback path. */
+        const val DEFAULT_SLEEP_HOURS = StressPipeline.DEFAULT_SLEEP_HOURS
     }
 }

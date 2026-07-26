@@ -55,8 +55,6 @@ import com.google.android.gms.wearable.Wearable
 
 class MainActivity : ComponentActivity(), SensorEventListener {
 
-    private val pathVitals = "/stress_vitals"
-
     // UI State for Jetpack Compose
     private var displayState by mutableStateOf("Waiting for permissions...")
 
@@ -84,14 +82,6 @@ class MainActivity : ComponentActivity(), SensorEventListener {
 
     /** Registered callbacks have to be released, or heart rate measurement drains the battery. */
     private var measureCallback: MeasureCallback? = null
-
-    /**
-     * The step sensor fires on every change at SENSOR_DELAY_UI. Sending each one would put the
-     * phone through a full inference, a database write and an alert evaluation several times a
-     * second, for a step count that barely moved. Plan §4 is explicit that not every packet
-     * should be forwarded.
-     */
-    private var lastSentAtElapsedMs = 0L
 
     /**
      * When the last heart rate sample actually arrived.
@@ -237,7 +227,11 @@ class MainActivity : ComponentActivity(), SensorEventListener {
                     }
                     currentHr = realHeartRate.toInt()
                     lastHrAtElapsedMs = now
-                    sendFreshReading()
+                    // Health Services stamps each sample with when it was taken, so the age is
+                    // measured rather than assumed to be zero.
+                    val sampleAgeMs =
+                        (now - hrData.last().timeDurationFromBoot.toMillis()).coerceAtLeast(0L)
+                    sendFreshReading(sampleAgeMs)
                 } else {
                     Log.d(TAG, "heart rate reported as 0; still acquiring")
                 }
@@ -251,6 +245,19 @@ class MainActivity : ComponentActivity(), SensorEventListener {
         // than waiting for the first availability callback, which may never come.
         statusNote = null
         refreshDisplay()
+
+        // 3. Make sure collection continues once this Activity is gone. Registering here rather
+        // than only from the boot receiver means the first run of the app switches background
+        // monitoring on, without the user having to reboot the watch for it to start.
+        //
+        // Deliberately NOT lifecycleScope. Registration is an IPC to Health Services that can take
+        // tens of seconds to connect, and a watch screen times out in about fifteen -- tying it to
+        // this Activity had the call cancelled partway through, so background monitoring silently
+        // never started and there was not even a log line to say so.
+        val appContext = applicationContext
+        CoroutineScope(Dispatchers.Default + SupervisorJob()).launch {
+            PassiveVitalsStore(appContext).registered = PassiveVitals.register(appContext)
+        }
 
         runDiagnostics(measureClient)
     }
@@ -268,7 +275,9 @@ class MainActivity : ComponentActivity(), SensorEventListener {
      * meant "no reading has arrived" -- which conflates a missing watch with a missing sensor.
      */
     private fun runDiagnostics(measureClient: MeasureClient) {
-        lifecycleScope.launch {
+        // Application-scoped for the same reason as the registration above: the answers are logged,
+        // and a screen timeout must not cancel the question before it is asked.
+        CoroutineScope(Dispatchers.Default + SupervisorJob()).launch {
             runCatching { measureClient.getCapabilities() }
                 .onSuccess { capabilities ->
                     val supported = capabilities.supportedDataTypesMeasure
@@ -374,15 +383,35 @@ class MainActivity : ComponentActivity(), SensorEventListener {
      * -- five entries in the alert window. The rule is "3 of the last 5 predictions are high
      * stress", which exists to require a sustained trend; duplicates of a single measurement
      * satisfied it on their own.
+     *
+     * The throttle is shared with [PassiveVitalsService] through [PassiveVitalsStore]. Both paths
+     * can be live at once -- this one while the app is open, the passive one always -- and a
+     * shared floor is what stops them sending the same measurement twice.
      */
-    private fun sendFreshReading() {
+    private fun sendFreshReading(sampleAgeMs: Long) {
         refreshDisplay()
 
-        val now = SystemClock.elapsedRealtime()
-        if (now - lastSentAtElapsedMs < MIN_SEND_INTERVAL_MS) return
-        lastSentAtElapsedMs = now
+        // Kept in the shared store so the passive service, which cannot see this Activity's
+        // fields, sends the same figure. Both mean "steps so far today".
+        val store = PassiveVitalsStore(this)
+        store.dailySteps = currentSteps
+        if (!store.claimSendSlot()) return
 
-        sendRealDataToPhone("$currentHr|$currentSteps")
+        PassiveVitalsService.send(
+            context = this,
+            payload = "$currentHr|$currentSteps|$sampleAgeMs",
+            onNoPhone = {
+                statusNote = "Phone not connected\nHR: $currentHr BPM"
+                refreshDisplay()
+            },
+            onSent = {
+                // A send proving the link works clears any earlier complaint that it did not.
+                if (statusNote != null) {
+                    statusNote = null
+                    refreshDisplay()
+                }
+            },
+        )
     }
 
     /**
@@ -401,47 +430,6 @@ class MainActivity : ComponentActivity(), SensorEventListener {
                 refreshDisplay()
             }
         }
-    }
-
-    // --------------------------------------------------------
-    // Secure BLE Transmission (AES)
-    // --------------------------------------------------------
-    private fun sendRealDataToPhone(sensorData: String) {
-        val messageClient = Wearable.getMessageClient(this)
-        val encryptedPayload = EncryptionUtil.encrypt(sensorData)
-
-        Wearable.getNodeClient(this).connectedNodes
-            .addOnSuccessListener { nodes ->
-                if (nodes.isEmpty()) {
-                    // The commonest failure and previously silent: the watch has no companion
-                    // reachable, so the loop below simply did not execute.
-                    Log.w(TAG, "no connected phone; $sensorData not sent")
-                    statusNote = "Phone not connected\nHR: $currentHr BPM"
-                    refreshDisplay()
-                    return@addOnSuccessListener
-                }
-
-                for (node in nodes) {
-                    messageClient.sendMessage(node.id, pathVitals, encryptedPayload)
-                        .addOnSuccessListener {
-                            Log.d(TAG, "sent $sensorData to ${node.displayName}")
-                            // A send proving the link works clears any earlier complaint that
-                            // it did not, so the watch does not keep claiming the phone is gone.
-                            if (statusNote != null) {
-                                statusNote = null
-                                refreshDisplay()
-                            }
-                        }
-                        .addOnFailureListener { error ->
-                            // Typically the phone app not being installed, so nothing is
-                            // listening on this path.
-                            Log.w(TAG, "send to ${node.displayName} failed: ${error.message}")
-                        }
-                }
-            }
-            .addOnFailureListener { error ->
-                Log.w(TAG, "could not list connected nodes: ${error.message}")
-            }
     }
 
     override fun onDestroy() {
@@ -486,14 +474,6 @@ class MainActivity : ComponentActivity(), SensorEventListener {
 
     companion object {
         private const val TAG = "WEAR_VITALS"
-
-        /**
-         * Minimum gap between messages. Health Services can push heart rate samples faster than
-         * this, and each send costs the phone an inference, a database write and an alert
-         * evaluation. It is a floor, not a cadence: there is no upper bound, because nothing
-         * polls the sensor and a watch off the wrist produces nothing to send.
-         */
-        private const val MIN_SEND_INTERVAL_MS = 5_000L
 
         /**
          * Past this, the displayed heart rate is labelled with its age rather than shown as a
