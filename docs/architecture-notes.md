@@ -30,7 +30,8 @@
 3. The service hands the reading to `StressPipeline`, blocking until the pass completes so it is
    not torn down partway through.
 4. Sleep comes from `SleepCache`, last written by the dashboard from Health Connect; a
-   training-set-mean default is substituted if there is none, and labelled as assumed.
+   training-set-mean default is substituted if there is none, and labelled as assumed. Steps come
+   from `StepHistory`, not straight off the watch — see below.
 5. `StressFeatureBuilder` builds a 22-value vector in the order the model manifest declares.
 6. `StressInferenceService` runs the three ONNX graphs and averages their probabilities.
 7. The pipeline stores the prediction, pushes its class into the smoothing window, and asks
@@ -85,6 +86,63 @@ independent reading, so that single measurement became five stored predictions, 
 samples, and five entries in a five-slot alert window whose entire purpose is to require a
 sustained trend.
 
+## "Daily Steps" means an activity level, not a running count
+
+The model's `Daily Steps` column describes a person's **habitual full-day activity**: 1000 to 16036
+in `ml_engine/data/sleep_health_dataset.csv`, where every row is a person rather than a moment. The
+watch reports `STEPS_DAILY`, which is steps *since midnight* — a different quantity that happens to
+share a name, and one that is 0 at midnight and below the trained minimum for hours every morning.
+
+Feeding the partial count straight in put the input outside the trained range. Tree ensembles do
+not extrapolate; they clamp to the outermost leaf, so the prediction stopped responding to heart
+rate entirely. A full night's run made the failure unmistakable:
+
+```
+label distribution : [('stressed', 99)]
+outOfTrainingRange : [(1, 99)]     <- every one
+steps range        : 0 – 458       <- trained minimum is 1000
+heart rate range   : 76 – 100      <- well inside 43–109
+```
+
+This is the same class of defect as the z-scored training data fixed earlier: the right number for
+the wrong quantity, producing confident and meaningless output rather than an error.
+
+`StepHistory` supplies `max(steps so far today, most recent complete day)`, backed by one row per
+day in `daily_step_totals`. In range once a single day has elapsed, still rises on a genuinely
+active day, and honest on day one — with no history it returns the partial count and the prediction
+stays flagged as an extrapolation, because the user's activity level genuinely is not known yet.
+
+The day total keeps the **highest** count seen, not the latest, because a reading landing just after
+the watch's midnight reset would otherwise wipe the day.
+
+Both figures are stored on every prediction: `dailySteps` is what the watch measured, `activityLevel`
+is what the model was told. A history that recorded only one of them could not explain its own
+predictions afterwards.
+
+**The extrapolation flag follows the model's inputs, not the raw sample.** `StressPipeline` computes
+it from the values actually handed over; `SensorReading.outOfTrainingRange` remains an ingest-time
+signal for logging. The two answer different questions and are deliberately not merged.
+
+## Backend sync (plan §15)
+
+`SupabaseSyncWorker` drains the local queues into `stress_predictions`, `latency_metrics` and
+`alert_events`. It runs on WorkManager every 30 minutes with a `NetworkType.CONNECTED` constraint —
+that constraint is what implements "restore internet and confirm sync occurs" without the app owning
+a connectivity listener.
+
+Scheduled from `DashboardViewModel`, never from `StressPipeline`. Plan §4 and §25 both require sync
+to stay off the real-time path, and enqueuing work per prediction would put it right beside one.
+
+**Retries cannot duplicate rows.** Every table has `unique (user_id, <event time>)` and the worker
+upserts against it with `ignoreDuplicates`. A natural key rather than a client-generated id because
+Room's autoincrement restarts at 1 after a reinstall and so identifies nothing stable; two events
+cannot share a millisecond given the watch's five-second send floor. Rows are marked synced only
+after the upsert returns, so a crash midway re-sends rather than loses.
+
+Nothing syncs while signed out — there is no `user_id` to attach rows to. They stay queued rather
+than being discarded, and the dashboard says why: a pending count with no explanation reads as a
+broken sync.
+
 ## Why the pipeline is not in the ViewModel
 
 `StressPipeline` is process-scoped and owns inference, storage, smoothing and alerting.
@@ -124,9 +182,12 @@ over both describes neither.
 durable store for the real-time path: every write happens without a network, which is the point
 of the architecture, and Supabase syncs *from* here rather than being written to directly.
 
-Every table carries a `synced` flag with an `unsynced()` query, so the Phase 7 worker has a
-queue to drain. Retention deletes rows older than 30 days **only if already synced**, so a long
-spell offline cannot silently discard readings that never reached the backend.
+Every table carries a `synced` flag with an `unsynced()` query, which `SupabaseSyncWorker` drains.
+Retention deletes rows older than 30 days **only if already synced**, so a long spell offline
+cannot silently discard readings that never reached the backend.
+
+`daily_step_totals` is the one table that is not synced. It is an input to inference rather than a
+record of one, and it is derivable from the prediction history already being uploaded.
 
 Alert cooldown state is read from the database rather than memory, so it survives a restart and
 cannot be bypassed by killing the app.

@@ -31,9 +31,16 @@ data class StressPredictionEntity(
     /** Which model build produced this. Plan §19 requires it on every prediction record. */
     val modelVersion: String,
     val heartRate: Int,
+    /** Steps since midnight, as the watch measured them. */
     val dailySteps: Int,
+    /**
+     * The step figure actually given to the model, which differs from [dailySteps] whenever the
+     * day is still young. Both are stored so the history can explain its own predictions; see
+     * `StepHistory`.
+     */
+    val activityLevel: Int = 0,
     val sleepHours: Float,
-    /** The model was extrapolating for this reading; see SensorReading.outOfTrainingRange. */
+    /** The values given to the model fell outside its training ranges, so it extrapolated. */
     val outOfTrainingRange: Boolean,
     val synced: Boolean = false,
 )
@@ -69,6 +76,29 @@ data class LatencyMetricEntity(
     val totalMs: Long,
     val coldStart: Boolean,
     val synced: Boolean = false,
+)
+
+/**
+ * How many steps were taken on a given day.
+ *
+ * Exists because the model's "Daily Steps" feature means a person's habitual full-day activity
+ * level — 1000 to 16036 in the training data, where every row is a person rather than a moment.
+ * The watch reports steps *since midnight*, which is necessarily 0 at midnight and below the
+ * trained minimum for the first hours of every day. Feeding that straight in put every morning
+ * prediction outside the trained range, where the trees clamp to their outermost leaf and stop
+ * responding to heart rate at all.
+ *
+ * Keeping one row per day lets [com.example.stressguard.data.StepHistory] answer the question the
+ * model is actually asking. Not synced: it is an input to inference, not a record of it, and it is
+ * derivable from the prediction history already being uploaded.
+ */
+@Entity(tableName = "daily_step_totals")
+data class DailyStepTotalEntity(
+    /** `yyyy-MM-dd` in local time, so a day rolls over at the user's midnight rather than UTC's. */
+    @PrimaryKey val date: String,
+    /** Highest count seen for the day. The watch's counter only climbs until it resets. */
+    val steps: Int,
+    val updatedAtEpochMs: Long,
 )
 
 /** A fired alert, retained so cooldown survives a restart and so history can be shown. */

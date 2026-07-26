@@ -58,6 +58,23 @@
                 android:textColor="#64706A"
                 android:textSize="14sp" />
 
+            <!--
+                Backend sync, deliberately on its own line. The line above already carries the
+                data source, the latency figures and the extrapolation marker; adding a fourth
+                clause made none of them readable. Tapping it requests a sync immediately.
+            -->
+            <TextView
+                android:id="@+id/tvSyncStatus"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:background="?attr/selectableItemBackground"
+                android:paddingTop="2dp"
+                android:paddingBottom="2dp"
+                android:text="Checking sync…"
+                android:textColor="#8A948F"
+                android:textSize="12sp" />
+
             <LinearLayout
                 android:id="@+id/statusRow"
                 android:layout_width="match_parent"

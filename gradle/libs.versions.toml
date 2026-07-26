@@ -27,6 +27,7 @@ googleid = "1.1.1"
 coroutines = "1.9.0"
 lifecycle = "2.8.7"
 room = "2.6.1"
+work = "2.9.1"
 # KSP releases are pinned to a Kotlin version: the prefix must match `kotlin` above exactly,
 # or the plugin refuses to load.
 ksp = "2.0.21-1.0.28"
@@ -82,6 +83,7 @@ androidx-room-runtime = { group = "androidx.room", name = "room-runtime", versio
 androidx-room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "room" }
 androidx-room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "room" }
 androidx-room-testing = { group = "androidx.room", name = "room-testing", version.ref = "room" }
+androidx-work-runtime-ktx = { group = "androidx.work", name = "work-runtime-ktx", version.ref = "work" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

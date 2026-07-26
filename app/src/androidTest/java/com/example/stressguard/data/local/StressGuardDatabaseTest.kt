@@ -187,6 +187,43 @@ class StressGuardDatabaseTest {
         assertEquals(100.0, dao.averagePredictionToAlertMs()!!, 0.01)
     }
 
+    // --- daily step totals -------------------------------------------------------
+
+    @Test
+    fun aDayKeepsItsHighestStepCountRatherThanItsLatest() = runTest {
+        val dao = database.dailyStepTotals()
+
+        dao.upsertMax("2026-07-25", 9000, now)
+        // A reading landing just after the watch's midnight reset. Taking the latest here would
+        // wipe the day's total and reintroduce the below-training-range input this table exists
+        // to prevent.
+        dao.upsertMax("2026-07-25", 12, now + 1000)
+
+        assertEquals(9000, dao.totalFor("2026-07-25"))
+        assertEquals("upsert must not create a second row for the day", 1, dao.count())
+    }
+
+    @Test
+    fun theMostRecentEarlierDayIsFoundAcrossAGapInWear() = runTest {
+        val dao = database.dailyStepTotals()
+        dao.upsertMax("2026-07-20", 7400, now)
+        dao.upsertMax("2026-07-22", 8100, now)
+
+        // The watch is not worn every day, so "yesterday" often does not exist.
+        assertEquals(8100, dao.mostRecentBefore("2026-07-26")?.steps)
+        assertNull("nothing before the earliest day", dao.mostRecentBefore("2026-07-20"))
+    }
+
+    @Test
+    fun todaysOwnTotalIsNeverTreatedAsHistory() = runTest {
+        val dao = database.dailyStepTotals()
+        dao.upsertMax("2026-07-26", 5000, now)
+
+        // Otherwise the figure would ratchet up and never fall: one active morning would pin the
+        // model's input for the rest of the day.
+        assertNull(dao.mostRecentBefore("2026-07-26"))
+    }
+
     // --- alerts ------------------------------------------------------------------
 
     @Test

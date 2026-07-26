@@ -1,0 +1,107 @@
+package com.example.stressguard.data.sync
+
+import com.example.stressguard.data.local.AlertEventEntity
+import com.example.stressguard.data.local.LatencyMetricEntity
+import com.example.stressguard.data.local.StressPredictionEntity
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
+import java.time.Instant
+
+/**
+ * The wire shapes for the three synced tables.
+ *
+ * Separate from the Room entities on purpose. The local rows carry `id` and `synced`, which are
+ * device-local bookkeeping and meaningless on the server; the server rows carry `user_id` and ISO
+ * timestamps, which are meaningless locally. Mapping between them in one place keeps that
+ * translation testable without a database or a network.
+ *
+ * Epoch millis become ISO-8601 strings because the Postgres columns are `timestamptz`: storing a
+ * bigint would make the data unreadable in the Supabase table editor, which is where it will be
+ * demonstrated.
+ */
+
+private fun Long.toIso(): String = Instant.ofEpochMilli(this).toString()
+
+@Serializable
+data class StressPredictionRow(
+    @SerialName("user_id") val userId: String,
+    @SerialName("recorded_at") val recordedAt: String,
+    val label: String,
+    @SerialName("class_index") val classIndex: Int,
+    val confidence: Float,
+    val probabilities: List<Float>,
+    @SerialName("model_version") val modelVersion: String,
+    @SerialName("heart_rate") val heartRate: Int,
+    @SerialName("daily_steps") val dailySteps: Int,
+    @SerialName("activity_level") val activityLevel: Int,
+    @SerialName("sleep_hours") val sleepHours: Float,
+    @SerialName("out_of_training_range") val outOfTrainingRange: Boolean,
+) {
+    companion object {
+        fun from(entity: StressPredictionEntity, userId: String) = StressPredictionRow(
+            userId = userId,
+            recordedAt = entity.recordedAtEpochMs.toIso(),
+            label = entity.label,
+            classIndex = entity.classIndex,
+            confidence = entity.confidence,
+            probabilities = entity.probabilities,
+            modelVersion = entity.modelVersion,
+            heartRate = entity.heartRate,
+            dailySteps = entity.dailySteps,
+            activityLevel = entity.activityLevel,
+            sleepHours = entity.sleepHours,
+            outOfTrainingRange = entity.outOfTrainingRange,
+        )
+    }
+}
+
+@Serializable
+data class LatencyMetricRow(
+    @SerialName("user_id") val userId: String,
+    @SerialName("recorded_at") val recordedAt: String,
+    @SerialName("preprocessing_ms") val preprocessingMs: Long,
+    @SerialName("inference_ms") val inferenceMs: Long,
+    @SerialName("ui_update_ms") val uiUpdateMs: Long,
+    @SerialName("receive_to_prediction_ms") val receiveToPredictionMs: Long,
+    /** Null when no alert fired for this sample, which is the common case. */
+    @SerialName("prediction_to_alert_ms") val predictionToAlertMs: Long?,
+    @SerialName("total_ms") val totalMs: Long,
+    @SerialName("cold_start") val coldStart: Boolean,
+) {
+    companion object {
+        fun from(entity: LatencyMetricEntity, userId: String) = LatencyMetricRow(
+            userId = userId,
+            recordedAt = entity.recordedAtEpochMs.toIso(),
+            preprocessingMs = entity.preprocessingMs,
+            inferenceMs = entity.inferenceMs,
+            uiUpdateMs = entity.uiUpdateMs,
+            receiveToPredictionMs = entity.receiveToPredictionMs,
+            predictionToAlertMs = entity.predictionToAlertMs,
+            totalMs = entity.totalMs,
+            coldStart = entity.coldStart,
+        )
+    }
+}
+
+@Serializable
+data class AlertEventRow(
+    @SerialName("user_id") val userId: String,
+    @SerialName("fired_at") val firedAt: String,
+    val reason: String,
+    @SerialName("high_count_in_window") val highCountInWindow: Int,
+    @SerialName("window_size") val windowSize: Int,
+    @SerialName("model_version") val modelVersion: String,
+    val dismissed: Boolean,
+) {
+    companion object {
+        fun from(entity: AlertEventEntity, userId: String) = AlertEventRow(
+            userId = userId,
+            firedAt = entity.firedAtEpochMs.toIso(),
+            reason = entity.reason,
+            highCountInWindow = entity.highCountInWindow,
+            windowSize = entity.windowSize,
+            modelVersion = entity.modelVersion,
+            dismissed = entity.dismissed,
+        )
+    }
+}

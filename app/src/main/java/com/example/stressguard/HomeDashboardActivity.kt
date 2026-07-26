@@ -45,6 +45,7 @@ class HomeDashboardActivity : AppCompatActivity() {
     private lateinit var tvStressPercentage: TextView
     private lateinit var tvStressStatus: TextView
     private lateinit var tvConnectionState: TextView
+    private lateinit var tvSyncStatus: TextView
     private lateinit var chipConnectionState: TextView
     private lateinit var stressGauge: CircularProgressIndicator
     private lateinit var btnSimulateModelInput: MaterialButton
@@ -87,6 +88,10 @@ class HomeDashboardActivity : AppCompatActivity() {
         tvStressPercentage = findViewById(R.id.tvStressPercentage)
         tvStressStatus = findViewById(R.id.tvStressStatus)
         tvConnectionState = findViewById(R.id.tvConnectionState)
+        tvSyncStatus = findViewById(R.id.tvSyncStatus)
+        // A manual sync, for when waiting for the periodic window would be wrong -- just after
+        // signing in, or when demonstrating that queued rows do reach the backend.
+        tvSyncStatus.setOnClickListener { viewModel.syncNow() }
         chipConnectionState = findViewById(R.id.chipConnectionState)
         stressGauge = findViewById(R.id.stressGauge)
         btnSimulateModelInput = findViewById(R.id.btnSimulateModelInput)
@@ -119,6 +124,7 @@ class HomeDashboardActivity : AppCompatActivity() {
 
         renderSource(state)
         renderPrediction(state)
+        tvSyncStatus.text = state.sync.describe(System.currentTimeMillis())
     }
 
     private fun renderSource(state: DashboardUiState) {

@@ -35,6 +35,13 @@ sealed interface PipelineResult {
          * a shared flow that a background reading can post to at any moment.
          */
         val simulated: Boolean,
+        /**
+         * The step figure the model was given, which is not `reading.dailySteps` whenever the day
+         * is still young. See [StepHistory].
+         */
+        val activityLevel: Int,
+        /** The values given to the model fell outside its training ranges. */
+        val extrapolating: Boolean,
     ) : PipelineResult
 
     /** A message fit for the dashboard: "PROFILE NEEDED", "MODEL ERROR". */
@@ -68,6 +75,7 @@ class StressPipeline private constructor(private val context: Context) {
     private val latencyTracker = LatencyTracker(database.latencyMetrics())
     private val alertManager = StressAlertManager(context, database.alertEvents())
     private val sleepCache = SleepCache(context)
+    private val stepHistory = StepHistory(database.dailyStepTotals())
 
     /** Loaded once and kept for the life of the process. */
     private var inference: StressInferenceService? = null
@@ -109,7 +117,23 @@ class StressPipeline private constructor(private val context: Context) {
 
         val cached = sleepOverride ?: sleepCache.hours()
         val sleepHours = cached ?: DEFAULT_SLEEP_HOURS
-        val vitals = StressVitals(reading.heartRate, reading.dailySteps, sleepHours)
+
+        // The model's "Daily Steps" means a full-day activity level, not a count that restarts at
+        // midnight; see StepHistory. Debug scenarios name their own figure and must not be
+        // rewritten by yesterday's real walking, or the three scenarios stop being distinguishable.
+        val activityLevel = if (simulated) {
+            reading.dailySteps
+        } else {
+            stepHistory.record(reading.dailySteps, reading.measuredAtEpochMs)
+            stepHistory.activityLevel(reading.dailySteps, reading.measuredAtEpochMs)
+        }
+
+        val vitals = StressVitals(reading.heartRate, activityLevel, sleepHours)
+
+        // Computed here rather than taken from the reading, because what matters is whether the
+        // values the model actually received were inside its training ranges. The reading's own
+        // flag is about the raw sample and now answers a different question.
+        val extrapolating = isExtrapolating(reading.heartRate, activityLevel, sleepHours)
 
         return try {
             val service = inference ?: withContext(Dispatchers.Default) {
@@ -131,7 +155,7 @@ class StressPipeline private constructor(private val context: Context) {
             }
             sample.markUiUpdated()
 
-            store(prediction, reading, sleepHours)
+            store(prediction, reading, activityLevel, sleepHours, extrapolating)
 
             recentClassIndices.addLast(prediction.classIndex)
             while (recentClassIndices.size > StressAlertPolicy.WINDOW) recentClassIndices.removeFirst()
@@ -152,6 +176,8 @@ class StressPipeline private constructor(private val context: Context) {
                 sleepAssumed = cached == null,
                 decision = decision,
                 simulated = simulated,
+                activityLevel = activityLevel,
+                extrapolating = extrapolating,
             ).also { _latest.value = it }
         } catch (error: Exception) {
             Log.e(TAG, "prediction failed", error)
@@ -162,7 +188,9 @@ class StressPipeline private constructor(private val context: Context) {
     private suspend fun store(
         prediction: StressPrediction,
         reading: SensorReading,
+        activityLevel: Int,
         sleepHours: Float,
+        extrapolating: Boolean,
     ) {
         runCatching {
             database.stressPredictions().insert(
@@ -177,9 +205,13 @@ class StressPipeline private constructor(private val context: Context) {
                     probabilities = prediction.probabilities.toList(),
                     modelVersion = prediction.modelVersion,
                     heartRate = reading.heartRate,
+                    // Both: what the watch measured, and what the model was told. They differ
+                    // whenever the day is young, and a history that recorded only one of them
+                    // could not explain its own predictions afterwards.
                     dailySteps = reading.dailySteps,
+                    activityLevel = activityLevel,
                     sleepHours = sleepHours,
-                    outOfTrainingRange = reading.outOfTrainingRange,
+                    outOfTrainingRange = extrapolating,
                 )
             )
         }.onFailure {
@@ -190,6 +222,18 @@ class StressPipeline private constructor(private val context: Context) {
 
     /** Records a sleep figure just read from Health Connect, for later background predictions. */
     fun cacheSleepHours(hours: Float) = sleepCache.put(hours)
+
+    /**
+     * Whether the values handed to the model fall outside what it was trained on.
+     *
+     * Worth recording rather than hiding: the trees clamp to their outermost leaf beyond these
+     * ranges, so the prediction there is an extrapolation and a report quoting holdout accuracy
+     * should say how often that happened.
+     */
+    private fun isExtrapolating(heartRate: Int, dailySteps: Int, sleepHours: Float): Boolean =
+        heartRate !in SensorReading.TRAINED_HEART_RATE ||
+            dailySteps !in SensorReading.TRAINED_STEPS ||
+            sleepHours !in SensorReading.TRAINED_SLEEP_HOURS
 
     suspend fun latencySummary(): LatencySummary =
         runCatching { latencyTracker.summary() }.getOrDefault(LatencySummary.EMPTY)

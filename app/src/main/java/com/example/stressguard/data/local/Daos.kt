@@ -44,6 +44,9 @@ interface StressPredictionDao {
     @Query("DELETE FROM stress_predictions WHERE recordedAtEpochMs < :cutoffEpochMs AND synced = 1")
     suspend fun deleteSyncedOlderThan(cutoffEpochMs: Long): Int
 
+    @Query("SELECT COUNT(*) FROM stress_predictions WHERE synced = 0")
+    suspend fun countUnsynced(): Int
+
     @Query("SELECT COUNT(*) FROM stress_predictions")
     suspend fun count(): Int
 }
@@ -85,7 +88,50 @@ interface LatencyMetricDao {
     @Query("DELETE FROM latency_metrics WHERE recordedAtEpochMs < :cutoffEpochMs AND synced = 1")
     suspend fun deleteSyncedOlderThan(cutoffEpochMs: Long): Int
 
+    @Query("SELECT COUNT(*) FROM latency_metrics WHERE synced = 0")
+    suspend fun countUnsynced(): Int
+
     @Query("SELECT COUNT(*) FROM latency_metrics")
+    suspend fun count(): Int
+}
+
+@Dao
+interface DailyStepTotalDao {
+
+    /**
+     * Records a step count for a day, keeping whichever figure is higher.
+     *
+     * Highest rather than latest, because the watch's daily counter resets at midnight and a
+     * reading that lands just after the reset would otherwise overwrite the whole day's total
+     * with a number near zero — the exact failure this table exists to prevent.
+     */
+    @Query(
+        """
+        INSERT INTO daily_step_totals (date, steps, updatedAtEpochMs)
+        VALUES (:date, :steps, :updatedAtEpochMs)
+        ON CONFLICT(date) DO UPDATE SET
+            steps = MAX(steps, excluded.steps),
+            updatedAtEpochMs = excluded.updatedAtEpochMs
+        """
+    )
+    suspend fun upsertMax(date: String, steps: Int, updatedAtEpochMs: Long)
+
+    @Query("SELECT steps FROM daily_step_totals WHERE date = :date")
+    suspend fun totalFor(date: String): Int?
+
+    /**
+     * The most recent day before [beforeDate] that has a total, newest first.
+     *
+     * A gap is normal — the app is not worn every day — so this looks back rather than assuming
+     * yesterday exists.
+     */
+    @Query("SELECT * FROM daily_step_totals WHERE date < :beforeDate ORDER BY date DESC LIMIT 1")
+    suspend fun mostRecentBefore(beforeDate: String): DailyStepTotalEntity?
+
+    @Query("DELETE FROM daily_step_totals WHERE date < :cutoffDate")
+    suspend fun deleteOlderThan(cutoffDate: String): Int
+
+    @Query("SELECT COUNT(*) FROM daily_step_totals")
     suspend fun count(): Int
 }
 
@@ -119,6 +165,9 @@ interface AlertEventDao {
 
     @Query("DELETE FROM alert_events WHERE firedAtEpochMs < :cutoffEpochMs AND synced = 1")
     suspend fun deleteSyncedOlderThan(cutoffEpochMs: Long): Int
+
+    @Query("SELECT COUNT(*) FROM alert_events WHERE synced = 0")
+    suspend fun countUnsynced(): Int
 
     @Query("SELECT COUNT(*) FROM alert_events")
     suspend fun count(): Int

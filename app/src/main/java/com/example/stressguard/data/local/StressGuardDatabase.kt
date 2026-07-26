@@ -19,8 +19,9 @@ import androidx.room.TypeConverters
         StressPredictionEntity::class,
         LatencyMetricEntity::class,
         AlertEventEntity::class,
+        DailyStepTotalEntity::class,
     ],
-    version = 1,
+    version = 2,
     exportSchema = false,
 )
 @TypeConverters(Converters::class)
@@ -29,6 +30,7 @@ abstract class StressGuardDatabase : RoomDatabase() {
     abstract fun stressPredictions(): StressPredictionDao
     abstract fun latencyMetrics(): LatencyMetricDao
     abstract fun alertEvents(): AlertEventDao
+    abstract fun dailyStepTotals(): DailyStepTotalDao
 
     companion object {
         private const val TAG = "STRESS_DB"
@@ -44,10 +46,13 @@ abstract class StressGuardDatabase : RoomDatabase() {
 
         private fun build(context: Context): StressGuardDatabase =
             Room.databaseBuilder(context, StressGuardDatabase::class.java, NAME)
-                // No migrations yet, and this is version 1. Destructive fallback is the right
-                // trade while the schema is still moving: a developer reinstalling should not
-                // hit a crash, and no production data exists to lose. Add real migrations
-                // before anyone relies on their history surviving an update.
+                // No migrations yet. Destructive fallback is the right trade while the schema is
+                // still moving: a developer reinstalling should not hit a crash, and no production
+                // data exists to lose. Add real migrations before anyone relies on their history
+                // surviving an update.
+                //
+                // Version 2 added daily_step_totals, so an existing install is wiped on upgrade.
+                // Acceptable here, and unavoidable without a migration.
                 .fallbackToDestructiveMigration()
                 .build()
 

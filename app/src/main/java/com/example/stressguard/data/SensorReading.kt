@@ -31,11 +31,14 @@ data class SensorReading(
      */
     val sampleAgeMs: Long = 0L,
     /**
-     * True when a value is physiologically believable but outside the range the model was
-     * trained on. The trees clamp to their outermost leaf there, so the prediction is an
-     * extrapolation rather than an interpolation. Recorded rather than hidden: live wearable
-     * heart rate exceeds the training maximum during ordinary activity, and a report that
-     * quotes holdout accuracy should say how often it was predicting outside that range.
+     * True when a value in **this raw sample** is physiologically believable but outside the range
+     * the model was trained on.
+     *
+     * An ingest-time signal, useful for logging what the watch sent. It is deliberately *not* what
+     * the dashboard shows or what history stores: `StressPipeline` recomputes the flag against the
+     * values the model actually received, and for steps those differ — the watch reports a count
+     * since midnight while the model is given a full-day activity level (see `StepHistory`). The
+     * two fields answer different questions and should not be conflated.
      */
     val outOfTrainingRange: Boolean,
 ) {

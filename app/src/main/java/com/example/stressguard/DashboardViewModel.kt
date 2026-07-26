@@ -6,10 +6,15 @@ import android.os.SystemClock
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.stressguard.data.AlertDecision
+import com.example.stressguard.data.AuthRepository
 import com.example.stressguard.data.LatencySummary
 import com.example.stressguard.data.PipelineResult
 import com.example.stressguard.data.SensorReading
 import com.example.stressguard.data.StressPipeline
+import com.example.stressguard.data.SupabaseConfig
+import com.example.stressguard.data.sync.SyncScheduler
+import com.example.stressguard.data.sync.SyncState
+import com.example.stressguard.data.sync.SyncStatus
 import com.example.stressguard.data.local.RETENTION_DAYS
 import com.example.stressguard.data.local.StressGuardDatabase
 import com.example.stressguard.data.local.purgeOlderThan
@@ -59,6 +64,8 @@ data class DashboardUiState(
     val latency: LatencySummary = LatencySummary.EMPTY,
     val lastAlertAtEpochMs: Long? = null,
     val lastDecision: AlertDecision? = null,
+    /** How much local history is still waiting for Supabase, and when it last got there. */
+    val sync: SyncStatus = SyncStatus.UNKNOWN,
     val error: String? = null,
 ) {
     /** True when the displayed watch reading is too old to describe the wearer's present state. */
@@ -94,6 +101,16 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
         viewModelScope.launch { purgeOldHistory() }
         viewModelScope.launch { tickReadingAge() }
         refreshWatchLink()
+
+        // Idempotent, so calling it on every dashboard launch is fine. Scheduled here rather than
+        // from StressPipeline: plan §4 and §25 both require sync to stay off the real-time path,
+        // and enqueuing work per prediction would put it right beside one.
+        SyncScheduler.ensureScheduled(application)
+    }
+
+    /** Asks for a sync now, for the moments where waiting half an hour would be wrong. */
+    fun syncNow() {
+        SyncScheduler.syncNow(getApplication())
     }
 
     /**
@@ -197,7 +214,10 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
                     watchLink =
                         if (result.simulated) current.watchLink else WatchLink.STREAMING,
                     prediction = result.prediction,
-                    outOfTrainingRange = reading.outOfTrainingRange,
+                    // The pipeline's flag, not the reading's: it reflects the values the model was
+                    // actually given, which for steps is a full-day activity level rather than the
+                    // partial count the watch reported.
+                    outOfTrainingRange = result.extrapolating,
                     readingAgeMs =
                         if (result.simulated) null
                         else SystemClock.elapsedRealtime() - measuredAt,
@@ -220,9 +240,14 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
     private suspend fun tickReadingAge() {
         while (true) {
             delay(AGE_TICK_MS)
-            val measuredAt = measuredAtElapsedMs ?: continue
+            // Sync status is refreshed on the same tick: the worker drains the queue from another
+            // component entirely, so there is no event here to hang a refresh off.
+            val sync = readSyncStatus()
+            val measuredAt = measuredAtElapsedMs
             _state.value = _state.value.copy(
-                readingAgeMs = SystemClock.elapsedRealtime() - measuredAt
+                sync = sync,
+                readingAgeMs = measuredAt?.let { SystemClock.elapsedRealtime() - it }
+                    ?: _state.value.readingAgeMs,
             )
         }
     }
@@ -231,8 +256,26 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
         _state.value = _state.value.copy(
             latency = pipeline.latencySummary(),
             lastAlertAtEpochMs = pipeline.lastAlertAtEpochMs(),
+            sync = readSyncStatus(),
         )
     }
+
+    /**
+     * Counts what is still queued for Supabase.
+     *
+     * Read from the database rather than tracked in memory, because the worker runs in a different
+     * component and may have drained the queue since this ViewModel last looked.
+     */
+    private suspend fun readSyncStatus(): SyncStatus = runCatching {
+        SyncStatus(
+            pending = database.stressPredictions().countUnsynced() +
+                database.latencyMetrics().countUnsynced() +
+                database.alertEvents().countUnsynced(),
+            lastSuccessEpochMs = SyncState(getApplication()).lastSuccessEpochMs,
+            signedIn = AuthRepository.currentUser != null,
+            backendConfigured = SupabaseConfig.isBackendConfigured,
+        )
+    }.getOrDefault(SyncStatus.UNKNOWN)
 
     private suspend fun purgeOldHistory() {
         runCatching {

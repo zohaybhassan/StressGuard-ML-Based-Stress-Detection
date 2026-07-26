@@ -95,6 +95,10 @@ dependencies {
     implementation(libs.androidx.room.ktx)
     ksp(libs.androidx.room.compiler)
 
+    // WorkManager: drains the local queues to Supabase. Deliberately outside the alert path --
+    // plan §4 and §25 both require that detection never waits on the network.
+    implementation(libs.androidx.work.runtime.ktx)
+
     testImplementation(libs.junit)
     testImplementation(libs.kotlinx.coroutines.test)
     // Real org.json for unit tests: the one bundled in android.jar is a stub that throws,
