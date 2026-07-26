@@ -53,6 +53,10 @@ dependencies {
     implementation(libs.androidx.core.splashscreen)
     implementation("com.google.android.gms:play-services-wearable:18.1.0")
     implementation("androidx.health:health-services-client:1.0.0-beta03")
+    // The suspend wrappers around Health Services' ListenableFuture-returning *Async methods
+    // live in the main artifact but need a coroutine scope to call from. Using them avoids
+    // putting Guava on this module's compile classpath just to discard a Future.
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.9.0")
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
