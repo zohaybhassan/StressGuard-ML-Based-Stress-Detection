@@ -123,7 +123,14 @@ class HomeDashboardActivity : AppCompatActivity() {
 
     private fun renderSource(state: DashboardUiState) {
         when (state.source) {
-            ReadingSource.WATCH -> {
+            // "Watch Connected" beside a number that has not changed in minutes is the same
+            // conflation as before, one step further along: the link is up but the sensor has
+            // stopped producing, which is what happens the moment the watch leaves the wrist.
+            ReadingSource.WATCH -> if (state.isReadingStale) {
+                tvConnectionState.text = state.sourceDetail
+                chipConnectionState.text = "Watch Idle"
+                chipConnectionState.setTextColor(Color.parseColor("#F9A825"))
+            } else {
                 tvConnectionState.text = state.sourceDetail
                 chipConnectionState.text = "Watch Connected"
                 chipConnectionState.setTextColor(Color.parseColor("#2E7D32"))
@@ -190,7 +197,14 @@ class HomeDashboardActivity : AppCompatActivity() {
 
     /** Latency and last-alert are surfaced here rather than in a new card, per the plan. */
     private fun buildDetailLine(state: DashboardUiState): String = buildString {
-        append(state.sourceDetail.ifBlank { "Reading received" })
+        val ageMs = state.readingAgeMs
+        if (state.isReadingStale && ageMs != null) {
+            // Replaces "Watch data live", which stops being true the moment the watch stops
+            // sending, and gives the age so the reading can be judged rather than assumed.
+            append("Last reading ").append(ageMs / 1000).append("s ago")
+        } else {
+            append(state.sourceDetail.ifBlank { "Reading received" })
+        }
 
         state.latency.latestReceiveToPredictionMs?.let { latest ->
             append("  •  ").append(latest).append(" ms")

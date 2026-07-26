@@ -36,8 +36,10 @@ import androidx.health.services.client.unregisterMeasureCallback
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import androidx.health.services.client.data.Availability
@@ -57,6 +59,16 @@ class MainActivity : ComponentActivity(), SensorEventListener {
 
     // UI State for Jetpack Compose
     private var displayState by mutableStateOf("Waiting for permissions...")
+
+    /**
+     * A condition that overrides the normal readout: a missing permission, a watch that cannot
+     * measure heart rate, no reachable phone.
+     *
+     * Held here rather than written straight to [displayState] because the staleness ticker
+     * repaints on a timer, and would otherwise wipe whichever message was on screen a few
+     * seconds after it appeared. One writer for the display, several sources for what it says.
+     */
+    private var statusNote: String? = null
 
     // Variables to hold the live data
     private var currentHr: Int = 0
@@ -81,6 +93,19 @@ class MainActivity : ComponentActivity(), SensorEventListener {
      */
     private var lastSentAtElapsedMs = 0L
 
+    /**
+     * When the last heart rate sample actually arrived.
+     *
+     * Nothing polls the sensor: Health Services pushes samples on its own schedule, and on this
+     * watch that schedule is irregular. Without recording the arrival time there is no way to
+     * tell a heart rate measured a second ago from one measured a minute ago, and both were
+     * being displayed -- and transmitted -- as though current.
+     */
+    private var lastHrAtElapsedMs = 0L
+
+    /** Repaints the staleness age while the app is visible; see [startStalenessTicker]. */
+    private var stalenessTicker: Job? = null
+
     // Permission Launcher for both sensors
     private val permissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
@@ -98,7 +123,8 @@ class MainActivity : ComponentActivity(), SensorEventListener {
                 if (!activityGranted) add("steps")
             }.joinToString(" and ")
             Log.w(TAG, "permission denied for $missing")
-            displayState = "Permission needed for $missing.\nGrant it in Settings, then reopen."
+            statusNote = "Permission needed for $missing.\nGrant it in Settings, then reopen."
+            refreshDisplay()
         }
     }
 
@@ -141,6 +167,14 @@ class MainActivity : ComponentActivity(), SensorEventListener {
             Log.i(TAG, "permissions now granted; starting sensors")
             startSensors()
         }
+        startStalenessTicker()
+    }
+
+    override fun onPause() {
+        super.onPause()
+        // Nothing to age while the face is not being looked at.
+        stalenessTicker?.cancel()
+        stalenessTicker = null
     }
 
     private fun hasSensorPermissions(): Boolean {
@@ -157,7 +191,8 @@ class MainActivity : ComponentActivity(), SensorEventListener {
     }
 
     private fun startSensors() {
-        displayState = "Starting sensors..."
+        statusNote = "Starting sensors..."
+        refreshDisplay()
 
         // 1. Start the Live Step Counter
         stepSensor?.let {
@@ -173,9 +208,15 @@ class MainActivity : ComponentActivity(), SensorEventListener {
                 // The usual reason nothing is sent: the watch is not on a wrist, so heart rate
                 // never becomes available and the currentHr > 0 gate is never satisfied.
                 Log.i(TAG, "heart rate availability: $availability")
-                if (availability.toString().contains("UNAVAILABLE", ignoreCase = true)) {
-                    displayState = "Wear the watch to read heart rate"
-                }
+                statusNote =
+                    if (availability.toString().contains("UNAVAILABLE", ignoreCase = true)) {
+                        "Wear the watch to read heart rate"
+                    } else {
+                        // Cleared on ACQUIRING or AVAILABLE, so the readout comes back by
+                        // itself once the sensor recovers.
+                        null
+                    }
+                refreshDisplay()
             }
 
             override fun onDataReceived(data: DataPointContainer) {
@@ -184,8 +225,19 @@ class MainActivity : ComponentActivity(), SensorEventListener {
 
                 val realHeartRate = hrData.last().value
                 if (realHeartRate > 0.0) {
+                    val now = SystemClock.elapsedRealtime()
+                    // The one place a heart rate enters the app, logged with the gap since the
+                    // previous sample. The cadence is Health Services' choice, not ours, and it
+                    // was previously unobservable: only sends were logged, and those were also
+                    // triggered by the step sensor, so a frozen heart rate looked like a live one.
+                    if (lastHrAtElapsedMs == 0L) {
+                        Log.d(TAG, "first heart rate: $realHeartRate")
+                    } else {
+                        Log.d(TAG, "heart rate $realHeartRate, ${now - lastHrAtElapsedMs} ms after the last")
+                    }
                     currentHr = realHeartRate.toInt()
-                    updateUIAndSendData() // Route through master sync
+                    lastHrAtElapsedMs = now
+                    sendFreshReading()
                 } else {
                     Log.d(TAG, "heart rate reported as 0; still acquiring")
                 }
@@ -194,6 +246,11 @@ class MainActivity : ComponentActivity(), SensorEventListener {
         measureCallback = callback
         measureClient.registerMeasureCallback(DataType.HEART_RATE_BPM, callback)
         Log.i(TAG, "sensors started; waiting for a heart rate reading")
+
+        // The interim message has served its purpose; fall through to the real readout rather
+        // than waiting for the first availability callback, which may never come.
+        statusNote = null
+        refreshDisplay()
 
         runDiagnostics(measureClient)
     }
@@ -225,7 +282,8 @@ class MainActivity : ComponentActivity(), SensorEventListener {
                             "this watch does NOT support on-demand heart rate via Health Services, " +
                                 "so no reading will ever arrive through MeasureClient"
                         )
-                        displayState = "This watch cannot measure\nheart rate on demand"
+                        statusNote = "This watch cannot measure\nheart rate on demand"
+                        refreshDisplay()
                     }
                 }
                 .onFailure { Log.w(TAG, "could not read measure capabilities", it) }
@@ -258,7 +316,9 @@ class MainActivity : ComponentActivity(), SensorEventListener {
             // The raw value counts from boot; convert it to steps taken today, which is what
             // the model's "Daily Steps" feature means.
             currentSteps = dailySteps.today(event.values[0].toLong())
-            updateUIAndSendData() // Route through master sync
+            // Deliberately does not transmit. Steps ride along with the next heart rate sample;
+            // see sendFreshReading for why a step event must not put a reading on the wire.
+            refreshDisplay()
         }
     }
 
@@ -267,24 +327,80 @@ class MainActivity : ComponentActivity(), SensorEventListener {
     }
 
     // --------------------------------------------------------
-    // Master Updater: Syncs Compose UI and Phone BLE
+    // Display and transmission, kept separate
     // --------------------------------------------------------
-    private fun updateUIAndSendData() {
-        if (currentHr <= 0) {
-            // Steps are arriving but heart rate is not. Say which, rather than "Calibrating",
-            // which gave no clue whether the sensor, the permission or the wrist was the issue.
-            displayState = "Waiting for heart rate\nSteps: $currentSteps\nWear the watch snugly"
-            return
-        }
 
-        // Always refresh the watch face; it costs nothing and shows the sensors are alive.
-        displayState = "HR: $currentHr BPM\nSteps: $currentSteps\nSleep: $dummySleep"
+    /** How long ago the current heart rate was measured, or [Long.MAX_VALUE] if never. */
+    private fun heartRateAgeMs(): Long =
+        if (lastHrAtElapsedMs == 0L) Long.MAX_VALUE
+        else SystemClock.elapsedRealtime() - lastHrAtElapsedMs
+
+    /**
+     * Repaints the watch face, showing the heart rate's age once it stops being current.
+     *
+     * A number with no age on it reads as a live measurement. It often is not: the sensor stops
+     * producing samples the moment the watch loses skin contact, and Health Services only
+     * measures while this app is in the foreground, so a screen timeout ends measurement too.
+     */
+    private fun refreshDisplay() {
+        statusNote?.let { displayState = it; return }
+
+        val ageMs = heartRateAgeMs()
+        displayState = when {
+            // Steps may be arriving while heart rate is not. Say which, rather than
+            // "Calibrating", which gave no clue whether the sensor, the permission or the
+            // wrist was the issue.
+            currentHr <= 0 ->
+                "Waiting for heart rate\nSteps: $currentSteps\nWear the watch snugly"
+
+            ageMs > HR_STALE_AFTER_MS ->
+                "HR: $currentHr (${ageMs / 1000}s old)\nSteps: $currentSteps\nKeep the watch on"
+
+            else -> "HR: $currentHr BPM\nSteps: $currentSteps\nSleep: $dummySleep"
+        }
+    }
+
+    /**
+     * Transmits a reading, and is called only when a heart rate sample has just arrived.
+     *
+     * The step callback used to share this path. Because the payload is built from the last
+     * known value of each field, a step event retransmitted whatever heart rate was current
+     * when it was last measured -- so walking past the throttle re-sent a minute-old reading
+     * repeatedly. The logs showed 89 BPM sent five times across 70 seconds while the step count
+     * climbed 16 to 57.
+     *
+     * That is not cosmetic. The phone treats every message as an independent reading, so one
+     * measurement became five predictions: five rows stored, five latency samples, and -- worst
+     * -- five entries in the alert window. The rule is "3 of the last 5 predictions are high
+     * stress", which exists to require a sustained trend; duplicates of a single measurement
+     * satisfied it on their own.
+     */
+    private fun sendFreshReading() {
+        refreshDisplay()
 
         val now = SystemClock.elapsedRealtime()
         if (now - lastSentAtElapsedMs < MIN_SEND_INTERVAL_MS) return
         lastSentAtElapsedMs = now
 
         sendRealDataToPhone("$currentHr|$currentSteps")
+    }
+
+    /**
+     * Ages the displayed heart rate on a timer while the app is visible.
+     *
+     * Both sensor callbacks are the only other things that repaint, so if the watch comes off
+     * the wrist and the wearer stops moving, nothing fires again and the last heart rate stays
+     * on screen indefinitely looking current. This is what makes the staleness in
+     * [refreshDisplay] actually appear.
+     */
+    private fun startStalenessTicker() {
+        stalenessTicker?.cancel()
+        stalenessTicker = lifecycleScope.launch {
+            while (true) {
+                delay(STALENESS_TICK_MS)
+                refreshDisplay()
+            }
+        }
     }
 
     // --------------------------------------------------------
@@ -300,7 +416,8 @@ class MainActivity : ComponentActivity(), SensorEventListener {
                     // The commonest failure and previously silent: the watch has no companion
                     // reachable, so the loop below simply did not execute.
                     Log.w(TAG, "no connected phone; $sensorData not sent")
-                    displayState = "Phone not connected\nHR: $currentHr BPM"
+                    statusNote = "Phone not connected\nHR: $currentHr BPM"
+                    refreshDisplay()
                     return@addOnSuccessListener
                 }
 
@@ -308,6 +425,12 @@ class MainActivity : ComponentActivity(), SensorEventListener {
                     messageClient.sendMessage(node.id, pathVitals, encryptedPayload)
                         .addOnSuccessListener {
                             Log.d(TAG, "sent $sensorData to ${node.displayName}")
+                            // A send proving the link works clears any earlier complaint that
+                            // it did not, so the watch does not keep claiming the phone is gone.
+                            if (statusNote != null) {
+                                statusNote = null
+                                refreshDisplay()
+                            }
                         }
                         .addOnFailureListener { error ->
                             // Typically the phone app not being installed, so nothing is
@@ -365,10 +488,21 @@ class MainActivity : ComponentActivity(), SensorEventListener {
         private const val TAG = "WEAR_VITALS"
 
         /**
-         * Minimum gap between messages. The step counter fires far more often than this, and
-         * each send costs the phone an inference, a database write and an alert evaluation.
+         * Minimum gap between messages. Health Services can push heart rate samples faster than
+         * this, and each send costs the phone an inference, a database write and an alert
+         * evaluation. It is a floor, not a cadence: there is no upper bound, because nothing
+         * polls the sensor and a watch off the wrist produces nothing to send.
          */
         private const val MIN_SEND_INTERVAL_MS = 5_000L
+
+        /**
+         * Past this, the displayed heart rate is labelled with its age rather than shown as a
+         * bare number. Half a minute is already too old to describe someone's present stress.
+         */
+        private const val HR_STALE_AFTER_MS = 30_000L
+
+        /** How often the age on screen is recomputed. */
+        private const val STALENESS_TICK_MS = 5_000L
     }
 }
 

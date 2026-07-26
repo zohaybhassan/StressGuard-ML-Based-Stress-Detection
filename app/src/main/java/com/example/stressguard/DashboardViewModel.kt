@@ -19,6 +19,7 @@ import com.example.stressguard.data.local.StressPredictionEntity
 import com.example.stressguard.data.local.purgeOlderThan
 import com.google.android.gms.wearable.Wearable
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -53,11 +54,21 @@ data class DashboardUiState(
     val prediction: StressPrediction? = null,
     /** The model extrapolated for this reading; see SensorReading.outOfTrainingRange. */
     val outOfTrainingRange: Boolean = false,
+    /**
+     * How long ago the displayed watch reading arrived, refreshed on a timer. Null for debug
+     * samples, where an age would be meaningless.
+     */
+    val readingAgeMs: Long? = null,
     val latency: LatencySummary = LatencySummary.EMPTY,
     val lastAlertAtEpochMs: Long? = null,
     val lastDecision: AlertDecision? = null,
     val error: String? = null,
-)
+) {
+    /** True when the displayed watch reading is too old to describe the wearer's present state. */
+    val isReadingStale: Boolean
+        get() = source == ReadingSource.WATCH &&
+            (readingAgeMs ?: 0L) >= DashboardViewModel.STALE_READING_MS
+}
 
 /**
  * Owns the real-time path: reading in, prediction out, stored, timed, and possibly alerted.
@@ -83,6 +94,9 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
     /** Smoothing window. Survives rotation, which is the whole reason this class exists. */
     private val recentClassIndices = ArrayDeque<Int>()
 
+    /** Arrival time of the displayed watch reading, for [tickReadingAge]. */
+    private var lastWatchReadingAtElapsedMs: Long? = null
+
     private val _state = MutableStateFlow(DashboardUiState())
     val state: StateFlow<DashboardUiState> = _state.asStateFlow()
 
@@ -92,7 +106,27 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
         }
         viewModelScope.launch { refreshDerivedState() }
         viewModelScope.launch { purgeOldHistory() }
+        viewModelScope.launch { tickReadingAge() }
         refreshWatchLink()
+    }
+
+    /**
+     * Ages the displayed reading on a timer.
+     *
+     * State is otherwise only emitted when a reading arrives, so a watch that stops sending
+     * leaves its last heart rate on screen indefinitely, reading as current. The watch stops
+     * sending for ordinary reasons -- it comes off the wrist, or its screen times out, since
+     * Health Services only measures heart rate while the watch app is in the foreground -- so
+     * this is the normal case rather than an error case, and it needs to be visible.
+     */
+    private suspend fun tickReadingAge() {
+        while (true) {
+            delay(AGE_TICK_MS)
+            val arrivedAt = lastWatchReadingAtElapsedMs ?: continue
+            _state.value = _state.value.copy(
+                readingAgeMs = SystemClock.elapsedRealtime() - arrivedAt
+            )
+        }
     }
 
     /**
@@ -131,6 +165,7 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
     }
 
     private suspend fun onWatchReading(reading: SensorReading) {
+        lastWatchReadingAtElapsedMs = reading.receivedAtElapsedMs
         _state.value = _state.value.copy(
             heartRate = reading.heartRate,
             steps = reading.dailySteps,
@@ -138,6 +173,7 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
             sourceDetail = "Watch data live",
             watchLink = WatchLink.STREAMING,
             outOfTrainingRange = reading.outOfTrainingRange,
+            readingAgeMs = 0L,
         )
         predict(reading)
     }
@@ -157,6 +193,8 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
             return
         }
 
+        // A debug sample has no watch behind it, so there is no arrival to age.
+        lastWatchReadingAtElapsedMs = null
         _state.value = _state.value.copy(
             heartRate = heartRate,
             steps = steps,
@@ -165,6 +203,7 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
             source = ReadingSource.SIMULATED,
             sourceDetail = "Debug sample: $name",
             outOfTrainingRange = reading.outOfTrainingRange,
+            readingAgeMs = null,
         )
         viewModelScope.launch { predict(reading, sleepOverride = sleepHours) }
     }
@@ -270,6 +309,15 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
 
     companion object {
         private const val TAG = "VITALS"
+
+        /** How often [tickReadingAge] recomputes the on-screen age. */
+        private const val AGE_TICK_MS = 5_000L
+
+        /**
+         * Past this, the reading on screen is labelled with its age. Matches the watch's own
+         * staleness threshold so the two devices do not disagree about what counts as current.
+         */
+        const val STALE_READING_MS = 30_000L
 
         /**
          * Used when Health Connect holds no sleep record, so a missing provider does not stop
