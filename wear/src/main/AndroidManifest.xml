@@ -2,7 +2,21 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
     <uses-permission android:name="android.permission.WAKE_LOCK" />
-    <uses-permission android:name="android.permission.BODY_SENSORS" />
+
+    <!--
+        Heart rate access changed in Android 15 (API 35): BODY_SENSORS was deprecated in favour
+        of the granular health permission below. This module targets API 36, so on a Wear OS 5+
+        watch the platform expects READ_HEART_RATE and BODY_SENSORS is not offered at all,
+        which is why no heart rate permission appeared in the watch's app settings.
+
+        Both are declared: BODY_SENSORS capped at API 34 for older watches, READ_HEART_RATE for
+        current ones. The runtime request picks whichever applies, in MainActivity.
+    -->
+    <uses-permission
+        android:name="android.permission.BODY_SENSORS"
+        android:maxSdkVersion="34" />
+    <uses-permission android:name="android.permission.health.READ_HEART_RATE" />
+
     <uses-permission android:name="android.permission.ACTIVITY_RECOGNITION"/>
 
     <uses-feature android:name="android.hardware.type.watch" />

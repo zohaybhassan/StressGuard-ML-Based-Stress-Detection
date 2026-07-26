@@ -7,6 +7,7 @@ import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
+import android.os.Build
 import android.os.Bundle
 import android.os.SystemClock
 import android.util.Log
@@ -81,7 +82,7 @@ class MainActivity : ComponentActivity(), SensorEventListener {
     private val permissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
     ) { permissions ->
-        val bodySensorsGranted = permissions[Manifest.permission.BODY_SENSORS] ?: false
+        val bodySensorsGranted = permissions[heartRatePermission] ?: false
         val activityGranted = permissions[Manifest.permission.ACTIVITY_RECOGNITION] ?: false
 
         if (bodySensorsGranted && activityGranted) {
@@ -115,7 +116,9 @@ class MainActivity : ComponentActivity(), SensorEventListener {
         if (hasSensorPermissions()) {
             startSensors()
         } else {
-            permissionLauncher.launch(arrayOf(Manifest.permission.BODY_SENSORS, Manifest.permission.ACTIVITY_RECOGNITION))
+            permissionLauncher.launch(
+                arrayOf(heartRatePermission, Manifest.permission.ACTIVITY_RECOGNITION)
+            )
         }
 
         setContent { WearApp(displayState) }
@@ -138,15 +141,15 @@ class MainActivity : ComponentActivity(), SensorEventListener {
     }
 
     private fun hasSensorPermissions(): Boolean {
-        val body = ContextCompat.checkSelfPermission(this, Manifest.permission.BODY_SENSORS)
+        val heartRate = ContextCompat.checkSelfPermission(this, heartRatePermission)
         val activity = ContextCompat.checkSelfPermission(this, Manifest.permission.ACTIVITY_RECOGNITION)
-        if (body != PackageManager.PERMISSION_GRANTED) {
-            Log.w(TAG, "BODY_SENSORS not granted; heart rate cannot be read and nothing will be sent")
+        if (heartRate != PackageManager.PERMISSION_GRANTED) {
+            Log.w(TAG, "$heartRatePermission not granted; heart rate cannot be read and nothing will be sent")
         }
         if (activity != PackageManager.PERMISSION_GRANTED) {
             Log.w(TAG, "ACTIVITY_RECOGNITION not granted; step count will stay at 0")
         }
-        return body == PackageManager.PERMISSION_GRANTED &&
+        return heartRate == PackageManager.PERMISSION_GRANTED &&
             activity == PackageManager.PERMISSION_GRANTED
     }
 
@@ -280,6 +283,24 @@ class MainActivity : ComponentActivity(), SensorEventListener {
             }
         }
     }
+
+    /**
+     * Which permission actually governs heart rate on this watch.
+     *
+     * `BODY_SENSORS` was deprecated in Android 15 in favour of the granular health permission.
+     * Because this module targets API 36, a Wear OS 5+ watch does not offer `BODY_SENSORS` at
+     * all -- it never appears in the app's settings, so a user told to "grant it in settings"
+     * finds nothing to grant. Requesting the right one per platform version fixes that.
+     *
+     * A string literal rather than a `Manifest.permission` constant: the constant is not
+     * available at every compile SDK, and the value is stable.
+     */
+    private val heartRatePermission: String
+        get() = if (Build.VERSION.SDK_INT >= 35) {
+            "android.permission.health.READ_HEART_RATE"
+        } else {
+            Manifest.permission.BODY_SENSORS
+        }
 
     companion object {
         private const val TAG = "WEAR_VITALS"
