@@ -20,15 +20,20 @@
     <!--
         Reading heart rate while the app is not in the foreground is a separate grant from reading
         it at all, in the same way background location is separate from location. Without it
-        Health Services accepts a capabilities query but refuses setPassiveListenerService with
-        "SecurityException: Missing permissions", so the app can ask what the watch supports and
-        then not be allowed to use it.
+        Health Services accepts the registration, delivers for a few minutes and then calls
+        onPermissionLost; on this watch that took four minutes, which looks exactly like the watch
+        being taken off.
 
-        BODY_SENSORS_BACKGROUND is what Android 16 offers here. The health-permission equivalent,
-        READ_HEALTH_DATA_IN_BACKGROUND, is not present on this platform (checked with
-        `pm list permissions`), so there is nothing newer to prefer and no maxSdkVersion cap.
+        Each background permission is paired with the foreground one it extends, and is silently
+        auto-denied if that one is not held. So the split mirrors the pair above: BODY_SENSORS
+        with BODY_SENSORS_BACKGROUND up to API 34, READ_HEART_RATE with
+        READ_HEALTH_DATA_IN_BACKGROUND from API 35. Requesting BODY_SENSORS_BACKGROUND on API 36
+        is refused without a dialog, because BODY_SENSORS is capped at 34 above.
     -->
-    <uses-permission android:name="android.permission.BODY_SENSORS_BACKGROUND" />
+    <uses-permission
+        android:name="android.permission.BODY_SENSORS_BACKGROUND"
+        android:maxSdkVersion="34" />
+    <uses-permission android:name="android.permission.health.READ_HEALTH_DATA_IN_BACKGROUND" />
 
     <uses-permission android:name="android.permission.ACTIVITY_RECOGNITION"/>
 

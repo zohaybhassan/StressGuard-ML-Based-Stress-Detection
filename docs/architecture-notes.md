@@ -192,9 +192,20 @@ claim, so it is worth demonstrating in airplane mode rather than merely assertin
   app cannot tell a permission problem apart from a watch that is not being worn. Passive
   registration is better behaved and does throw `SecurityException: Missing permissions`, which is
   why `PassiveVitals.register` returns a boolean the caller records.
-- `BODY_SENSORS_BACKGROUND` is declared because reading heart rate outside the foreground is a
-  separate grant. Android 16 on this watch has no `READ_HEALTH_DATA_IN_BACKGROUND`, checked with
-  `pm list permissions`, so there is no newer health permission to prefer.
+- **Background heart rate is a second, separate grant**, and getting the wrong one is silent.
+  A background permission is auto-denied without a dialog unless the app already holds the
+  foreground permission it extends, so the pairing has to match: `BODY_SENSORS` with
+  `BODY_SENSORS_BACKGROUND` up to API 34, `READ_HEART_RATE` with
+  `READ_HEALTH_DATA_IN_BACKGROUND` from API 35. Requesting `BODY_SENSORS_BACKGROUND` on an API 36
+  watch is refused in about four seconds with no UI, because `BODY_SENSORS` is capped at 34.
+
+  Missing it does not fail at registration either: Health Services accepts the passive listener,
+  delivers for a few minutes, then calls `onPermissionLost` — four minutes on this watch, which
+  is indistinguishable from the watch being taken off.
+
+  `pm list permissions` alone is not a reliable way to check what a platform supports; it omitted
+  both `BODY_SENSORS_BACKGROUND` and `READ_HEALTH_DATA_IN_BACKGROUND` that `pm list permissions -g`
+  then listed.
 - Background readings are dropped rather than queued when the phone is out of Bluetooth range.
   A stress reading is only useful promptly, and a replayed one would be stamped with the wrong
   arrival time. Losing a window of readings is the accepted cost.

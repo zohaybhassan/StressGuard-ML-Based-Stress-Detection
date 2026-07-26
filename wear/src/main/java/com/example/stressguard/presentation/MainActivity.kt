@@ -118,6 +118,30 @@ class MainActivity : ComponentActivity(), SensorEventListener {
         }
     }
 
+    /**
+     * Asked for separately from the foreground permissions, and only once those are held.
+     *
+     * Denial is not fatal: the app keeps working while it is open, and only background collection
+     * is lost. That is worth saying out loud in the log rather than leaving someone to wonder why
+     * readings stop whenever the screen turns off.
+     */
+    private val backgroundPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        if (granted) {
+            Log.i(TAG, "background heart rate granted")
+        } else {
+            Log.w(
+                TAG,
+                "background heart rate denied; vitals will only arrive while this app is open"
+            )
+        }
+        // Registered either way. Without the grant Health Services withdraws it a few minutes
+        // later, and onPermissionLost records that plainly -- a better outcome than never trying
+        // and never knowing.
+        registerBackgroundCollection()
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen()
         super.onCreate(savedInstanceState)
@@ -246,20 +270,49 @@ class MainActivity : ComponentActivity(), SensorEventListener {
         statusNote = null
         refreshDisplay()
 
-        // 3. Make sure collection continues once this Activity is gone. Registering here rather
-        // than only from the boot receiver means the first run of the app switches background
-        // monitoring on, without the user having to reboot the watch for it to start.
-        //
-        // Deliberately NOT lifecycleScope. Registration is an IPC to Health Services that can take
-        // tens of seconds to connect, and a watch screen times out in about fifteen -- tying it to
-        // this Activity had the call cancelled partway through, so background monitoring silently
-        // never started and there was not even a log line to say so.
+        // 3. Make sure collection continues once this Activity is gone.
+        ensureBackgroundCollection()
+
+        runDiagnostics(measureClient)
+    }
+
+    /**
+     * Gets background collection going, asking for the extra permission it needs first.
+     *
+     * Reading heart rate while the app is not in the foreground is a separate grant from reading
+     * it at all, and Android will not honour it inside the same request as the foreground
+     * permission it depends on — bundled, it is silently denied. So it is asked for on its own,
+     * after the foreground grant has been confirmed.
+     *
+     * Skipping it does not fail loudly. Health Services accepts the registration, delivers for a
+     * few minutes, and then calls `onPermissionLost`; on this watch that took four minutes, which
+     * looks exactly like the watch being taken off.
+     */
+    private fun ensureBackgroundCollection() {
+        val permission = backgroundHeartRatePermission
+        if (permission != null &&
+            ContextCompat.checkSelfPermission(this, permission) != PackageManager.PERMISSION_GRANTED
+        ) {
+            Log.i(TAG, "requesting background heart rate access")
+            backgroundPermissionLauncher.launch(permission)
+            return
+        }
+        registerBackgroundCollection()
+    }
+
+    /**
+     * Registers with Health Services so vitals keep arriving once this Activity is gone.
+     *
+     * Deliberately NOT lifecycleScope. This is an IPC that took 52 seconds to complete on a
+     * Galaxy Watch 4, and a watch screen times out in about fifteen — tied to the Activity the
+     * call was cancelled partway through, so background monitoring silently never started and
+     * there was not even a log line to say so.
+     */
+    private fun registerBackgroundCollection() {
         val appContext = applicationContext
         CoroutineScope(Dispatchers.Default + SupervisorJob()).launch {
             PassiveVitalsStore(appContext).registered = PassiveVitals.register(appContext)
         }
-
-        runDiagnostics(measureClient)
     }
 
     /**
@@ -470,6 +523,25 @@ class MainActivity : ComponentActivity(), SensorEventListener {
             "android.permission.health.READ_HEART_RATE"
         } else {
             Manifest.permission.BODY_SENSORS
+        }
+
+    /**
+     * The permission for reading heart rate outside the foreground, or null where none is needed.
+     *
+     * Split at the same API level as [heartRatePermission], and for a hard reason rather than
+     * tidiness: a background permission is auto-denied — no dialog, immediate refusal — unless the
+     * app already holds the foreground permission it extends. `BODY_SENSORS_BACKGROUND` extends
+     * `BODY_SENSORS`, which this app deliberately does not hold above API 34, so on a modern watch
+     * it can never be granted. `READ_HEALTH_DATA_IN_BACKGROUND` is the one that pairs with
+     * `READ_HEART_RATE`.
+     *
+     * Background sensor access needed no separate grant before Android 13.
+     */
+    private val backgroundHeartRatePermission: String?
+        get() = when {
+            Build.VERSION.SDK_INT >= 35 -> "android.permission.health.READ_HEALTH_DATA_IN_BACKGROUND"
+            Build.VERSION.SDK_INT >= 33 -> "android.permission.BODY_SENSORS_BACKGROUND"
+            else -> null
         }
 
     companion object {
