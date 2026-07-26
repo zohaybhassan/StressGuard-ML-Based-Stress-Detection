@@ -1,40 +1,61 @@
 package com.example.stressguard
 
-import android.content.Intent
+import android.os.SystemClock
 import android.util.Log
+import com.example.stressguard.data.SensorReading
+import com.example.stressguard.data.SensorRepository
 import com.google.android.gms.wearable.MessageEvent
 import com.google.android.gms.wearable.WearableListenerService
 
+/**
+ * Receives vitals from the watch over the Wearable message channel.
+ *
+ * The arrival timestamp is taken first, before decryption and parsing, so the latency figures
+ * include the work this service does rather than starting the clock after it.
+ *
+ * Readings go to [SensorRepository] rather than a broadcast: the dashboard is in this same
+ * process, and a shared flow avoids serialising two integers into string extras only to parse
+ * them back out again.
+ */
 class VitalReceiverService : WearableListenerService() {
 
     override fun onMessageReceived(messageEvent: MessageEvent) {
         super.onMessageReceived(messageEvent)
+        if (messageEvent.path != VITALS_PATH) return
 
-        if (messageEvent.path == "/stress_vitals") {
-            try {
-                // 1. THE HACKER's VIEW: Print the raw, encrypted bytes as a string
-                // We use Base64 just so the unreadable bytes can be printed to the screen
-                val rawEncryptedString = android.util.Base64.encodeToString(messageEvent.data, android.util.Base64.NO_WRAP)
-                android.util.Log.w("SECURITY_AUDIT", "INTERCEPTED PAYLOAD (AES-128 Encrypted): $rawEncryptedString")
+        // First thing, before any processing: this is t=0 for the whole latency chain.
+        val receivedAtElapsedMs = SystemClock.elapsedRealtime()
+        val receivedAtEpochMs = System.currentTimeMillis()
 
-                // 2. Decrypt the AES bytes back into our readable string
-                val decryptedData = EncryptionUtil.decrypt(messageEvent.data)
-
-                // 3. THE SYSTEM'S VIEW: Print the clean data
-                android.util.Log.i("SECURITY_AUDIT", "SUCCESSFUL DECRYPTION (Plaintext): $decryptedData")
-
-                // Now split the string as normal and broadcast to the UI
-                val dataParts = decryptedData.split("|")
-                if (dataParts.size >= 2) {
-                    val broadcastIntent = Intent("STRESS_DATA_UPDATE")
-                    broadcastIntent.setPackage(packageName)
-                    broadcastIntent.putExtra("hr_value", dataParts[0])
-                    broadcastIntent.putExtra("steps_value", dataParts[1])
-                    sendBroadcast(broadcastIntent)
-                }
-            } catch (e: Exception) {
-                e.printStackTrace()
-            }
+        val payload = try {
+            EncryptionUtil.decrypt(messageEvent.data)
+        } catch (error: Exception) {
+            Log.w(TAG, "could not decrypt a watch message; dropping it", error)
+            return
         }
+
+        val reading = SensorReading.parse(payload, receivedAtElapsedMs, receivedAtEpochMs)
+        if (reading == null) {
+            // Malformed, or values no person produces. Dropped rather than fed to the model,
+            // where a bogus heart rate would yield a confident and meaningless prediction.
+            SensorRepository.recordRejected()
+            Log.w(TAG, "discarded an implausible or malformed reading")
+            return
+        }
+
+        if (reading.outOfTrainingRange) {
+            Log.d(
+                TAG,
+                "reading outside the trained range (hr=${reading.heartRate}, " +
+                    "steps=${reading.dailySteps}); the model will extrapolate"
+            )
+        }
+
+        SensorRepository.publish(reading)
+    }
+
+    companion object {
+        private const val TAG = "VITALS"
+        private const val VITALS_PATH = "/stress_vitals"
     }
 }

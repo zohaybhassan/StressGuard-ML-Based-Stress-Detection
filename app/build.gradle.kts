@@ -4,6 +4,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.serialization)
+    alias(libs.plugins.ksp)
 }
 
 /**
@@ -69,7 +70,9 @@ dependencies {
     implementation(libs.androidx.constraintlayout)
     implementation("com.google.android.gms:play-services-wearable:18.1.0")
     implementation("androidx.health.connect:connect-client:1.1.0-alpha07")
-    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.6.2")
+    implementation(libs.androidx.activity.ktx)
+    implementation(libs.androidx.lifecycle.runtime.ktx)
+    implementation(libs.androidx.lifecycle.viewmodel.ktx)
     implementation("com.microsoft.onnxruntime:onnxruntime-android:1.20.0")
 
     // Supabase: auth today, postgrest for profiles and stress history next.
@@ -86,6 +89,12 @@ dependencies {
 
     implementation(libs.kotlinx.coroutines.android)
 
+    // Room: local history. The alert path and the latency figures must survive with no
+    // network, so this is the durable store; Supabase syncs from it later.
+    implementation(libs.androidx.room.runtime)
+    implementation(libs.androidx.room.ktx)
+    ksp(libs.androidx.room.compiler)
+
     testImplementation(libs.junit)
     testImplementation(libs.kotlinx.coroutines.test)
     // Real org.json for unit tests: the one bundled in android.jar is a stub that throws,
@@ -93,4 +102,6 @@ dependencies {
     testImplementation("org.json:json:20240303")
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
+    androidTestImplementation(libs.androidx.room.testing)
+    androidTestImplementation(libs.kotlinx.coroutines.test)
 }

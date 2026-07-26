@@ -7,6 +7,12 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
+    <!-- Sustained-stress alerts. The haptic is the alert; the notification is a fallback for
+         when the app is backgrounded. POST_NOTIFICATIONS is runtime-granted from API 33, and
+         the alert degrades to haptic-only without it rather than failing. -->
+    <uses-permission android:name="android.permission.VIBRATE" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
     <uses-permission android:name="android.permission.health.READ_SLEEP" />
 
     <queries>

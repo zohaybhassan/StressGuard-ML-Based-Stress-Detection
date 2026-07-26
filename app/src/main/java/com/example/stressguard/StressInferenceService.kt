@@ -70,6 +70,14 @@ class StressInferenceService(context: Context) : AutoCloseable {
 
     private val sessions: List<Pair<StressModelMember, OrtSession>> by sessionsDelegate
 
+    /**
+     * Whether the ONNX graphs are already loaded.
+     *
+     * The first prediction pays for roughly 13.8 MB of model loading. Latency measurements
+     * separate that from steady state, because averaging the two together describes neither.
+     */
+    val isWarm: Boolean get() = sessionsDelegate.isInitialized()
+
     /** Builds the feature vector in the manifest's declared order, then predicts. */
     fun predict(profile: StressProfile, vitals: StressVitals): StressPrediction =
         predict(StressFeatureBuilder.buildVector(profile, vitals, modelInfo.featureNames))

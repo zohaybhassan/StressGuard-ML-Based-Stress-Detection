@@ -22,12 +22,43 @@
 ## Data Flow Today
 
 1. Watch sends heart rate and step data.
-2. `VitalReceiverService` decrypts and parses the message.
-3. The dashboard receives a broadcast and updates the UI.
+2. `VitalReceiverService` stamps the arrival time, decrypts, and parses into a `SensorReading`.
+   Implausible values are dropped; values outside the model's training ranges are kept and
+   flagged, because live heart rate exceeds the trained maximum during ordinary activity.
+3. The reading is published on `SensorRepository`, a `StateFlow`. Both the service and the
+   dashboard are in one process, so no broadcast is involved.
 4. Sleep data is requested from Health Connect when available, otherwise an assumed value is
    used so inference is not blocked.
 5. `StressFeatureBuilder` builds a 22-value vector in the order the model manifest declares.
 6. `StressInferenceService` runs the three ONNX graphs and averages their probabilities.
+7. `DashboardViewModel` stores the prediction, pushes its class into the smoothing window, and
+   asks `StressAlertManager` whether to alert.
+8. `LatencyTracker` records the timings for the whole pass.
+
+## Latency: what is and is not measured
+
+Timings run from the message arriving **on the phone** to the prediction, the UI update and the
+haptic. Watch-to-phone transmission is not included and cannot be without synchronising the two
+devices' clocks. Plan §12 names the first target "BLE receive to prediction"; what is measured
+is *arrival on the phone* to prediction. Say so in the report rather than let the figure imply
+end-to-end coverage.
+
+Averages exclude the first inference of a process, which loads roughly 13.8 MB of ONNX graphs.
+Cold and steady-state are stored separately (`LatencyMetricEntity.coldStart`) because an average
+over both describes neither.
+
+## Local storage
+
+`StressGuardDatabase` (Room) holds predictions, latency samples and alert events. It is the
+durable store for the real-time path: every write happens without a network, which is the point
+of the architecture, and Supabase syncs *from* here rather than being written to directly.
+
+Every table carries a `synced` flag with an `unsynced()` query, so the Phase 7 worker has a
+queue to drain. Retention deletes rows older than 30 days **only if already synced**, so a long
+spell offline cannot silently discard readings that never reached the backend.
+
+Alert cooldown state is read from the database rather than memory, so it survives a restart and
+cannot be bypassed by killing the app.
 
 ## Model Contract
 
@@ -56,21 +87,24 @@ Keep the real-time alert path fully local:
 
 Anything network-dependent must happen after the alert path.
 
+Every step above happens on device with no network. The design rule is the project's central
+claim, so it is worth demonstrating in airplane mode rather than merely asserting.
+
 ## Planned Next Layers
 
-- Typed sensor models with timestamps and validation of impossible values
-- Room storage for history and a sync queue -- nothing is persisted today
-- Latency tracking across the receive-to-alert path
-- Alert manager with smoothing and cooldown
-- Supabase persistence
-- Recommendation module
+- WorkManager sync worker to drain the `unsynced()` queues (the flags already exist)
+- Health checklist and the rule-based recommendation module
+- Trend charts over the stored prediction history
 - Supportive chatbot backend
+- Daily stress summaries
 
 ## Known Structural Gaps
 
-- No persistence of any kind beyond `SharedPreferences`, so no history, trends or alert state
-- No network layer and no `INTERNET` permission
-- `EncryptionUtil.kt` is duplicated byte-for-byte across both modules
+- `EncryptionUtil.kt` is duplicated byte-for-byte across both modules, with a hardcoded
+  AES/ECB key committed to the repository
+- `AuthRepository.signOut()` has no caller; there is no sign-out anywhere in the UI
+- Watch-side sleep is a hardcoded placeholder; only the phone's Health Connect read is real
+- Nothing syncs to Supabase yet except the profile, so local history stays on the device
 - Dead UI declared in `activity_home_dashboard.xml` with no listeners: `btnEmergency`,
   `bottomNavigation`, and the `nav_trends` / `nav_assistant` menu entries
 - Command-line Gradle builds require JDK 21; the machine's default JDK 26 is too new for

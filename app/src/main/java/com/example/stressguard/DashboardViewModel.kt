@@ -1,0 +1,232 @@
+package com.example.stressguard
+
+import android.app.Application
+import android.util.Log
+import android.os.SystemClock
+import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.viewModelScope
+import com.example.stressguard.data.AlertDecision
+import com.example.stressguard.data.LatencySample
+import com.example.stressguard.data.LatencySummary
+import com.example.stressguard.data.LatencyTracker
+import com.example.stressguard.data.SensorReading
+import com.example.stressguard.data.SensorRepository
+import com.example.stressguard.data.StressAlertManager
+import com.example.stressguard.data.StressAlertPolicy
+import com.example.stressguard.data.local.RETENTION_DAYS
+import com.example.stressguard.data.local.StressGuardDatabase
+import com.example.stressguard.data.local.StressPredictionEntity
+import com.example.stressguard.data.local.purgeOlderThan
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+
+/** Where the current reading came from, so the dashboard can label it honestly. */
+enum class ReadingSource { WAITING, WATCH, SIMULATED }
+
+data class DashboardUiState(
+    val heartRate: Int? = null,
+    val steps: Int? = null,
+    val sleepHours: Float? = null,
+    /** True when no Health Connect record existed and a default was substituted. */
+    val sleepAssumed: Boolean = false,
+    val source: ReadingSource = ReadingSource.WAITING,
+    val sourceDetail: String = "",
+    val prediction: StressPrediction? = null,
+    /** The model extrapolated for this reading; see SensorReading.outOfTrainingRange. */
+    val outOfTrainingRange: Boolean = false,
+    val latency: LatencySummary = LatencySummary.EMPTY,
+    val lastAlertAtEpochMs: Long? = null,
+    val lastDecision: AlertDecision? = null,
+    val error: String? = null,
+)
+
+/**
+ * Owns the real-time path: reading in, prediction out, stored, timed, and possibly alerted.
+ *
+ * This exists because two pieces of state must outlive the Activity. The smoothing window
+ * ([StressAlertPolicy.WINDOW] recent predictions) would reset on every rotation if it lived in
+ * the Activity, so turning the screen would silently postpone an alert. The ONNX service would
+ * likewise be closed and reloaded — 13.8 MB — on each configuration change.
+ *
+ * Nothing here needs the network. That is the point: plan §3 requires the whole
+ * receive → inference → alert path to work offline, and Supabase syncs from the local store
+ * afterwards.
+ */
+class DashboardViewModel(application: Application) : AndroidViewModel(application) {
+
+    private val database = StressGuardDatabase.get(application)
+    private val latencyTracker = LatencyTracker(database.latencyMetrics())
+    private val alertManager = StressAlertManager(application, database.alertEvents())
+
+    /** Created once and kept, rather than per-Activity. */
+    private var inference: StressInferenceService? = null
+
+    /** Smoothing window. Survives rotation, which is the whole reason this class exists. */
+    private val recentClassIndices = ArrayDeque<Int>()
+
+    private val _state = MutableStateFlow(DashboardUiState())
+    val state: StateFlow<DashboardUiState> = _state.asStateFlow()
+
+    init {
+        viewModelScope.launch {
+            SensorRepository.latest.filterNotNull().collect { onWatchReading(it) }
+        }
+        viewModelScope.launch { refreshDerivedState() }
+        viewModelScope.launch { purgeOldHistory() }
+    }
+
+    /** Called by the Activity once Health Connect has been consulted. */
+    fun setSleepHours(hours: Float?, assumed: Boolean = false) {
+        _state.value = _state.value.copy(sleepHours = hours, sleepAssumed = assumed)
+    }
+
+    private suspend fun onWatchReading(reading: SensorReading) {
+        _state.value = _state.value.copy(
+            heartRate = reading.heartRate,
+            steps = reading.dailySteps,
+            source = ReadingSource.WATCH,
+            sourceDetail = "Watch data live",
+            outOfTrainingRange = reading.outOfTrainingRange,
+        )
+        predict(reading)
+    }
+
+    /**
+     * Debug scenarios go down the same path as a real reading, so the latency figures and the
+     * alert rule are exercised by them. That is what makes them useful without a watch.
+     */
+    fun runDebugScenario(name: String, heartRate: Int, steps: Int, sleepHours: Float) {
+        val reading = SensorReading.from(
+            heartRate = heartRate,
+            dailySteps = steps,
+            receivedAtElapsedMs = SystemClock.elapsedRealtime(),
+            receivedAtEpochMs = System.currentTimeMillis(),
+        ) ?: run {
+            _state.value = _state.value.copy(error = "Debug scenario $name has implausible values")
+            return
+        }
+
+        _state.value = _state.value.copy(
+            heartRate = heartRate,
+            steps = steps,
+            sleepHours = sleepHours,
+            sleepAssumed = false,
+            source = ReadingSource.SIMULATED,
+            sourceDetail = "Debug sample: $name",
+            outOfTrainingRange = reading.outOfTrainingRange,
+        )
+        viewModelScope.launch { predict(reading, sleepOverride = sleepHours) }
+    }
+
+    private suspend fun predict(reading: SensorReading, sleepOverride: Float? = null) {
+        val profile = SessionManager.readProfile(getApplication()) ?: run {
+            _state.value = _state.value.copy(error = "PROFILE NEEDED")
+            return
+        }
+
+        val sleepHours = sleepOverride ?: _state.value.sleepHours ?: DEFAULT_SLEEP_HOURS
+        val vitals = StressVitals(reading.heartRate, reading.dailySteps, sleepHours)
+
+        try {
+            val service = inference ?: withContext(Dispatchers.Default) {
+                StressInferenceService(getApplication())
+            }.also { inference = it }
+
+            val sample = LatencySample(
+                receivedAtElapsedMs = reading.receivedAtElapsedMs,
+                receivedAtEpochMs = reading.receivedAtEpochMs,
+                coldStart = !service.isWarm,
+            )
+
+            val prediction = withContext(Dispatchers.Default) {
+                val features = StressFeatureBuilder.buildVector(
+                    profile, vitals, service.modelInfo.featureNames
+                )
+                sample.markPreprocessed()
+                service.predict(features).also { sample.markInferred() }
+            }
+
+            _state.value = _state.value.copy(prediction = prediction, error = null)
+            sample.markUiUpdated()
+
+            store(prediction, reading, sleepHours)
+
+            recentClassIndices.addLast(prediction.classIndex)
+            while (recentClassIndices.size > StressAlertPolicy.WINDOW) recentClassIndices.removeFirst()
+
+            val decision = alertManager.onPrediction(
+                recentClassIndices = recentClassIndices.toList(),
+                highStressClassIndex = service.modelInfo.classCount - 1,
+                modelVersion = prediction.modelVersion,
+            )
+            if (decision is AlertDecision.Fire) sample.markAlertFired()
+
+            latencyTracker.record(sample)
+            _state.value = _state.value.copy(lastDecision = decision)
+            refreshDerivedState()
+        } catch (error: Exception) {
+            Log.e(StressInferenceService.TAG, "prediction failed", error)
+            _state.value = _state.value.copy(error = "MODEL ERROR")
+        }
+    }
+
+    private suspend fun store(
+        prediction: StressPrediction,
+        reading: SensorReading,
+        sleepHours: Float,
+    ) {
+        runCatching {
+            database.stressPredictions().insert(
+                StressPredictionEntity(
+                    recordedAtEpochMs = reading.receivedAtEpochMs,
+                    label = prediction.label,
+                    classIndex = prediction.classIndex,
+                    confidence = prediction.confidence,
+                    probabilities = prediction.probabilities.toList(),
+                    modelVersion = prediction.modelVersion,
+                    heartRate = reading.heartRate,
+                    dailySteps = reading.dailySteps,
+                    sleepHours = sleepHours,
+                    outOfTrainingRange = reading.outOfTrainingRange,
+                )
+            )
+        }.onFailure {
+            // A failed write must not lose the prediction the user is looking at.
+            Log.w(StressInferenceService.TAG, "could not store the prediction", it)
+        }
+    }
+
+    private suspend fun refreshDerivedState() {
+        runCatching {
+            val summary = latencyTracker.summary()
+            val lastAlert = database.alertEvents().mostRecent()?.firedAtEpochMs
+            _state.value = _state.value.copy(latency = summary, lastAlertAtEpochMs = lastAlert)
+        }
+    }
+
+    private suspend fun purgeOldHistory() {
+        runCatching {
+            val cutoff = System.currentTimeMillis() - RETENTION_DAYS * 24 * 60 * 60 * 1000L
+            database.purgeOlderThan(cutoff)
+        }
+    }
+
+    override fun onCleared() {
+        inference?.close()
+        inference = null
+        super.onCleared()
+    }
+
+    companion object {
+        /**
+         * Used when Health Connect holds no sleep record, so a missing provider does not stop
+         * the app predicting. Close to the training set's mean of 7.75 hours.
+         */
+        const val DEFAULT_SLEEP_HOURS = 7.5f
+    }
+}
