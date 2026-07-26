@@ -288,14 +288,21 @@ ensemble of three ONNX gradient-boosted and tree models, with no server round tr
 consumes raw physical sensor units directly; predictions are not post-processed.
 ```
 
-Two limitations to state honestly alongside those numbers:
+**Do not quote that figure without the limitations.** They are set out with measurements in
+[docs/model-limitations.md](docs/model-limitations.md), and the most important one is that
+accuracy is not the whole story:
 
-- The training data is a survey dataset of *resting* heart rate spanning 43-109 bpm. Live
-  wearable heart rate exceeds 109 during ordinary activity, where the model extrapolates.
-- Oversampling is applied before the train/test split, so synthetic rows derived from
-  test-fold neighbours reach the training set. This inflates the reported figure by an
-  unquantified amount. It was kept deliberately so the number stays comparable to earlier
-  write-ups; `ml_engine/prepare_dataset.py` documents where to change it.
+- **Occupation influences the prediction more than the live wearable data does** — median swing
+  0.754 in `P(stressed)` versus 0.458 for heart rate, steps and sleep combined. For 6 of the 15
+  occupations, no combination of vitals in the trained range changes the predicted class. This
+  follows from the dataset, where occupation is close to a proxy for the stress label. Measure it
+  with `python ml_engine/analyze_feature_influence.py`.
+- The training data is a survey of *resting* heart rate spanning 43-109 bpm. Live wearable heart
+  rate exceeds 109 during ordinary activity, where the trees clamp rather than extrapolate.
+  Affected predictions are flagged and stored as such.
+- Oversampling is applied before the train/test split, so synthetic rows derived from test-fold
+  neighbours reach the training set. This inflates the reported figure by an unquantified amount.
+  Kept deliberately so the number stays comparable to earlier write-ups.
 
 StressGuard should be treated as a stress-risk monitoring prototype, not a clinical diagnosis tool.
 
@@ -450,15 +457,18 @@ Wear app:
   records. When none exist the app now falls back to an assumed 7.5 hours, labelled as such in
   the UI, so inference still runs instead of stalling.
 - The watch sends a hardcoded placeholder sleep value; only the phone's Health Connect read is real.
-- The current debug button simulates sensor values for testing without the smartwatch.
-- Heart rate above 109 bpm is outside the training range, so the model extrapolates there.
-- No Room database has been added yet, so nothing is stored: no history, no trends, no alerts.
-- No Supabase/backend sync has been added yet. The app declares no `INTERNET` permission.
-- No latency measurement exists yet, despite low latency being the project's central claim.
-- `google-services.json` is absent, so Google sign-in currently fails with `DEVELOPER_ERROR`.
-- The wearable payload uses AES/ECB with a hardcoded key duplicated in both modules, and
-  `VitalReceiverService` logs the ciphertext. This needs replacing before it is presented as a
-  security measure.
+- The current debug button simulates sensor values for testing without the smartwatch. Note that
+  for about half of profiles all three scenarios land on the same class, because occupation
+  dominates — see [docs/model-limitations.md](docs/model-limitations.md).
+- Heart rate above 109 bpm is outside the training range, so the model clamps rather than
+  extrapolates. Such predictions are flagged with an asterisk and recorded as out-of-range.
+- Only the profile syncs to Supabase. Prediction history, latency samples and alerts are stored
+  locally and have no sync worker yet, so they stay on the device.
+- The watch sends a hardcoded placeholder sleep value; only the phone's Health Connect read is real.
+- `AuthRepository.signOut()` has no caller — there is no sign-out anywhere in the UI.
+- The wearable payload uses AES/ECB with a hardcoded key duplicated in both modules. This needs
+  replacing before it is presented as a security measure.
+- `btnEmergency` and the Trends/Assistant tabs are visible but not wired to anything.
 - No clinical validation has been performed.
 
 ## Suggested Next Steps
