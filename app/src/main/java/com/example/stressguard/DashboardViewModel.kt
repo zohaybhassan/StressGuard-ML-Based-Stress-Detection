@@ -45,6 +45,16 @@ data class DashboardUiState(
     val sleepHours: Float? = null,
     /** True when no Health Connect record existed and a default was substituted. */
     val sleepAssumed: Boolean = false,
+    /**
+     * Why sleep is a substitute rather than a measurement — "no sleep records", "permission
+     * denied", "Health Connect unavailable".
+     *
+     * Part of the state rather than written straight to a view: the reason used to be put in
+     * `tvConnectionState`, which `renderPrediction` overwrites microseconds later, so nobody ever
+     * saw it. Sleep silently defaulting to the training-set mean, with no way to find out why, is
+     * exactly the kind of thing that should be visible.
+     */
+    val sleepDetail: String? = null,
     val source: ReadingSource = ReadingSource.WAITING,
     val sourceDetail: String = "",
     val watchLink: WatchLink = WatchLink.UNKNOWN,
@@ -149,9 +159,13 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
      * The figure is cached as well as displayed, because background predictions have no Activity
      * to read Health Connect for them and would otherwise fall back to the training-set mean.
      */
-    fun setSleepHours(hours: Float?, assumed: Boolean = false) {
+    fun setSleepHours(hours: Float?, assumed: Boolean = false, detail: String? = null) {
         if (hours != null && !assumed) pipeline.cacheSleepHours(hours)
-        _state.value = _state.value.copy(sleepHours = hours, sleepAssumed = assumed)
+        _state.value = _state.value.copy(
+            sleepHours = hours,
+            sleepAssumed = assumed,
+            sleepDetail = detail,
+        )
     }
 
     /**

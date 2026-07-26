@@ -123,6 +123,38 @@ predictions afterwards.
 it from the values actually handed over; `SensorReading.outOfTrainingRange` remains an ingest-time
 signal for logging. The two answer different questions and are deliberately not merged.
 
+## Sleep does not come from the watch, and cannot
+
+Heart rate and steps arrive over the watch link. Sleep does not, and no amount of work on that
+link would change it — the constraint sits below us at three separate layers, verified on a
+Galaxy Watch 4 running Wear OS 6 (API 36):
+
+| Layer | Finding |
+|---|---|
+| Watch — Health Services | **No sleep data type exists.** `getCapabilities()` returns eleven types: heart rate, steps, distance, calories, floors, elevation and their daily variants. Sleep is not among them |
+| Watch — Samsung Health | Tracks sleep in its own private store. Its manifest declares `READ_HEART_RATE`, `READ_OXYGEN_SATURATION`, `READ_SKIN_TEMPERATURE` — and **no `WRITE_SLEEP`** |
+| Watch — Health Connect | Present as a platform service (`healthconnect: IHealthConnectService`), but nothing writes sleep into it, so reading it on-watch returns nothing |
+
+Sleep therefore reaches the model the only way it can: **Samsung Health on the phone** receives it
+from the watch and writes it to **Health Connect**, which `HomeDashboardActivity` reads as
+`SleepSessionRecord` over the last 24 hours.
+
+That chain has one link that is easy to miss. Galaxy Wearable pairs the watch but does **not**
+write health data to Health Connect; Samsung Health does, and it is a separate install. With
+Galaxy Wearable present and Samsung Health absent, the app reads a real, empty Health Connect and
+substitutes the training-set mean — which is why every stored prediction showed `sleepHours = 7.5`.
+
+Three consequences shaped the code:
+
+- **The substitution is labelled with its reason.** `sleepDetail` travels in `DashboardUiState` and
+  renders as `Sleep: 7.5 hrs (assumed — no sleep records)`. It was previously written straight to
+  `tvConnectionState`, which `renderPrediction` overwrites on the next emission, so nobody ever
+  saw it.
+- **Sleep is re-read on every resume**, not once in `onCreate`. Otherwise installing a provider has
+  no effect until the app is killed and relaunched.
+- **The watch shows no sleep line.** It used to display a hardcoded `"7.2 hrs"` that was never
+  measured and never transmitted — a fabricated number presented as a reading.
+
 ## Backend sync (plan §15)
 
 `SupabaseSyncWorker` drains the local queues into `stress_predictions`, `latency_metrics` and

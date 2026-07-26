@@ -71,7 +71,6 @@ class MainActivity : ComponentActivity(), SensorEventListener {
     // Variables to hold the live data
     private var currentHr: Int = 0
     private var currentSteps: Int = 0
-    private val dummySleep = "7.2 hrs" // For UI polish during the demo
 
     // Sensor Manager for live step counting
     private lateinit var sensorManager: SensorManager
@@ -418,7 +417,12 @@ class MainActivity : ComponentActivity(), SensorEventListener {
             ageMs > HR_STALE_AFTER_MS ->
                 "HR: $currentHr (${ageMs / 1000}s old)\nSteps: $currentSteps\nKeep the watch on"
 
-            else -> "HR: $currentHr BPM\nSteps: $currentSteps\nSleep: $dummySleep"
+            // No sleep line. It used to show a hardcoded "7.2 hrs" that was never measured and
+            // never transmitted -- a fabricated number presented as a reading. Health Services
+            // has no sleep data type at all (the capability query returns eleven types, none of
+            // them sleep), so the watch has nothing truthful to put here. Sleep reaches the model
+            // through Health Connect on the phone; see docs/architecture-notes.md.
+            else -> "HR: $currentHr BPM\nSteps: $currentSteps"
         }
     }
 
@@ -589,5 +593,5 @@ fun Greeting(sensorText: String) {
 @Preview(device = WearDevices.SMALL_ROUND, showSystemUi = true)
 @Composable
 fun DefaultPreview() {
-    WearApp("HR: 85 BPM\nSteps: 3450\nSleep: 7.2 hrs")
+    WearApp("HR: 85 BPM\nSteps: 3450")
 }

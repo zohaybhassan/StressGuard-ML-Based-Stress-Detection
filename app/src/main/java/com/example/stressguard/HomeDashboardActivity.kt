@@ -4,6 +4,7 @@ import android.Manifest
 import android.graphics.Color
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import android.widget.TextView
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
@@ -75,6 +76,24 @@ class HomeDashboardActivity : AppCompatActivity() {
         super.onResume()
         // The watch can be paired or unpaired while the dashboard is open.
         viewModel.refreshWatchLink()
+
+        // Re-read sleep every time the dashboard comes forward. Previously this happened once in
+        // onCreate, so a night's sleep appearing in Health Connect -- or a provider being
+        // installed that writes it at all -- had no effect until the app was killed and
+        // relaunched. Deliberately does not re-request permission: refresh only, or a denied
+        // permission would re-prompt on every resume.
+        refreshSleepIfPermitted()
+    }
+
+    /** Reads Health Connect again if the permission is already held. Never prompts. */
+    private fun refreshSleepIfPermitted() {
+        if (HealthConnectClient.getSdkStatus(this) != HealthConnectClient.SDK_AVAILABLE) return
+
+        lifecycleScope.launch {
+            val granted = HealthConnectClient.getOrCreate(this@HomeDashboardActivity)
+                .permissionController.getGrantedPermissions()
+            if (granted.containsAll(sleepPermissions)) fetchSleepData()
+        }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -117,8 +136,15 @@ class HomeDashboardActivity : AppCompatActivity() {
     private fun render(state: DashboardUiState) {
         tvHeartRate.text = state.heartRate?.let { "$it BPM" } ?: "--"
         tvSteps.text = state.steps?.toString() ?: "--"
+        // The reason travels with the value. A substituted figure that looks like a measurement
+        // is worse than no figure, and this is the only place the user can find out that sleep
+        // is not real.
         tvSleep.text = state.sleepHours?.let {
-            val suffix = if (state.sleepAssumed) " (assumed)" else ""
+            val suffix = when {
+                !state.sleepAssumed -> ""
+                state.sleepDetail != null -> " (assumed — ${state.sleepDetail})"
+                else -> " (assumed)"
+            }
             "Sleep: ${String.format("%.1f", it)} hrs$suffix"
         } ?: "Sleep: Loading..."
 
@@ -314,11 +340,17 @@ class HomeDashboardActivity : AppCompatActivity() {
                 val totalMillis = response.records.sumOf {
                     it.endTime.toEpochMilli() - it.startTime.toEpochMilli()
                 }
-                viewModel.setSleepHours(
-                    hours = (totalMillis / (1000.0 * 60.0 * 60.0)).toFloat(),
-                    assumed = false,
+                val hours = (totalMillis / (1000.0 * 60.0 * 60.0)).toFloat()
+                // Logged at info because it is the only confirmation that a sleep provider is
+                // actually feeding Health Connect. Without a provider installed the app reads a
+                // real, empty database and silently substitutes the training-set mean.
+                Log.i(
+                    TAG,
+                    "read $hours h of sleep from ${response.records.size} Health Connect record(s)"
                 )
-            } catch (_: Exception) {
+                viewModel.setSleepHours(hours = hours, assumed = false)
+            } catch (error: Exception) {
+                Log.w(TAG, "Health Connect sleep read failed", error)
                 useAssumedSleep("could not read Health Connect")
             }
         }
@@ -330,9 +362,15 @@ class HomeDashboardActivity : AppCompatActivity() {
      * provider has ever written sleep data, and the UI labels the value as assumed.
      */
     private fun useAssumedSleep(reason: String) {
-        viewModel.setSleepHours(DashboardViewModel.DEFAULT_SLEEP_HOURS, assumed = true)
-        tvSleep.text = "Sleep: ${String.format("%.1f", DashboardViewModel.DEFAULT_SLEEP_HOURS)} hrs (assumed)"
-        tvConnectionState.text = "Sleep unavailable: $reason"
+        // Only the ViewModel is told. Writing to the views directly is what hid this before:
+        // tvConnectionState is rewritten by renderPrediction on the next state emission, and
+        // tvSleep by render(), so both messages vanished within microseconds of appearing.
+        Log.i(TAG, "sleep unavailable ($reason); using the training-set mean")
+        viewModel.setSleepHours(
+            hours = DashboardViewModel.DEFAULT_SLEEP_HOURS,
+            assumed = true,
+            detail = reason,
+        )
     }
 
     private data class DebugScenario(
@@ -343,6 +381,8 @@ class HomeDashboardActivity : AppCompatActivity() {
     )
 
     companion object {
+        private const val TAG = "VITALS"
+
         // Gauge anchors, inset from 0 and 100 so the extremes still read as a filled arc.
         private const val GAUGE_MIN = 10f
         private const val GAUGE_MAX = 90f
