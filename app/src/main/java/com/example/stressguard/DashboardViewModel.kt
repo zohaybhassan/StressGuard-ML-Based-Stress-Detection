@@ -17,6 +17,7 @@ import com.example.stressguard.data.local.RETENTION_DAYS
 import com.example.stressguard.data.local.StressGuardDatabase
 import com.example.stressguard.data.local.StressPredictionEntity
 import com.example.stressguard.data.local.purgeOlderThan
+import com.google.android.gms.wearable.Wearable
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -28,6 +29,16 @@ import kotlinx.coroutines.withContext
 /** Where the current reading came from, so the dashboard can label it honestly. */
 enum class ReadingSource { WAITING, WATCH, SIMULATED }
 
+/**
+ * Whether a watch is paired and reachable, which is a different question from whether a reading
+ * has arrived.
+ *
+ * Conflating the two is actively misleading: a watch that is paired but not being worn produces
+ * no heart rate, and labelling that "Watch Not Connected" sends anyone debugging it to look at
+ * the transport, which is working.
+ */
+enum class WatchLink { UNKNOWN, NO_WATCH, PAIRED_NO_DATA, STREAMING }
+
 data class DashboardUiState(
     val heartRate: Int? = null,
     val steps: Int? = null,
@@ -36,6 +47,9 @@ data class DashboardUiState(
     val sleepAssumed: Boolean = false,
     val source: ReadingSource = ReadingSource.WAITING,
     val sourceDetail: String = "",
+    val watchLink: WatchLink = WatchLink.UNKNOWN,
+    /** Name of the paired watch, when one is reachable. */
+    val watchName: String? = null,
     val prediction: StressPrediction? = null,
     /** The model extrapolated for this reading; see SensorReading.outOfTrainingRange. */
     val outOfTrainingRange: Boolean = false,
@@ -78,6 +92,37 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
         }
         viewModelScope.launch { refreshDerivedState() }
         viewModelScope.launch { purgeOldHistory() }
+        refreshWatchLink()
+    }
+
+    /**
+     * Asks the Wearable API whether a watch is actually reachable.
+     *
+     * Without this the dashboard could only report whether a reading had arrived, so a paired
+     * watch that simply was not being worn appeared identical to no watch at all.
+     */
+    fun refreshWatchLink() {
+        Wearable.getNodeClient(getApplication<Application>()).connectedNodes
+            .addOnSuccessListener { nodes ->
+                val current = _state.value
+                _state.value = current.copy(
+                    watchName = nodes.firstOrNull()?.displayName,
+                    watchLink = when {
+                        nodes.isEmpty() -> WatchLink.NO_WATCH
+                        current.source == ReadingSource.WATCH -> WatchLink.STREAMING
+                        else -> WatchLink.PAIRED_NO_DATA
+                    },
+                )
+                Log.i(
+                    TAG,
+                    if (nodes.isEmpty()) "no watch reachable"
+                    else "watch reachable: " + nodes.joinToString { it.displayName }
+                )
+            }
+            .addOnFailureListener {
+                Log.w(TAG, "could not query connected watches", it)
+                _state.value = _state.value.copy(watchLink = WatchLink.UNKNOWN)
+            }
     }
 
     /** Called by the Activity once Health Connect has been consulted. */
@@ -91,6 +136,7 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
             steps = reading.dailySteps,
             source = ReadingSource.WATCH,
             sourceDetail = "Watch data live",
+            watchLink = WatchLink.STREAMING,
             outOfTrainingRange = reading.outOfTrainingRange,
         )
         predict(reading)
@@ -223,6 +269,8 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
     }
 
     companion object {
+        private const val TAG = "VITALS"
+
         /**
          * Used when Health Connect holds no sleep record, so a missing provider does not stop
          * the app predicting. Close to the training set's mean of 7.75 hours.

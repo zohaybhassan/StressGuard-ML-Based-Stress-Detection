@@ -70,6 +70,12 @@ class HomeDashboardActivity : AppCompatActivity() {
     private val requestNotificationPermission =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) { /* either way */ }
 
+    override fun onResume() {
+        super.onResume()
+        // The watch can be paired or unpaired while the dashboard is open.
+        viewModel.refreshWatchLink()
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_home_dashboard)
@@ -127,10 +133,28 @@ class HomeDashboardActivity : AppCompatActivity() {
                 chipConnectionState.text = "Simulated Data"
                 chipConnectionState.setTextColor(Color.parseColor("#0B57D0"))
             }
-            ReadingSource.WAITING -> {
-                tvConnectionState.text = "Waiting for watch data"
-                chipConnectionState.text = "Watch Not Connected"
-                chipConnectionState.setTextColor(Color.parseColor("#757575"))
+            // Distinguish "no watch" from "watch present but not sending". They look the same
+            // from the dashboard's point of view but have completely different causes: the
+            // second is almost always the watch not being worn, since heart rate needs skin
+            // contact, and calling that "Not Connected" points at the transport instead.
+            ReadingSource.WAITING -> when (state.watchLink) {
+                WatchLink.STREAMING, WatchLink.PAIRED_NO_DATA -> {
+                    tvConnectionState.text =
+                        "${state.watchName ?: "Watch"} connected — waiting for a heart rate. " +
+                            "Wear the watch snugly."
+                    chipConnectionState.text = "Watch Connected"
+                    chipConnectionState.setTextColor(Color.parseColor("#F9A825"))
+                }
+                WatchLink.NO_WATCH -> {
+                    tvConnectionState.text = "No watch reachable from this phone"
+                    chipConnectionState.text = "Watch Not Connected"
+                    chipConnectionState.setTextColor(Color.parseColor("#757575"))
+                }
+                WatchLink.UNKNOWN -> {
+                    tvConnectionState.text = "Checking for a watch…"
+                    chipConnectionState.text = "Checking…"
+                    chipConnectionState.setTextColor(Color.parseColor("#757575"))
+                }
             }
         }
     }

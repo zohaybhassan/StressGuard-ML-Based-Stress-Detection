@@ -30,7 +30,10 @@ import androidx.core.content.ContextCompat
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.health.services.client.HealthServices
 import androidx.health.services.client.MeasureCallback
+import androidx.health.services.client.MeasureClient
+import androidx.health.services.client.getCapabilities
 import androidx.health.services.client.unregisterMeasureCallback
+import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.NonCancellable
@@ -191,6 +194,60 @@ class MainActivity : ComponentActivity(), SensorEventListener {
         measureCallback = callback
         measureClient.registerMeasureCallback(DataType.HEART_RATE_BPM, callback)
         Log.i(TAG, "sensors started; waiting for a heart rate reading")
+
+        runDiagnostics(measureClient)
+    }
+
+    /**
+     * Answers two questions the app previously had no way to answer.
+     *
+     * **Can this watch measure heart rate on demand?** `registerMeasureCallback` succeeds
+     * whether or not the data type is supported, so an unsupported watch looks identical to one
+     * that is simply not being worn: no callback, no error, nothing in the log.
+     *
+     * **Is the phone reachable?** Connectivity was only ever checked inside the send path, and
+     * that path requires a heart rate first. So with no heart rate the app could never report
+     * whether the phone was connected, and the dashboard's "Watch Not Connected" only ever
+     * meant "no reading has arrived" -- which conflates a missing watch with a missing sensor.
+     */
+    private fun runDiagnostics(measureClient: MeasureClient) {
+        lifecycleScope.launch {
+            runCatching { measureClient.getCapabilities() }
+                .onSuccess { capabilities ->
+                    val supported = capabilities.supportedDataTypesMeasure
+                    val canMeasureHr = DataType.HEART_RATE_BPM in supported
+                    Log.i(TAG, "measure capabilities: $supported")
+                    if (canMeasureHr) {
+                        Log.i(TAG, "this watch supports on-demand heart rate; wear it to get a reading")
+                    } else {
+                        Log.e(
+                            TAG,
+                            "this watch does NOT support on-demand heart rate via Health Services, " +
+                                "so no reading will ever arrive through MeasureClient"
+                        )
+                        displayState = "This watch cannot measure\nheart rate on demand"
+                    }
+                }
+                .onFailure { Log.w(TAG, "could not read measure capabilities", it) }
+
+            reportPhoneConnectivity()
+        }
+    }
+
+    /** Logs whether a companion phone is reachable, independent of having any reading to send. */
+    private fun reportPhoneConnectivity() {
+        Wearable.getNodeClient(this).connectedNodes
+            .addOnSuccessListener { nodes ->
+                if (nodes.isEmpty()) {
+                    Log.w(TAG, "no companion phone reachable from this watch")
+                } else {
+                    Log.i(
+                        TAG,
+                        "phone reachable: " + nodes.joinToString { "${it.displayName} (nearby=${it.isNearby})" }
+                    )
+                }
+            }
+            .addOnFailureListener { Log.w(TAG, "could not query connected nodes", it) }
     }
 
     // --------------------------------------------------------
@@ -214,7 +271,9 @@ class MainActivity : ComponentActivity(), SensorEventListener {
     // --------------------------------------------------------
     private fun updateUIAndSendData() {
         if (currentHr <= 0) {
-            displayState = "Calibrating HR..."
+            // Steps are arriving but heart rate is not. Say which, rather than "Calibrating",
+            // which gave no clue whether the sensor, the permission or the wrist was the issue.
+            displayState = "Waiting for heart rate\nSteps: $currentSteps\nWear the watch snugly"
             return
         }
 
