@@ -140,10 +140,19 @@ Sleep therefore reaches the model the only way it can: **Samsung Health on the p
 from the watch and writes it to **Health Connect**, which `HomeDashboardActivity` reads as
 `SleepSessionRecord` over the last 24 hours.
 
-That chain has one link that is easy to miss. Galaxy Wearable pairs the watch but does **not**
-write health data to Health Connect; Samsung Health does, and it is a separate install. With
-Galaxy Wearable present and Samsung Health absent, the app reads a real, empty Health Connect and
-substitutes the training-set mean — which is why every stored prediction showed `sleepHours = 7.5`.
+That chain has two links that are easy to miss, and both were hit in turn.
+
+**Galaxy Wearable is not Samsung Health.** Galaxy Wearable pairs the watch but writes no health
+data; Samsung Health does, and it is a separate install. With Galaxy Wearable present and Samsung
+Health absent, the app reads a real, empty Health Connect and substitutes the training-set mean.
+
+**Connected is not the same as writing.** With Samsung Health installed, listed under Health
+Connect's "Your health apps", and holding `WRITE_SLEEP` with `USER_SET`, Health Connect still
+returned zero sleep records over seven days while Samsung Health's own screen showed a full night.
+Health Connect's "Recent access" listed the app's reads and no Samsung Health activity at all. A
+provider shares data on its own schedule and generally only from the moment it was connected, so
+nights recorded before the link was made may never appear. The permission grant proves consent, not
+delivery — worth stating plainly, because every layer reports success while the value stays fake.
 
 Three consequences shaped the code:
 
