@@ -2,6 +2,7 @@ package com.example.stressguard.data.local
 
 import androidx.room.Dao
 import androidx.room.Insert
+import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import kotlinx.coroutines.flow.Flow
 
@@ -133,6 +134,45 @@ interface DailyStepTotalDao {
 
     @Query("SELECT COUNT(*) FROM daily_step_totals")
     suspend fun count(): Int
+}
+
+@Dao
+interface HealthChecklistDao {
+
+    /**
+     * Saves the answers, replacing whatever was there.
+     *
+     * REPLACE rather than an insert-or-update pair because the row is a singleton: editing the
+     * checklist is always a whole-form save, and there is no partial update to merge.
+     */
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun save(checklist: HealthChecklistEntity)
+
+    @Query("SELECT * FROM health_checklists WHERE id = :id")
+    suspend fun current(id: Int = HealthChecklistEntity.SINGLETON_ID): HealthChecklistEntity?
+
+    /** Live view, so the recommendation card updates when the user edits their answers. */
+    @Query("SELECT * FROM health_checklists WHERE id = :id")
+    fun observeCurrent(id: Int = HealthChecklistEntity.SINGLETON_ID): Flow<HealthChecklistEntity?>
+
+    @Query("SELECT * FROM health_checklists WHERE synced = 0")
+    suspend fun unsynced(): List<HealthChecklistEntity>
+
+    @Query("UPDATE health_checklists SET synced = 1 WHERE id IN (:ids)")
+    suspend fun markSynced(ids: List<Int>)
+
+    @Query("SELECT COUNT(*) FROM health_checklists WHERE synced = 0")
+    suspend fun countUnsynced(): Int
+
+    /**
+     * Clears the checklist on sign-out or account switch.
+     *
+     * Necessary rather than tidy: the table is keyed by a constant, not by user, so leaving a row
+     * behind would attribute one person's medical answers to the next person who signs in on this
+     * device — and the risk score would use them without any way to notice.
+     */
+    @Query("DELETE FROM health_checklists")
+    suspend fun clear()
 }
 
 @Dao

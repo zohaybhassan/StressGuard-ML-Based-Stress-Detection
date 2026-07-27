@@ -21,6 +21,18 @@ val localProperties = Properties().apply {
 
 fun config(key: String): String = localProperties.getProperty(key).orEmpty()
 
+/**
+ * Room writes one JSON file per schema version here, and they are committed.
+ *
+ * Required now that the database uses real migrations rather than destructive fallback: a
+ * migration can only be tested against the schema it starts from, so the old versions have to
+ * be kept somewhere. Room also uses them to fail the build when an entity changes without a
+ * version bump, which is the mistake this catches earliest.
+ */
+ksp {
+    arg("room.schemaLocation", "$projectDir/schemas")
+}
+
 android {
     namespace = "com.example.stressguard"
     compileSdk = 36
@@ -42,6 +54,11 @@ android {
     buildFeatures {
         buildConfig = true
     }
+
+    // Room's exported schema JSON, so MigrationTestHelper can open a database at an older
+    // version and run the real migration against it. Without this on the test classpath a
+    // migration can only be verified by hand on a device.
+    sourceSets.getByName("androidTest").assets.srcDir(layout.projectDirectory.dir("schemas"))
 
     buildTypes {
         release {

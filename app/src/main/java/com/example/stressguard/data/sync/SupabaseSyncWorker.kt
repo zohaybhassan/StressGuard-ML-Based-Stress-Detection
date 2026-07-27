@@ -52,10 +52,15 @@ class SupabaseSyncWorker(
             val predictions = syncPredictions(database, userId)
             val latency = syncLatency(database, userId)
             val alerts = syncAlerts(database, userId)
+            val checklists = syncChecklist(database, userId)
 
-            val total = predictions + latency + alerts
+            val total = predictions + latency + alerts + checklists
             if (total > 0) {
-                Log.i(TAG, "synced $predictions predictions, $latency latency, $alerts alerts")
+                Log.i(
+                    TAG,
+                    "synced $predictions predictions, $latency latency, $alerts alerts, " +
+                        "$checklists checklists"
+                )
             }
             SyncState(applicationContext).recordSuccess(System.currentTimeMillis())
             Result.success()
@@ -112,11 +117,34 @@ class SupabaseSyncWorker(
         return pending.size
     }
 
+    /**
+     * The checklist differs from the history tables in two ways that both matter here.
+     *
+     * It is at most one row, and it is *current state* rather than an event, so the conflict target
+     * is `user_id` alone and a re-save must overwrite. `ignoreDuplicates` is therefore false: an
+     * edit that changed an answer has to replace the stored row, and ignoring the conflict would
+     * silently keep the old answers on the server while the app marked them synced.
+     */
+    private suspend fun syncChecklist(database: StressGuardDatabase, userId: String): Int {
+        val dao = database.healthChecklists()
+        val pending = dao.unsynced()
+        if (pending.isEmpty()) return 0
+
+        SupabaseProvider.client.from("health_checklists")
+            .upsert(pending.map { HealthChecklistRow.from(it, userId) }) {
+                onConflict = "user_id"
+            }
+
+        dao.markSynced(pending.map { it.id })
+        return pending.size
+    }
+
     private suspend fun pendingCount(): Int = runCatching {
         val database = StressGuardDatabase.get(applicationContext)
         database.stressPredictions().unsynced(BATCH).size +
             database.latencyMetrics().unsynced(BATCH).size +
-            database.alertEvents().unsynced(BATCH).size
+            database.alertEvents().unsynced(BATCH).size +
+            database.healthChecklists().countUnsynced()
     }.getOrDefault(0)
 
     companion object {

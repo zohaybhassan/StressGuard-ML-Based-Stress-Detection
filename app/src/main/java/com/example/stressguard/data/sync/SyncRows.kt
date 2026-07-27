@@ -1,6 +1,7 @@
 package com.example.stressguard.data.sync
 
 import com.example.stressguard.data.local.AlertEventEntity
+import com.example.stressguard.data.local.HealthChecklistEntity
 import com.example.stressguard.data.local.LatencyMetricEntity
 import com.example.stressguard.data.local.StressPredictionEntity
 import kotlinx.serialization.SerialName
@@ -8,7 +9,7 @@ import kotlinx.serialization.Serializable
 import java.time.Instant
 
 /**
- * The wire shapes for the three synced tables.
+ * The wire shapes for the synced tables.
  *
  * Separate from the Room entities on purpose. The local rows carry `id` and `synced`, which are
  * device-local bookkeeping and meaningless on the server; the server rows carry `user_id` and ISO
@@ -79,6 +80,57 @@ data class LatencyMetricRow(
             predictionToAlertMs = entity.predictionToAlertMs,
             totalMs = entity.totalMs,
             coldStart = entity.coldStart,
+        )
+    }
+}
+
+/**
+ * The checklist's wire shape.
+ *
+ * Keyed on `user_id` alone rather than on a user-and-time pair like the history rows: this is the
+ * user's current answers, so a re-save must land on the same row. That difference is what makes
+ * the worker upsert this one with `onConflict = "user_id"`.
+ */
+@Serializable
+data class HealthChecklistRow(
+    @SerialName("user_id") val userId: String,
+    val smoking: Boolean,
+    @SerialName("heart_condition") val heartCondition: Boolean,
+    val hypertension: Boolean,
+    val diabetes: Boolean,
+    @SerialName("sleep_disorder") val sleepDisorder: Boolean,
+    @SerialName("anxiety_history") val anxietyHistory: Boolean,
+    @SerialName("high_caffeine_use") val highCaffeineUse: Boolean,
+    @SerialName("physically_inactive") val physicallyInactive: Boolean,
+    @SerialName("updated_at") val updatedAt: String,
+) {
+    /** The local row this came from, for recovering a checklist after a reinstall. */
+    fun toEntity(synced: Boolean = true) = HealthChecklistEntity(
+        smoking = smoking,
+        heartCondition = heartCondition,
+        hypertension = hypertension,
+        diabetes = diabetes,
+        sleepDisorder = sleepDisorder,
+        anxietyHistory = anxietyHistory,
+        highCaffeineUse = highCaffeineUse,
+        physicallyInactive = physicallyInactive,
+        updatedAtEpochMs = runCatching { Instant.parse(updatedAt).toEpochMilli() }
+            .getOrDefault(System.currentTimeMillis()),
+        synced = synced,
+    )
+
+    companion object {
+        fun from(entity: HealthChecklistEntity, userId: String) = HealthChecklistRow(
+            userId = userId,
+            smoking = entity.smoking,
+            heartCondition = entity.heartCondition,
+            hypertension = entity.hypertension,
+            diabetes = entity.diabetes,
+            sleepDisorder = entity.sleepDisorder,
+            anxietyHistory = entity.anxietyHistory,
+            highCaffeineUse = entity.highCaffeineUse,
+            physicallyInactive = entity.physicallyInactive,
+            updatedAt = entity.updatedAtEpochMs.toIso(),
         )
     }
 }

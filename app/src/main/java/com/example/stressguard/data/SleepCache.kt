@@ -42,6 +42,11 @@ class SleepCache(context: Context) {
         return prefs.getFloat(KEY_HOURS, 0f)
     }
 
+    /** Drops the cached figure, on sign-out. It describes one person's night, not the device's. */
+    fun clear() {
+        prefs.edit().clear().apply()
+    }
+
     private companion object {
         const val NAME = "sleep_cache"
         const val KEY_HOURS = "hours"

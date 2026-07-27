@@ -10,6 +10,7 @@ object SessionManager {
     private const val KEY_USER_GENDER = "user_gender"
     private const val KEY_USER_OCCUPATION = "user_occupation"
     private const val KEY_USER_BMI = "user_bmi"
+    private const val KEY_PASSWORD_SET = "password_set"
 
     private fun prefs(context: Context) = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
 
@@ -62,4 +63,30 @@ object SessionManager {
 
     fun getUserBmi(context: Context): String? =
         prefs(context).getString(KEY_USER_BMI, null)?.takeIf { it.isNotBlank() }
+
+    /**
+     * Remembers that this account has a password, so the router does not ask the server again.
+     *
+     * Cache-once rather than cache-with-expiry, because the fact only ever moves in one direction:
+     * an account that has a password cannot stop having one. Only ever written as true — a false
+     * answer is not cached, so an account still waiting to set one is re-checked on each launch and
+     * cannot be let through by a stale local flag. Cleared on sign-out with everything else.
+     */
+    fun markPasswordSet(context: Context) {
+        prefs(context).edit().putBoolean(KEY_PASSWORD_SET, true).apply()
+    }
+
+    fun isPasswordKnownSet(context: Context): Boolean =
+        prefs(context).getBoolean(KEY_PASSWORD_SET, false)
+
+    /**
+     * Forgets the stored profile, on sign-out.
+     *
+     * Nothing here is keyed by user, so a profile left behind becomes the next signed-in user's:
+     * their predictions would be built from the previous person's age, gender, occupation and BMI,
+     * and occupation alone moves the model's output more than the live vitals do.
+     */
+    fun clear(context: Context) {
+        prefs(context).edit().clear().apply()
+    }
 }

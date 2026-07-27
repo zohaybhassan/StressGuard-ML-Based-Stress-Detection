@@ -6,9 +6,11 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
+import androidx.room.migration.Migration
+import androidx.sqlite.db.SupportSQLiteDatabase
 
 /**
- * Local history: predictions, latency samples and alerts.
+ * Local history: predictions, latency samples, alerts and the health checklist.
  *
  * This is the durable store for the real-time path. Everything here is written without a
  * network, which is the point — the plan's central claim is that detection and alerting keep
@@ -20,9 +22,10 @@ import androidx.room.TypeConverters
         LatencyMetricEntity::class,
         AlertEventEntity::class,
         DailyStepTotalEntity::class,
+        HealthChecklistEntity::class,
     ],
-    version = 2,
-    exportSchema = false,
+    version = 3,
+    exportSchema = true,
 )
 @TypeConverters(Converters::class)
 abstract class StressGuardDatabase : RoomDatabase() {
@@ -31,10 +34,59 @@ abstract class StressGuardDatabase : RoomDatabase() {
     abstract fun latencyMetrics(): LatencyMetricDao
     abstract fun alertEvents(): AlertEventDao
     abstract fun dailyStepTotals(): DailyStepTotalDao
+    abstract fun healthChecklists(): HealthChecklistDao
 
     companion object {
         private const val TAG = "STRESS_DB"
         private const val NAME = "stressguard.db"
+
+        /**
+         * Adds the activity level and the day-totals table.
+         *
+         * Existing rows get `activityLevel = 0`, matching the entity's default. That is a truthful
+         * "not recorded" for predictions made before the app distinguished steps-since-midnight
+         * from a full-day activity level, and it is what a fresh insert would have written.
+         *
+         * The DDL below is Room's own `createSql` from
+         * `app/schemas/…StressGuardDatabase/3.json`, copied verbatim including the backticks.
+         * Hand-written equivalents are where migrations go wrong: a stray `DEFAULT 0` or a
+         * differently-spelled type makes `TableInfo.read()` disagree with the expected schema and
+         * Room throws on the first launch after the update — on the user's device, not here.
+         * Regenerate rather than retype when the schema changes.
+         */
+        val MIGRATION_1_2 = object : Migration(1, 2) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                // SQLite requires a default when adding a NOT NULL column to a populated table.
+                // Room's expected schema records no default for this column, and its validation
+                // only compares defaults it knows about, so the two agree.
+                db.execSQL(
+                    "ALTER TABLE `stress_predictions` ADD COLUMN `activityLevel` INTEGER NOT NULL DEFAULT 0"
+                )
+                db.execSQL(
+                    "CREATE TABLE IF NOT EXISTS `daily_step_totals` " +
+                        "(`date` TEXT NOT NULL, `steps` INTEGER NOT NULL, " +
+                        "`updatedAtEpochMs` INTEGER NOT NULL, PRIMARY KEY(`date`))"
+                )
+            }
+        }
+
+        /** Adds the health checklist that the rule-based risk score reads (plan §7, §16). */
+        val MIGRATION_2_3 = object : Migration(2, 3) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(
+                    "CREATE TABLE IF NOT EXISTS `health_checklists` " +
+                        "(`id` INTEGER NOT NULL, `smoking` INTEGER NOT NULL, " +
+                        "`heartCondition` INTEGER NOT NULL, `hypertension` INTEGER NOT NULL, " +
+                        "`diabetes` INTEGER NOT NULL, `sleepDisorder` INTEGER NOT NULL, " +
+                        "`anxietyHistory` INTEGER NOT NULL, `highCaffeineUse` INTEGER NOT NULL, " +
+                        "`physicallyInactive` INTEGER NOT NULL, " +
+                        "`updatedAtEpochMs` INTEGER NOT NULL, `synced` INTEGER NOT NULL, " +
+                        "PRIMARY KEY(`id`))"
+                )
+            }
+        }
+
+        fun migrations(): Array<Migration> = arrayOf(MIGRATION_1_2, MIGRATION_2_3)
 
         @Volatile
         private var instance: StressGuardDatabase? = null
@@ -44,16 +96,23 @@ abstract class StressGuardDatabase : RoomDatabase() {
                 instance ?: build(context.applicationContext).also { instance = it }
             }
 
+        /**
+         * Real migrations, not destructive fallback.
+         *
+         * The fallback was the right trade while history was disposable. It stopped being one once
+         * the history became an input: the risk score in plan §7 counts high-stress *days* over the
+         * last one or two weeks, so wiping the database on a version bump does not just lose a
+         * display — it silently resets the recommendation to "not enough data" and takes a fortnight
+         * to recover. The same rows are the report's evidence.
+         *
+         * Deliberately no `fallbackToDestructiveMigration()` alongside these. Leaving it in place
+         * would mean a missing migration degrades to a silent wipe at exactly the moment the schema
+         * changed, which is when a wipe is least likely to be noticed and most likely to be wrong.
+         * A missing migration should fail loudly in development instead.
+         */
         private fun build(context: Context): StressGuardDatabase =
             Room.databaseBuilder(context, StressGuardDatabase::class.java, NAME)
-                // No migrations yet. Destructive fallback is the right trade while the schema is
-                // still moving: a developer reinstalling should not hit a crash, and no production
-                // data exists to lose. Add real migrations before anyone relies on their history
-                // surviving an update.
-                //
-                // Version 2 added daily_step_totals, so an existing install is wiped on upgrade.
-                // Acceptable here, and unavoidable without a migration.
-                .fallbackToDestructiveMigration()
+                .addMigrations(*migrations())
                 .build()
 
         /** Test hook so an in-memory database can be substituted. */

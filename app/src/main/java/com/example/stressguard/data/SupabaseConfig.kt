@@ -16,14 +16,37 @@ object SupabaseConfig {
     val publishableKey: String = BuildConfig.SUPABASE_PUBLISHABLE_KEY
     val googleWebClientId: String = BuildConfig.GOOGLE_WEB_CLIENT_ID
 
-    /** Human-readable reasons the backend cannot be reached, empty when configuration is complete. */
+    /** Every configuration problem, empty when configuration is complete. */
     fun problems(): List<String> = validate(url, publishableKey, googleWebClientId)
+
+    /**
+     * Problems that stop the app working at all.
+     *
+     * Separated from [googleProblems] because they have different consequences and the login
+     * screen has to treat them differently. Without a URL and key there is no backend and nothing
+     * can sign in; without a Google client ID only the Google button is unusable, and email and
+     * password sign-in is unaffected. Blocking the whole screen on the latter — which is what
+     * happened before email auth existed — makes a project configured for email-only look broken.
+     */
+    fun backendProblems(): List<String> = validate(url, publishableKey, VALID_CLIENT_ID_PLACEHOLDER)
+
+    /** Problems that disable Google sign-in specifically, leaving email and password usable. */
+    fun googleProblems(): List<String> = validate(VALID_URL_PLACEHOLDER, VALID_KEY_PLACEHOLDER, googleWebClientId)
 
     val isConfigured: Boolean get() = problems().isEmpty()
 
     /** Auth needs these two; the Google client ID is only required for Google sign-in. */
     val isBackendConfigured: Boolean
         get() = url.startsWith("https://") && publishableKey.isNotBlank() && !isSecretKey(publishableKey)
+
+    /** Whether Google sign-in can be offered. Email and password does not depend on this. */
+    val isGoogleConfigured: Boolean get() = googleProblems().isEmpty()
+
+    // Stand-ins so each of the two checks above can reuse `validate` and report only its own
+    // half. Never used as real configuration.
+    private const val VALID_URL_PLACEHOLDER = "https://placeholder.supabase.co"
+    private const val VALID_KEY_PLACEHOLDER = "sb_publishable_placeholder"
+    private const val VALID_CLIENT_ID_PLACEHOLDER = "0.apps.googleusercontent.com"
 
     /** Pure, so the rules can be tested without a build configuration behind them. */
     fun validate(

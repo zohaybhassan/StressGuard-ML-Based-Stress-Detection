@@ -11,27 +11,20 @@
         android:layout_height="wrap_content"
         android:gravity="center_horizontal"
         android:orientation="vertical"
-        android:padding="28dp">
-
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="0.2" />
+        android:padding="24dp">
 
         <ImageView
-            android:layout_width="160dp"
-            android:layout_height="160dp"
-            android:layout_marginBottom="200dp"
+            android:layout_width="96dp"
+            android:layout_height="96dp"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="12dp"
             android:contentDescription="@string/app_name"
             android:src="@drawable/logo" />
-
-
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:layout_marginBottom="10dp"
+            android:layout_marginBottom="16dp"
             android:gravity="center"
             android:text="Live stress awareness for your watch and phone"
             android:textColor="#5F6B76"
@@ -40,7 +33,6 @@
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
             android:layout_marginBottom="16dp"
             app:cardCornerRadius="20dp"
             app:cardElevation="6dp">
@@ -52,36 +44,162 @@
                 android:padding="20dp">
 
                 <TextView
+                    android:id="@+id/tvAuthTitle"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Sign in to continue"
+                    android:text="Sign in"
                     android:textColor="@android:color/black"
-                    android:textSize="18sp"
+                    android:textSize="20sp"
                     android:textStyle="bold" />
 
                 <TextView
-                    android:layout_width="wrap_content"
+                    android:id="@+id/tvAuthSubtitle"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:text="Use your Google account to unlock your profile and dashboard."
+                    android:layout_marginTop="6dp"
+                    android:layout_marginBottom="16dp"
+                    android:text="Welcome back. Sign in to reach your dashboard."
                     android:textColor="#6D7882"
                     android:textSize="14sp" />
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/tilEmail"
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="12dp"
+                    android:hint="Email">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/etEmail"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:autofillHints="emailAddress"
+                        android:imeOptions="actionNext"
+                        android:inputType="textEmailAddress"
+                        android:maxLines="1" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/tilPassword"
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="12dp"
+                    android:hint="Password"
+                    app:passwordToggleEnabled="true">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/etPassword"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:autofillHints="password"
+                        android:imeOptions="actionDone"
+                        android:inputType="textPassword"
+                        android:maxLines="1" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <!-- Registration only. Hidden when signing in, where there is nothing to confirm
+                     against and a second field would just be one more thing to type. -->
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/tilConfirmPassword"
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="12dp"
+                    android:hint="Confirm password"
+                    android:visibility="gone"
+                    app:passwordToggleEnabled="true">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/etConfirmPassword"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:imeOptions="actionDone"
+                        android:inputType="textPassword"
+                        android:maxLines="1" />
+                </com.google.android.material.textfield.TextInputLayout>
 
                 <TextView
                     android:id="@+id/tvLoginStatus"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="14dp"
                     android:layout_marginBottom="4dp"
                     android:text=""
                     android:textColor="#B00020"
+                    android:textSize="14sp"
+                    android:visibility="gone" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnPrimaryAuth"
+                    android:layout_width="match_parent"
+                    android:layout_height="56dp"
+                    android:layout_marginTop="6dp"
+                    android:text="Sign in"
+                    android:textAllCaps="false"
+                    android:textSize="16sp"
+                    app:cornerRadius="14dp" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnToggleAuthMode"
+                    style="@style/Widget.MaterialComponents.Button.TextButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:layout_marginTop="2dp"
+                    android:text="New here? Create an account"
+                    android:textAllCaps="false"
                     android:textSize="14sp" />
+
+                <LinearLayout
+                    android:id="@+id/googleDivider"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:layout_marginBottom="6dp"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <View
+                        android:layout_width="0dp"
+                        android:layout_height="1dp"
+                        android:layout_weight="1"
+                        android:background="#E0E7E2" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:paddingStart="12dp"
+                        android:paddingEnd="12dp"
+                        android:text="or"
+                        android:textColor="#8A96A1"
+                        android:textSize="13sp" />
+
+                    <View
+                        android:layout_width="0dp"
+                        android:layout_height="1dp"
+                        android:layout_weight="1"
+                        android:background="#E0E7E2" />
+                </LinearLayout>
+
+                <!-- Shown only when registering: signing up with Google and then choosing a
+                     password leaves the account with both routes, so it is the recommended way in.
+                     Signing in treats the two evenly. -->
+                <TextView
+                    android:id="@+id/tvGoogleHint"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="8dp"
+                    android:text="Recommended"
+                    android:textColor="#2E7D32"
+                    android:textSize="12sp"
+                    android:textStyle="bold"
+                    android:visibility="gone" />
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnGoogleSignIn"
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
                     android:layout_width="match_parent"
                     android:layout_height="56dp"
-                    android:layout_marginTop="8dp"
                     android:text="Continue with Google"
                     android:textAllCaps="false"
                     android:textSize="16sp"
@@ -92,10 +210,10 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:text="By continuing, you help the app keep your data organized on the device."
+            android:layout_marginBottom="12dp"
+            android:text="Your readings stay on this device and sync only to your own account."
+            android:textAlignment="center"
             android:textColor="#8A96A1"
-            android:textSize="12sp"
-            android:textAlignment="center" />
+            android:textSize="12sp" />
     </LinearLayout>
 </ScrollView>

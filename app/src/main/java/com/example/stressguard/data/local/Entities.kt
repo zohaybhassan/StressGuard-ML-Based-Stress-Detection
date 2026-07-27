@@ -119,6 +119,38 @@ data class AlertEventEntity(
 )
 
 /**
+ * The user's self-reported health risk factors, as plan §7 scores them.
+ *
+ * One row, always id [SINGLETON_ID]. The table holds the *current* answers for whoever is signed
+ * in on this device rather than a history of them: the risk score asks "does this user smoke",
+ * not "when did they say so". A fixed primary key makes that structural, so a second save
+ * replaces the first instead of accumulating rows the score would then have to disambiguate.
+ *
+ * Self-reported, and stored as such. Nothing here is measured, which is exactly why plan §7 uses
+ * it to recommend a checkup rather than to conclude anything.
+ *
+ * [synced] mirrors the other tables so the existing worker can drain it.
+ */
+@Entity(tableName = "health_checklists")
+data class HealthChecklistEntity(
+    @PrimaryKey val id: Int = SINGLETON_ID,
+    val smoking: Boolean = false,
+    val heartCondition: Boolean = false,
+    val hypertension: Boolean = false,
+    val diabetes: Boolean = false,
+    val sleepDisorder: Boolean = false,
+    val anxietyHistory: Boolean = false,
+    val highCaffeineUse: Boolean = false,
+    val physicallyInactive: Boolean = false,
+    val updatedAtEpochMs: Long,
+    val synced: Boolean = false,
+) {
+    companion object {
+        const val SINGLETON_ID = 1
+    }
+}
+
+/**
  * Room stores a probability vector as a comma-separated string.
  *
  * Deliberately not JSON: the value is always a flat list of floats, and a plain join keeps the

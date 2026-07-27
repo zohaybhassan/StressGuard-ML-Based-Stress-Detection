@@ -22,6 +22,16 @@ class SyncState(context: Context) {
         prefs.edit().putLong(KEY_LAST_SUCCESS, atEpochMs).apply()
     }
 
+    /**
+     * Forgets the last success, on sign-out.
+     *
+     * Otherwise the next user's dashboard opens claiming their data synced minutes ago, when what
+     * synced was someone else's and their own queue is untouched.
+     */
+    fun clear() {
+        prefs.edit().clear().apply()
+    }
+
     private companion object {
         const val NAME = "sync_state"
         const val KEY_LAST_SUCCESS = "last_success_epoch_ms"

@@ -32,6 +32,12 @@
             android:name=".ProfileSetupActivity"
             android:exported="false" />
         <activity
+            android:name=".HealthChecklistActivity"
+            android:exported="false" />
+        <activity
+            android:name=".SetPasswordActivity"
+            android:exported="false" />
+        <activity
             android:name=".LoginActivity"
             android:exported="false" />
         <activity

@@ -97,4 +97,29 @@ class SupabaseConfigTest {
         val problems = SupabaseConfig.validate(validUrl, validKey, "355796161084")
         assertTrue(problems.any { it.contains("googleWebClientId") })
     }
+
+    /**
+     * The two problem surfaces have to stay separate.
+     *
+     * A missing Google client ID disables the Google button only; email and password sign-in is
+     * unaffected. Folding it into the backend check — which is what happened before email auth
+     * existed — makes a project configured for email-only look completely broken.
+     */
+    @Test
+    fun aMissingGoogleClientIdIsNotABackendProblem() {
+        val backendOnly = SupabaseConfig.validate(validUrl, validKey, "")
+
+        assertEquals(1, backendOnly.size)
+        assertTrue(backendOnly.single().contains("googleWebClientId"))
+    }
+
+    @Test
+    fun aMissingUrlOrKeyIsReportedIndependentlyOfGoogle() {
+        val problems = SupabaseConfig.validate("", "", validClientId)
+
+        assertEquals(2, problems.size)
+        assertTrue(problems.any { it.contains("supabase.url") })
+        assertTrue(problems.any { it.contains("supabase.publishableKey") })
+        assertFalse(problems.any { it.contains("googleWebClientId") })
+    }
 }

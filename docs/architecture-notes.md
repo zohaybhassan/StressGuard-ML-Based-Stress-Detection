@@ -15,8 +15,9 @@
 ## Present Screen Flow
 
 - Launcher router
-- Google sign-in screen
+- Google sign-in screen (Supabase auth via Credential Manager)
 - Profile setup form
+- Health checklist (skippable; also reachable from the dashboard to edit)
 - Live dashboard
 
 ## Data Flow Today
@@ -157,8 +158,9 @@ Three consequences shaped the code:
 
 ## Backend sync (plan §15)
 
-`SupabaseSyncWorker` drains the local queues into `stress_predictions`, `latency_metrics` and
-`alert_events`. It runs on WorkManager every 30 minutes with a `NetworkType.CONNECTED` constraint —
+`SupabaseSyncWorker` drains the local queues into `stress_predictions`, `latency_metrics`,
+`alert_events` and `health_checklists`. It runs on WorkManager every 30 minutes with a
+`NetworkType.CONNECTED` constraint —
 that constraint is what implements "restore internet and confirm sync occurs" without the app owning
 a connectivity listener.
 
@@ -254,13 +256,80 @@ Anything network-dependent must happen after the alert path.
 Every step above happens on device with no network. The design rule is the project's central
 claim, so it is worth demonstrating in airplane mode rather than merely asserting.
 
+## The checkup recommendation (plan §7, §16)
+
+`RecommendationPolicy` is pure and rule-based, deliberately, and `StressAlertPolicy` is the model
+it follows: the decision is a function of its inputs, so every branch is tested without a device.
+A learned model was rejected for the reason plan §7 gives — there is no clinically labelled data —
+and for one it does not: a score that recommends seeing a doctor has to be explainable to the
+person reading it, so the card lists each factor and the points it contributed.
+
+The pipeline is `stress_predictions` → `StressHistory.summarise` → per-day rollups →
+`RecommendationPolicy.evaluate`.
+
+Three decisions worth stating in the report:
+
+- **The stress tiers are a ladder, not a sum.** Plan §7 lists "3-4 days of 7: +15", "5+ days of 7:
+  +25" and "10+ days of 14: +30" as separate lines, but 10 high-stress days in 14 almost always
+  also means 5 in 7. Adding them would score one underlying fact three times and put a merely
+  stressed user at 70 before any health factor was considered, so the highest tier reached wins.
+
+- **A high score is not the same as a checkup.** The action is driven by the stress pattern and the
+  four major conditions, not by the score. Age, smoking and inactivity total 35 with no stress at
+  all, and telling someone to see a doctor on that basis — when the app has observed nothing — is
+  not what the app is for.
+
+- **A day needs `StressAlertPolicy.THRESHOLD` high readings to count as a high-stress day.** With
+  passive collection a day holds tens of readings, so a single-reading rule would mark nearly every
+  day high and the score would saturate for everyone. Reusing the alert's own threshold also means
+  the alerts and the recommendation agree about what counted.
+
+`sleepDisorder` and `highCaffeineUse` are collected — plan §6 lists both — but score nothing,
+because §7's table gives them no weight and inventing one would put an unsourced number into a
+medical-adjacent score.
+
+There is deliberately **no `daily_stress_summaries` table**, despite plan §6 listing one. Local
+retention keeps 30 days and every window the score asks about is 14 days or less, so the source
+rows are always present; a stored rollup would duplicate them and add a staleness bug for nothing.
+Every prediction is already uploaded, so server-side rollups remain possible without the app
+maintaining a second copy.
+
+## Local migrations, and why the destructive fallback had to go
+
+`StressGuardDatabase` ran `fallbackToDestructiveMigration()` through versions 1 and 2. That was the
+right trade while history was a display: a developer reinstalling should not hit a crash, and
+nothing depended on old rows.
+
+It stopped being the right trade when the history became an **input**. The risk score counts
+high-stress days over one or two weeks, so a wipe on a version bump does not merely clear a chart —
+it silently resets the recommendation to "not enough data" and takes a fortnight to recover, at the
+moment the schema changed and nobody is looking. The same rows are the report's evidence.
+
+Version 3 therefore ships real migrations and no fallback. A missing migration now fails loudly in
+development rather than degrading to a silent wipe on a user's device.
+
+Two things make this safe rather than merely intended:
+
+- **The DDL is Room's own.** `MIGRATION_2_3` uses the `createSql` from
+  `app/schemas/…/3.json` verbatim, backticks included. Hand-written equivalents are where
+  migrations go wrong: a stray `DEFAULT 0` makes `TableInfo.read()` disagree with the expected
+  schema and Room throws on first launch after the update. Room records no default for a column
+  whose default is a Kotlin one, which is exactly the mismatch that was avoided here.
+- **`exportSchema` is now true and the JSON is committed**, so the schema is diffable and Room
+  fails the build when an entity changes without a version bump.
+
+`StressGuardMigrationTest` covers 1→3 and 2→3 on a real device, and asserts the *rows survive*
+rather than only that the migration ran — a migration that dropped and recreated the table would
+satisfy Room's schema validation and still lose the user's history. It does not use
+`MigrationTestHelper`: that builds the starting database from exported JSON, and versions 1 and 2
+shipped with `exportSchema = false`, so no JSON for them exists. The tests create the old database
+with the DDL those versions shipped and then open it *through Room*, which is the path a real
+device takes and makes Room's own validation the assertion.
+
 ## Planned Next Layers
 
-- WorkManager sync worker to drain the `unsynced()` queues (the flags already exist)
-- Health checklist and the rule-based recommendation module
-- Trend charts over the stored prediction history
-- Supportive chatbot backend
-- Daily stress summaries
+- Trend charts over the stored prediction history (the `nav_trends` tab is still dead UI)
+- Supportive chatbot backend (`nav_assistant` likewise)
 
 ## Known Structural Gaps
 
@@ -305,7 +374,6 @@ claim, so it is worth demonstrating in airplane mode rather than merely assertin
 - Passive batches can arrive minutes apart, so the phone process is often killed in between and
   each batch pays the cold-start model load. This is why `LatencyMetricEntity.coldStart` is
   recorded separately — in background operation cold starts are common, not exceptional.
-- Nothing syncs to Supabase yet except the profile, so local history stays on the device
 - Dead UI declared in `activity_home_dashboard.xml` with no listeners: `btnEmergency`,
   `bottomNavigation`, and the `nav_trends` / `nav_assistant` menu entries
 - Command-line Gradle builds require JDK 21; the machine's default JDK 26 is too new for

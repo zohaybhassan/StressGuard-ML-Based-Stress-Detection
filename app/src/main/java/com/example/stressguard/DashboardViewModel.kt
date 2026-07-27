@@ -9,6 +9,8 @@ import com.example.stressguard.data.AlertDecision
 import com.example.stressguard.data.AuthRepository
 import com.example.stressguard.data.LatencySummary
 import com.example.stressguard.data.PipelineResult
+import com.example.stressguard.data.Recommendation
+import com.example.stressguard.data.RecommendationRepository
 import com.example.stressguard.data.SensorReading
 import com.example.stressguard.data.StressPipeline
 import com.example.stressguard.data.SupabaseConfig
@@ -74,6 +76,14 @@ data class DashboardUiState(
     val latency: LatencySummary = LatencySummary.EMPTY,
     val lastAlertAtEpochMs: Long? = null,
     val lastDecision: AlertDecision? = null,
+    /**
+     * The rule-based checkup recommendation, or null until enough history exists to compute one.
+     *
+     * Null rather than a zero-scored default, because "we have not seen enough of your week to
+     * say" and "your risk is low" are different statements and the card must not show the second
+     * when it means the first.
+     */
+    val recommendation: Recommendation? = null,
     /** How much local history is still waiting for Supabase, and when it last got there. */
     val sync: SyncStatus = SyncStatus.UNKNOWN,
     val error: String? = null,
@@ -112,6 +122,11 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
         viewModelScope.launch { tickReadingAge() }
         refreshWatchLink()
 
+        // Not refreshed per prediction: the score counts high-stress *days* over one or two weeks,
+        // so a single reading arriving while the dashboard is open cannot move it. Init and resume
+        // are the two moments it can actually have changed.
+        refreshRecommendation(pullChecklist = true)
+
         // Idempotent, so calling it on every dashboard launch is fine. Scheduled here rather than
         // from StressPipeline: plan §4 and §25 both require sync to stay off the real-time path,
         // and enqueuing work per prediction would put it right beside one.
@@ -121,6 +136,25 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
     /** Asks for a sync now, for the moments where waiting half an hour would be wrong. */
     fun syncNow() {
         SyncScheduler.syncNow(getApplication())
+    }
+
+    /**
+     * Recomputes the checkup recommendation.
+     *
+     * Called on resume as well as at init, because the checklist is edited on another screen and
+     * the answers change the score immediately — returning to a stale card after ticking "heart
+     * condition" would look like the edit had not saved.
+     *
+     * @param pullChecklist whether to try recovering the checklist from Supabase first. Only worth
+     *   doing once per ViewModel: it is a network call, and it is for the reinstall case.
+     */
+    fun refreshRecommendation(pullChecklist: Boolean = false) {
+        viewModelScope.launch {
+            if (pullChecklist) RecommendationRepository.ensureChecklist(getApplication())
+            _state.value = _state.value.copy(
+                recommendation = RecommendationRepository.current(getApplication())
+            )
+        }
     }
 
     /**

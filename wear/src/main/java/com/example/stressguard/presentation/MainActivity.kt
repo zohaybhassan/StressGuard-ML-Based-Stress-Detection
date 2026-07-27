@@ -375,8 +375,11 @@ class MainActivity : ComponentActivity(), SensorEventListener {
     override fun onSensorChanged(event: SensorEvent?) {
         if (event?.sensor?.type == Sensor.TYPE_STEP_COUNTER) {
             // The raw value counts from boot; convert it to steps taken today, which is what
-            // the model's "Daily Steps" feature means.
+            // the model's "Daily Steps" feature means. Contributed to the store rather than used
+            // directly, because after a reinstall this counter's baseline is gone and it reads
+            // near zero while the platform's own STEPS_DAILY already knows the real total.
             currentSteps = dailySteps.today(event.values[0].toLong())
+            PassiveVitalsStore(this).recordSteps(currentSteps, System.currentTimeMillis())
             // Deliberately does not transmit. Steps ride along with the next heart rate sample;
             // see sendFreshReading for why a step event must not put a reading on the wire.
             refreshDisplay()
@@ -406,23 +409,28 @@ class MainActivity : ComponentActivity(), SensorEventListener {
     private fun refreshDisplay() {
         statusNote?.let { displayState = it; return }
 
+        // The store, not this Activity's own field: the passive service updates it from
+        // STEPS_DAILY while nothing here is running, and showing the weaker figure meant the
+        // watch face read "Steps: 0" on a day the platform had already counted four thousand.
+        val steps = PassiveVitalsStore(this).stepsToday(System.currentTimeMillis())
+
         val ageMs = heartRateAgeMs()
         displayState = when {
             // Steps may be arriving while heart rate is not. Say which, rather than
             // "Calibrating", which gave no clue whether the sensor, the permission or the
             // wrist was the issue.
             currentHr <= 0 ->
-                "Waiting for heart rate\nSteps: $currentSteps\nWear the watch snugly"
+                "Waiting for heart rate\nSteps: $steps\nWear the watch snugly"
 
             ageMs > HR_STALE_AFTER_MS ->
-                "HR: $currentHr (${ageMs / 1000}s old)\nSteps: $currentSteps\nKeep the watch on"
+                "HR: $currentHr (${ageMs / 1000}s old)\nSteps: $steps\nKeep the watch on"
 
             // No sleep line. It used to show a hardcoded "7.2 hrs" that was never measured and
             // never transmitted -- a fabricated number presented as a reading. Health Services
             // has no sleep data type at all (the capability query returns eleven types, none of
             // them sleep), so the watch has nothing truthful to put here. Sleep reaches the model
             // through Health Connect on the phone; see docs/architecture-notes.md.
-            else -> "HR: $currentHr BPM\nSteps: $currentSteps"
+            else -> "HR: $currentHr BPM\nSteps: $steps"
         }
     }
 
@@ -448,15 +456,22 @@ class MainActivity : ComponentActivity(), SensorEventListener {
     private fun sendFreshReading(sampleAgeMs: Long) {
         refreshDisplay()
 
-        // Kept in the shared store so the passive service, which cannot see this Activity's
-        // fields, sends the same figure. Both mean "steps so far today".
+        // Contributed to the shared store, not written over it. This Activity's count comes from
+        // DailyStepCounter, which subtracts a baseline it stored itself and so reports roughly
+        // zero after a reinstall or a reboot until the wearer walks again. Assigning it directly
+        // wiped the platform's real STEPS_DAILY figure: the logs showed 4010 steps recorded by a
+        // passive batch and 0 sent to the phone seconds later.
+        val now = System.currentTimeMillis()
         val store = PassiveVitalsStore(this)
-        store.dailySteps = currentSteps
+        store.recordSteps(currentSteps, now)
         if (!store.claimSendSlot()) return
+
+        // The best figure either source has for today, rather than whichever ran last.
+        val steps = store.stepsToday(now)
 
         PassiveVitalsService.send(
             context = this,
-            payload = "$currentHr|$currentSteps|$sampleAgeMs",
+            payload = "$currentHr|$steps|$sampleAgeMs",
             onNoPhone = {
                 statusNote = "Phone not connected\nHR: $currentHr BPM"
                 refreshDisplay()

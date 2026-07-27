@@ -29,10 +29,14 @@ class PassiveVitalsService : PassiveListenerService() {
     override fun onNewDataPointsReceived(dataPoints: DataPointContainer) {
         val store = PassiveVitalsStore(this)
 
+        val now = System.currentTimeMillis()
+
         // Steps first, so a batch carrying both uses the value from this batch rather than the
-        // one before it.
+        // one before it. STEPS_DAILY is the platform's own count since midnight and the most
+        // trustworthy figure available; the store keeps the highest seen today so the Activity's
+        // weaker estimate cannot overwrite it.
         dataPoints.getData(DataType.STEPS_DAILY).lastOrNull()?.let { point ->
-            store.dailySteps = point.value.toInt()
+            store.recordSteps(point.value.toInt(), now)
             Log.d(TAG, "daily steps now ${point.value}")
         }
 
@@ -53,7 +57,7 @@ class PassiveVitalsService : PassiveListenerService() {
         // instant -- several rows of history claiming to be simultaneous, and an alert window
         // filled from one delivery.
         val heartRate = newest.value.toInt()
-        val steps = store.dailySteps
+        val steps = store.stepsToday(now)
 
         // How stale the sample already is at the moment of sending. Sent as a duration, not a
         // timestamp: the two devices' clocks are not synchronised, but an elapsed time measured

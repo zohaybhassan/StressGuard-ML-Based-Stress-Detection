@@ -366,6 +366,92 @@
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
+            <!-- Rule-based checkup recommendation, plan §7 and §16. Hidden until there is enough
+                 history to say anything: an empty card that says "Low" would be a claim, not a
+                 blank. -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cvRecommendation"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:visibility="gone"
+                app:cardBackgroundColor="#FFFFFF"
+                app:cardCornerRadius="8dp"
+                app:cardElevation="0dp"
+                app:strokeColor="#E0E7E2"
+                app:strokeWidth="1dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="18dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="HEALTH CHECK"
+                            android:textColor="#8A948F"
+                            android:textSize="12sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:id="@+id/tvRecommendationLevel"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="LOW"
+                            android:textColor="#69D18F"
+                            android:textSize="13sp"
+                            android:textStyle="bold" />
+                    </LinearLayout>
+
+                    <TextView
+                        android:id="@+id/tvRecommendationMessage"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:textColor="#101816"
+                        android:textSize="15sp" />
+
+                    <TextView
+                        android:id="@+id/tvRecommendationFactors"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:textColor="#5F6B76"
+                        android:textSize="13sp" />
+
+                    <!-- Plan §7 and §25: the app suggests a checkup, it does not diagnose. This
+                         line is not optional and travels with every recommendation. -->
+                    <TextView
+                        android:id="@+id/tvRecommendationDisclaimer"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="12dp"
+                        android:text="StressGuard is not a medical device and does not diagnose any condition. This is a guide based on your readings and the answers you gave."
+                        android:textColor="#8A948F"
+                        android:textSize="11sp" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnEditChecklist"
+                        style="@style/Widget.MaterialComponents.Button.TextButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:paddingStart="0dp"
+                        android:text="Update health checklist"
+                        android:textAllCaps="false"
+                        android:textSize="13sp" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnSimulateModelInput"
                 android:layout_width="match_parent"

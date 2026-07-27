@@ -224,6 +224,22 @@ class StressPipeline private constructor(private val context: Context) {
     fun cacheSleepHours(hours: Float) = sleepCache.put(hours)
 
     /**
+     * Forgets everything about the current user, on sign-out.
+     *
+     * The pipeline is process-scoped, so clearing the database is not enough: the smoothing window
+     * and the last result live in memory and would otherwise carry into the next session. A window
+     * holding the previous user's high-stress readings could fire an alert at the next user on
+     * their first or second reading — the opposite of what "3 of the last 5" is for.
+     *
+     * The loaded ONNX graphs are deliberately kept. They are not user data, and dropping 13.8 MB of
+     * models would make the next prediction a cold start for no reason.
+     */
+    suspend fun forgetUser() = mutex.withLock {
+        recentClassIndices.clear()
+        _latest.value = null
+    }
+
+    /**
      * Whether the values handed to the model fall outside what it was trained on.
      *
      * Worth recording rather than hiding: the trees clamp to their outermost leaf beyond these

@@ -5,7 +5,6 @@ import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.example.stressguard.data.AuthRepository
-import com.example.stressguard.data.ProfileRepository
 import com.example.stressguard.data.SupabaseConfig
 import io.github.jan.supabase.auth.status.SessionStatus
 import kotlinx.coroutines.flow.first
@@ -39,14 +38,9 @@ class MainActivity : AppCompatActivity() {
                 return@launch
             }
 
-            // Shared with LoginActivity: no local profile usually means a reinstall rather
-            // than a new user, so recover it before asking again.
-            val hasProfile = ProfileRepository.ensureLocalProfile(this@MainActivity)
-
-            route(
-                if (hasProfile) HomeDashboardActivity::class.java
-                else ProfileSetupActivity::class.java
-            )
+            // Shared with LoginActivity and SetPasswordActivity, so the same user cannot get a
+            // different destination depending on which door they came through.
+            route(PostAuthRouter.nextScreen(this@MainActivity))
         }
     }
 

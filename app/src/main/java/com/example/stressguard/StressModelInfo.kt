@@ -1,5 +1,6 @@
 package com.example.stressguard
 
+import android.content.Context
 import org.json.JSONObject
 
 /** One ONNX base learner in the soft-voting ensemble, as declared by the manifest. */
@@ -33,6 +34,20 @@ data class StressModelInfo(
     val version: String get() = "$selectedModel/$exportKind"
 
     companion object {
+
+        /**
+         * Reads the shipped manifest without touching ONNX Runtime.
+         *
+         * For callers that need the contract but not the model — the recommendation needs to know
+         * which class index means high stress, and loading 13.8 MB of graphs to answer that would
+         * be absurd. [StressInferenceService] holds the graphs; this holds only the JSON.
+         */
+        fun fromAssets(context: Context): StressModelInfo = parse(
+            json = context.assets.open(StressInferenceService.MANIFEST_ASSET)
+                .use { it.readBytes().decodeToString() },
+            assetDir = StressInferenceService.ASSET_DIR,
+        )
+
         fun parse(json: String, assetDir: String): StressModelInfo {
             val root = JSONObject(json)
             val label = root.optJSONObject("label")

@@ -43,7 +43,22 @@ class ProfileSetupActivity : AppCompatActivity() {
             "Nurse", "Sales Representative", "Salesperson", "Scientist",
             "Software Engineer", "Student", "Teacher", "Writer"
         )
-        val bmiCategories = arrayOf("Underweight", "Normal", "Overweight", "Obese")
+        // The dataset carries these four as bare labels with no height, weight or BMI number
+        // anywhere, so it documents no thresholds of its own. The WHO cut-offs are shown alongside
+        // each label because without them the choice is guesswork: two people with the same body
+        // would pick differently, and BMI is three of the model's 22 features.
+        val bmiCategories = arrayOf(
+            "Underweight",
+            "Normal",
+            "Overweight",
+            "Obese",
+        )
+        val bmiLabels = arrayOf(
+            "Underweight  (BMI under 18.5)",
+            "Normal  (BMI 18.5 – 24.9)",
+            "Overweight  (BMI 25.0 – 29.9)",
+            "Obese  (BMI 30.0 and over)",
+        )
 
         // 3. Attach the lists to the Dropdown menus
         val genderAdapter = ArrayAdapter(this, android.R.layout.simple_dropdown_item_1line, genders)
@@ -52,7 +67,10 @@ class ProfileSetupActivity : AppCompatActivity() {
         val occupationAdapter = ArrayAdapter(this, android.R.layout.simple_dropdown_item_1line, occupations)
         dropdownOccupation.setAdapter(occupationAdapter)
 
-        val bmiAdapter = ArrayAdapter(this, android.R.layout.simple_dropdown_item_1line, bmiCategories)
+        // The dropdown shows the labels with their ranges; what gets saved is the bare category,
+        // because that is the string StressFeatureBuilder matches on to set the one-hot flags and
+        // the value the profiles table's CHECK constraint accepts.
+        val bmiAdapter = ArrayAdapter(this, android.R.layout.simple_dropdown_item_1line, bmiLabels)
         dropdownBmi.setAdapter(bmiAdapter)
 
         // 4. Handle Save Button Click
@@ -61,7 +79,8 @@ class ProfileSetupActivity : AppCompatActivity() {
             val age = etAge.text.toString().trim()
             val gender = dropdownGender.text.toString().trim()
             val occupation = dropdownOccupation.text.toString().trim()
-            val bmi = dropdownBmi.text.toString().trim()
+            val bmiLabel = dropdownBmi.text.toString().trim()
+            val bmi = bmiCategories.firstOrNull { bmiLabel.startsWith(it) }.orEmpty()
 
             // Basic Validation to ensure no fields are empty
             if (name.isEmpty() || age.isEmpty() || gender.isEmpty() || occupation.isEmpty() || bmi.isEmpty()) {
@@ -107,7 +126,10 @@ class ProfileSetupActivity : AppCompatActivity() {
                     Toast.LENGTH_SHORT,
                 ).show()
 
-                startActivity(Intent(this@ProfileSetupActivity, HomeDashboardActivity::class.java))
+                // On to the health checklist, which feeds the checkup recommendation in plan §7.
+                // It is skippable and continues to the dashboard either way, so a user who does
+                // not want to answer medical questions is not stuck here.
+                startActivity(HealthChecklistActivity.setupIntent(this@ProfileSetupActivity))
                 finish() // Prevent user from going back to setup
             }
         }

@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#F3F6F8"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="24dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Health Checklist"
+            android:textColor="@android:color/black"
+            android:textSize="30sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:layout_marginBottom="24dp"
+            android:text="Tick anything that applies to you. StressGuard combines these with your recent stress pattern to suggest when a routine checkup might be worth booking."
+            android:textColor="#5F6B76"
+            android:textSize="14sp" />
+
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:cardCornerRadius="20dp"
+            app:cardElevation="6dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="18dp">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="10dp"
+                    android:text="CONDITIONS"
+                    android:textColor="#8A97A3"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+
+                <com.google.android.material.checkbox.MaterialCheckBox
+                    android:id="@+id/cbHeartCondition"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:minHeight="48dp"
+                    android:text="A diagnosed heart condition" />
+
+                <com.google.android.material.checkbox.MaterialCheckBox
+                    android:id="@+id/cbHypertension"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:minHeight="48dp"
+                    android:text="High blood pressure" />
+
+                <com.google.android.material.checkbox.MaterialCheckBox
+                    android:id="@+id/cbDiabetes"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:minHeight="48dp"
+                    android:text="Diabetes" />
+
+                <com.google.android.material.checkbox.MaterialCheckBox
+                    android:id="@+id/cbSleepDisorder"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:minHeight="48dp"
+                    android:text="A sleep disorder, such as insomnia or apnoea" />
+
+                <com.google.android.material.checkbox.MaterialCheckBox
+                    android:id="@+id/cbAnxietyHistory"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:minHeight="48dp"
+                    android:text="A history of anxiety" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="18dp"
+                    android:layout_marginBottom="10dp"
+                    android:text="HABITS"
+                    android:textColor="#8A97A3"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+
+                <com.google.android.material.checkbox.MaterialCheckBox
+                    android:id="@+id/cbSmoking"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:minHeight="48dp"
+                    android:text="I smoke" />
+
+                <com.google.android.material.checkbox.MaterialCheckBox
+                    android:id="@+id/cbHighCaffeineUse"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:minHeight="48dp"
+                    android:text="Four or more caffeinated drinks a day" />
+
+                <com.google.android.material.checkbox.MaterialCheckBox
+                    android:id="@+id/cbPhysicallyInactive"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:minHeight="48dp"
+                    android:text="Little or no regular exercise" />
+
+                <TextView
+                    android:id="@+id/tvChecklistDisclaimer"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="18dp"
+                    android:layout_marginBottom="16dp"
+                    android:text="StressGuard is not a medical device and does not diagnose anything. These answers are only used to decide when to suggest seeing a doctor, and they are stored against your account."
+                    android:textColor="#5F6B76"
+                    android:textSize="12sp" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnSaveChecklist"
+                    android:layout_width="match_parent"
+                    android:layout_height="56dp"
+                    android:text="Save and Continue"
+                    android:textAllCaps="false"
+                    android:textSize="16sp"
+                    app:cornerRadius="14dp" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnSkipChecklist"
+                    style="@style/Widget.MaterialComponents.Button.TextButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:layout_marginTop="4dp"
+                    android:text="Skip for now"
+                    android:textAllCaps="false" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+    </LinearLayout>
+</ScrollView>

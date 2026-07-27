@@ -59,6 +59,9 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.9.0")
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.ui.test.junit4)
+    // Only the pure decision logic is unit tested here; anything touching SharedPreferences or a
+    // sensor needs a device, and the wear module has no instrumented suite worth the upkeep.
+    testImplementation(libs.junit)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
 }

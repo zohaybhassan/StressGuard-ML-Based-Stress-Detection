@@ -222,7 +222,7 @@ class StressInferenceService(context: Context) : AutoCloseable {
 
     companion object {
         const val TAG = "STRESS_MODEL"
-        private const val ASSET_DIR = "stress_model"
-        private const val MANIFEST_ASSET = "$ASSET_DIR/stressguard_mobile_manifest.json"
+        internal const val ASSET_DIR = "stress_model"
+        internal const val MANIFEST_ASSET = "$ASSET_DIR/stressguard_mobile_manifest.json"
     }
 }

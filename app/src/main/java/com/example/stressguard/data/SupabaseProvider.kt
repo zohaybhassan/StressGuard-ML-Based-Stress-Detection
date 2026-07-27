@@ -25,7 +25,16 @@ object SupabaseProvider {
             supabaseUrl = SupabaseConfig.url,
             supabaseKey = SupabaseConfig.publishableKey,
         ) {
-            install(Auth)
+            install(Auth) {
+                // These are the library defaults, set explicitly because they are the behaviour
+                // the app promises: signing in once lasts until the user signs out. The session is
+                // written to storage, reloaded on launch, and its access token refreshed in the
+                // background before it expires. A future version changing a default would
+                // otherwise silently start logging everyone out.
+                autoSaveToStorage = true
+                autoLoadFromStorage = true
+                alwaysAutoRefresh = true
+            }
             install(Postgrest)
         }
     }

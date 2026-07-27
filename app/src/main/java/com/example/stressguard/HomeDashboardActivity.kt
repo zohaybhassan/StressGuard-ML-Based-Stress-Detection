@@ -1,6 +1,7 @@
 package com.example.stressguard
 
 import android.Manifest
+import android.content.Intent
 import android.graphics.Color
 import android.os.Build
 import android.os.Bundle
@@ -8,6 +9,7 @@ import android.util.Log
 import android.widget.TextView
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.health.connect.client.HealthConnectClient
 import androidx.health.connect.client.PermissionController
@@ -19,7 +21,14 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import com.example.stressguard.data.AlertDecision
+import com.example.stressguard.data.AuthRepository
+import com.example.stressguard.data.LocalUserData
+import com.example.stressguard.data.Recommendation
+import com.example.stressguard.data.RecommendationAction
+import com.example.stressguard.data.RiskLevel
+import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.button.MaterialButton
+import com.google.android.material.card.MaterialCardView
 import com.google.android.material.progressindicator.CircularProgressIndicator
 import java.time.Instant
 import java.time.temporal.ChronoUnit
@@ -50,6 +59,10 @@ class HomeDashboardActivity : AppCompatActivity() {
     private lateinit var chipConnectionState: TextView
     private lateinit var stressGauge: CircularProgressIndicator
     private lateinit var btnSimulateModelInput: MaterialButton
+    private lateinit var cvRecommendation: MaterialCardView
+    private lateinit var tvRecommendationLevel: TextView
+    private lateinit var tvRecommendationMessage: TextView
+    private lateinit var tvRecommendationFactors: TextView
 
     private var debugScenarioIndex = 0
 
@@ -83,6 +96,10 @@ class HomeDashboardActivity : AppCompatActivity() {
         // relaunched. Deliberately does not re-request permission: refresh only, or a denied
         // permission would re-prompt on every resume.
         refreshSleepIfPermitted()
+
+        // The checklist is edited on another screen, so coming back here is exactly when the
+        // score may have changed. No network: this reads Room only.
+        viewModel.refreshRecommendation()
     }
 
     /** Reads Health Connect again if the permission is already held. Never prompts. */
@@ -111,9 +128,20 @@ class HomeDashboardActivity : AppCompatActivity() {
         // A manual sync, for when waiting for the periodic window would be wrong -- just after
         // signing in, or when demonstrating that queued rows do reach the backend.
         tvSyncStatus.setOnClickListener { viewModel.syncNow() }
+        tvSleep.setOnClickListener { openHealthConnectSleepSettings() }
         chipConnectionState = findViewById(R.id.chipConnectionState)
         stressGauge = findViewById(R.id.stressGauge)
         btnSimulateModelInput = findViewById(R.id.btnSimulateModelInput)
+
+        setUpToolbar()
+
+        cvRecommendation = findViewById(R.id.cvRecommendation)
+        tvRecommendationLevel = findViewById(R.id.tvRecommendationLevel)
+        tvRecommendationMessage = findViewById(R.id.tvRecommendationMessage)
+        tvRecommendationFactors = findViewById(R.id.tvRecommendationFactors)
+        findViewById<MaterialButton>(R.id.btnEditChecklist).setOnClickListener {
+            startActivity(HealthChecklistActivity.editIntent(this))
+        }
 
         val userName = SessionManager.getUserName(this)?.takeIf { it.isNotBlank() } ?: "there"
         tvWelcome.text = "Welcome, $userName"
@@ -123,6 +151,79 @@ class HomeDashboardActivity : AppCompatActivity() {
         askForNotificationPermission()
         checkHealthConnectPermissions()
         observeState()
+    }
+
+    /**
+     * The toolbar was inflated but never wired to anything. It is where sign-out belongs: a
+     * destructive, rarely used action does not want a button on the main surface next to the
+     * things people tap every day.
+     */
+    private fun setUpToolbar() {
+        findViewById<MaterialToolbar>(R.id.topAppBar).apply {
+            inflateMenu(R.menu.dashboard_menu)
+            setOnMenuItemClickListener { item ->
+                when (item.itemId) {
+                    R.id.action_edit_checklist -> {
+                        startActivity(HealthChecklistActivity.editIntent(this@HomeDashboardActivity))
+                        true
+                    }
+
+                    R.id.action_sign_out -> {
+                        confirmSignOut()
+                        true
+                    }
+
+                    else -> false
+                }
+            }
+        }
+    }
+
+    /**
+     * Asks before signing out, and says what it costs.
+     *
+     * Signing out clears the local history, because none of it is keyed by user and the sync worker
+     * stamps whatever is queued with whoever is signed in *at upload time* — so a previous user's
+     * readings would otherwise be uploaded into the next user's account. Rows that never reached
+     * Supabase are lost, so the count is shown rather than discovered afterwards.
+     */
+    private fun confirmSignOut() {
+        lifecycleScope.launch {
+            val pending = LocalUserData.pendingUploadCount(this@HomeDashboardActivity)
+
+            val message = buildString {
+                append("Your profile and stress history will be removed from this device.")
+                if (pending > 0) {
+                    append("\n\n")
+                    append(pending)
+                    append(if (pending == 1) " reading has" else " readings have")
+                    append(" not reached the server yet and will be lost. Tap the sync line on ")
+                    append("the dashboard first if you want to keep them.")
+                }
+            }
+
+            AlertDialog.Builder(this@HomeDashboardActivity)
+                .setTitle("Sign out?")
+                .setMessage(message)
+                .setNegativeButton("Cancel", null)
+                .setPositiveButton("Sign out") { _, _ -> signOut() }
+                .show()
+        }
+    }
+
+    private fun signOut() {
+        lifecycleScope.launch {
+            AuthRepository.signOut()
+            LocalUserData.clear(this@HomeDashboardActivity)
+
+            startActivity(
+                Intent(this@HomeDashboardActivity, LoginActivity::class.java)
+                    // Nothing behind this should survive: the back stack holds screens rendered
+                    // from the signed-out user's data.
+                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+            )
+            finish()
+        }
     }
 
     private fun observeState() {
@@ -141,16 +242,59 @@ class HomeDashboardActivity : AppCompatActivity() {
         // is not real.
         tvSleep.text = state.sleepHours?.let {
             val suffix = when {
-                !state.sleepAssumed -> ""
-                state.sleepDetail != null -> " (assumed — ${state.sleepDetail})"
-                else -> " (assumed)"
+                state.sleepAssumed && state.sleepDetail != null ->
+                    " (assumed — ${state.sleepDetail}, tap to fix)"
+                state.sleepAssumed -> " (assumed)"
+                // A real reading can still carry a caveat, such as being two nights old.
+                state.sleepDetail != null -> " (${state.sleepDetail})"
+                else -> ""
             }
             "Sleep: ${String.format("%.1f", it)} hrs$suffix"
         } ?: "Sleep: Loading..."
+        // Only actionable while the figure is a substitute. Health Connect's settings are the
+        // only route back once the permission has been refused, and nothing else in the app
+        // points there.
+        tvSleep.isClickable = state.sleepAssumed
 
         renderSource(state)
         renderPrediction(state)
+        renderRecommendation(state.recommendation)
         tvSyncStatus.text = state.sync.describe(System.currentTimeMillis())
+    }
+
+    /**
+     * The rule-based checkup card, plan §7 and §16.
+     *
+     * Hidden entirely until there is enough history for a verdict. An always-visible card reading
+     * "Low" on day one would be a claim the app has no grounds for, and the point of a rule-based
+     * score is that every number on screen can be justified.
+     */
+    private fun renderRecommendation(recommendation: Recommendation?) {
+        if (recommendation == null || recommendation.action == RecommendationAction.NOT_ENOUGH_DATA) {
+            cvRecommendation.visibility = android.view.View.GONE
+            return
+        }
+
+        cvRecommendation.visibility = android.view.View.VISIBLE
+        tvRecommendationMessage.text = recommendation.message
+
+        tvRecommendationLevel.text = "${recommendation.level.name} · ${recommendation.score}"
+        tvRecommendationLevel.setTextColor(Color.parseColor(levelColor(recommendation.level)))
+
+        // The card shows its own working. A score with no breakdown would throw away the reason
+        // plan §7 chose rules over a model in the first place.
+        tvRecommendationFactors.text = if (recommendation.hasFactors) {
+            recommendation.factors.joinToString("\n") { "• ${it.description} (+${it.points})" }
+        } else {
+            "No risk factors recorded."
+        }
+    }
+
+    private fun levelColor(level: RiskLevel): String = when (level) {
+        RiskLevel.LOW -> "#69D18F"
+        RiskLevel.MODERATE -> "#FFC107"
+        RiskLevel.ELEVATED -> "#F9A825"
+        RiskLevel.HIGH -> "#F44336"
     }
 
     private fun renderSource(state: DashboardUiState) {
@@ -320,40 +464,89 @@ class HomeDashboardActivity : AppCompatActivity() {
         }
     }
 
+    /**
+     * Reads the wearer's most recent night from Health Connect.
+     *
+     * Two things this deliberately does not do.
+     *
+     * It does not look only at the last 24 hours. A provider syncs on its own schedule, and a
+     * night that ended 26 hours ago is still the most recent one there is — the narrow window
+     * reported "no sleep records" for data that was sitting right there. Seven days is wide
+     * enough to find something and to tell "the provider writes nothing" apart from "nothing
+     * recently".
+     *
+     * It does not sum everything it finds. Summing was survivable over 24 hours and becomes
+     * nonsense over seven days: it would report a week of sleep as one night. Instead the most
+     * recent session is taken, plus any earlier session close enough to be the same sleep
+     * fragmented by brief waking, which is how sleep is usually recorded.
+     */
     private fun fetchSleepData() {
         val client = HealthConnectClient.getOrCreate(this)
         lifecycleScope.launch {
             try {
                 val now = Instant.now()
-                val response = client.readRecords(
+                val records = client.readRecords(
                     ReadRecordsRequest(
                         recordType = SleepSessionRecord::class,
-                        timeRangeFilter = TimeRangeFilter.between(now.minus(24, ChronoUnit.HOURS), now),
+                        timeRangeFilter = TimeRangeFilter.between(
+                            now.minus(SLEEP_LOOKBACK_DAYS, ChronoUnit.DAYS), now
+                        ),
                     )
-                )
+                ).records
 
-                if (response.records.isEmpty()) {
+                if (records.isEmpty()) {
+                    // Health Connect answered; it simply holds nothing. Almost always a provider
+                    // problem rather than ours: Samsung Health has to be installed, connected to
+                    // Health Connect, and opened at least once for it to push anything.
+                    Log.i(TAG, "Health Connect returned no sleep in the last $SLEEP_LOOKBACK_DAYS days")
                     useAssumedSleep("no sleep records")
                     return@launch
                 }
 
-                val totalMillis = response.records.sumOf {
-                    it.endTime.toEpochMilli() - it.startTime.toEpochMilli()
-                }
+                val night = mostRecentNight(records)
+                val totalMillis = night.sumOf { it.endTime.toEpochMilli() - it.startTime.toEpochMilli() }
                 val hours = (totalMillis / (1000.0 * 60.0 * 60.0)).toFloat()
-                // Logged at info because it is the only confirmation that a sleep provider is
-                // actually feeding Health Connect. Without a provider installed the app reads a
-                // real, empty database and silently substitutes the training-set mean.
+                val endedHoursAgo = ChronoUnit.HOURS.between(night.first().endTime, now)
+
                 Log.i(
                     TAG,
-                    "read $hours h of sleep from ${response.records.size} Health Connect record(s)"
+                    "read $hours h of sleep from ${night.size} session(s) ending ${endedHoursAgo}h " +
+                        "ago; ${records.size} record(s) in the last $SLEEP_LOOKBACK_DAYS days"
                 )
-                viewModel.setSleepHours(hours = hours, assumed = false)
+
+                viewModel.setSleepHours(
+                    hours = hours,
+                    assumed = false,
+                    // A real measurement from two nights ago is worth more than the training-set
+                    // mean, but the user should not think it is last night's.
+                    detail = if (endedHoursAgo >= STALE_SLEEP_HOURS) "${endedHoursAgo / 24 + 1} days ago"
+                    else null,
+                )
             } catch (error: Exception) {
                 Log.w(TAG, "Health Connect sleep read failed", error)
                 useAssumedSleep("could not read Health Connect")
             }
         }
+    }
+
+    /**
+     * The sessions making up the latest sleep, newest first.
+     *
+     * Sleep is often stored as several sessions separated by brief waking, so taking only the
+     * newest would under-report a fragmented night. Walking backwards while the gap stays small
+     * gathers one night without reaching into the one before it.
+     */
+    private fun mostRecentNight(records: List<SleepSessionRecord>): List<SleepSessionRecord> {
+        val newestFirst = records.sortedByDescending { it.endTime }
+        val night = mutableListOf(newestFirst.first())
+
+        for (record in newestFirst.drop(1)) {
+            val earliestStart = night.minOf { it.startTime }
+            val gapHours = ChronoUnit.HOURS.between(record.endTime, earliestStart)
+            if (gapHours > SLEEP_FRAGMENT_GAP_HOURS) break
+            night += record
+        }
+        return night
     }
 
     /**
@@ -373,6 +566,33 @@ class HomeDashboardActivity : AppCompatActivity() {
         )
     }
 
+    /**
+     * Opens Health Connect's permission screen for this app.
+     *
+     * Needed because a denied health permission is a dead end from inside the app. Android stops
+     * showing the request dialog after it has been refused, so `requestSleepPermission.launch`
+     * returns denied immediately and forever — the app can keep asking and the user will never
+     * see anything. The only way back is Health Connect's own settings, and the user has no
+     * reason to know that, so the "assumed" label is made tappable and brings them here.
+     */
+    private fun openHealthConnectSleepSettings() {
+        val intents = listOf(
+            // Per-app screen, straight to the permissions for this package.
+            Intent("android.health.connect.action.MANAGE_HEALTH_PERMISSIONS")
+                .putExtra(Intent.EXTRA_PACKAGE_NAME, packageName),
+            // Older platforms and the standalone Health Connect APK use the androidx action.
+            Intent("androidx.health.ACTION_MANAGE_HEALTH_PERMISSIONS")
+                .putExtra(Intent.EXTRA_PACKAGE_NAME, packageName),
+            // Last resort: the Health Connect home screen, from which the app is reachable.
+            Intent("android.health.connect.action.HEALTH_HOME_SETTINGS"),
+        )
+
+        for (intent in intents) {
+            if (runCatching { startActivity(intent); true }.getOrDefault(false)) return
+        }
+        Log.w(TAG, "no Health Connect settings screen could be opened on this device")
+    }
+
     private data class DebugScenario(
         val name: String,
         val heartRate: Int,
@@ -382,6 +602,18 @@ class HomeDashboardActivity : AppCompatActivity() {
 
     companion object {
         private const val TAG = "VITALS"
+
+        /**
+         * How far back to look for sleep. Wide enough to distinguish a provider that writes
+         * nothing from one that simply has not written today.
+         */
+        private const val SLEEP_LOOKBACK_DAYS = 7L
+
+        /** Beyond this, the night found is labelled with its age rather than passed off as last night's. */
+        private const val STALE_SLEEP_HOURS = 36L
+
+        /** Sessions closer together than this are treated as one night broken by brief waking. */
+        private const val SLEEP_FRAGMENT_GAP_HOURS = 4L
 
         // Gauge anchors, inset from 0 and 100 so the extremes still read as a filled arc.
         private const val GAUGE_MIN = 10f

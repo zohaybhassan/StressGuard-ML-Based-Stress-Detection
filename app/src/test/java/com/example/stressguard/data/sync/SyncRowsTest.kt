@@ -1,10 +1,13 @@
 package com.example.stressguard.data.sync
 
 import com.example.stressguard.data.local.AlertEventEntity
+import com.example.stressguard.data.local.HealthChecklistEntity
 import com.example.stressguard.data.local.LatencyMetricEntity
 import com.example.stressguard.data.local.StressPredictionEntity
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
 /**
@@ -132,5 +135,58 @@ class SyncRowsTest {
         )
 
         assertEquals("2026-07-26T09:00:00.123Z", AlertEventRow.from(entity, userId).firedAt)
+    }
+
+    @Test
+    fun `a checklist maps every answer the server expects`() {
+        val entity = HealthChecklistEntity(
+            smoking = true,
+            heartCondition = false,
+            hypertension = true,
+            diabetes = false,
+            sleepDisorder = true,
+            anxietyHistory = false,
+            highCaffeineUse = true,
+            physicallyInactive = false,
+            updatedAtEpochMs = recordedAt,
+            synced = false,
+        )
+
+        val row = HealthChecklistRow.from(entity, userId)
+
+        assertEquals(userId, row.userId)
+        assertEquals("2026-07-26T09:00:00Z", row.updatedAt)
+        assertTrue(row.smoking)
+        assertFalse(row.heartCondition)
+        assertTrue(row.hypertension)
+        assertFalse(row.diabetes)
+        // Unscored by the risk table, but still carried: dropping them from the wire shape would
+        // lose the answers the user actually gave.
+        assertTrue(row.sleepDisorder)
+        assertTrue(row.highCaffeineUse)
+        assertFalse(row.physicallyInactive)
+    }
+
+    /** A checklist pulled back after a reinstall has to reconstruct the local row exactly. */
+    @Test
+    fun `a checklist round-trips through the wire shape`() {
+        val original = HealthChecklistEntity(
+            smoking = true,
+            heartCondition = true,
+            hypertension = false,
+            diabetes = true,
+            sleepDisorder = false,
+            anxietyHistory = true,
+            highCaffeineUse = false,
+            physicallyInactive = true,
+            updatedAtEpochMs = recordedAt,
+            synced = false,
+        )
+
+        val restored = HealthChecklistRow.from(original, userId).toEntity()
+
+        // Marked synced on the way back: it came from the server, so re-uploading it would push a
+        // fresher updated_at over the answer's real age.
+        assertEquals(original.copy(synced = true), restored)
     }
 }

@@ -1,0 +1,411 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 3,
+    "identityHash": "5ddca14bc71a1d3e1a7e1c9fb880df5b",
+    "entities": [
+      {
+        "tableName": "stress_predictions",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `recordedAtEpochMs` INTEGER NOT NULL, `label` TEXT NOT NULL, `classIndex` INTEGER NOT NULL, `confidence` REAL NOT NULL, `probabilities` TEXT NOT NULL, `modelVersion` TEXT NOT NULL, `heartRate` INTEGER NOT NULL, `dailySteps` INTEGER NOT NULL, `activityLevel` INTEGER NOT NULL, `sleepHours` REAL NOT NULL, `outOfTrainingRange` INTEGER NOT NULL, `synced` INTEGER NOT NULL)",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "recordedAtEpochMs",
+            "columnName": "recordedAtEpochMs",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "label",
+            "columnName": "label",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "classIndex",
+            "columnName": "classIndex",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "confidence",
+            "columnName": "confidence",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "probabilities",
+            "columnName": "probabilities",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "modelVersion",
+            "columnName": "modelVersion",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "heartRate",
+            "columnName": "heartRate",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "dailySteps",
+            "columnName": "dailySteps",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "activityLevel",
+            "columnName": "activityLevel",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "sleepHours",
+            "columnName": "sleepHours",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "outOfTrainingRange",
+            "columnName": "outOfTrainingRange",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "synced",
+            "columnName": "synced",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_stress_predictions_recordedAtEpochMs",
+            "unique": false,
+            "columnNames": [
+              "recordedAtEpochMs"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_stress_predictions_recordedAtEpochMs` ON `${TABLE_NAME}` (`recordedAtEpochMs`)"
+          },
+          {
+            "name": "index_stress_predictions_synced",
+            "unique": false,
+            "columnNames": [
+              "synced"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_stress_predictions_synced` ON `${TABLE_NAME}` (`synced`)"
+          }
+        ],
+        "foreignKeys": []
+      },
+      {
+        "tableName": "latency_metrics",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `recordedAtEpochMs` INTEGER NOT NULL, `preprocessingMs` INTEGER NOT NULL, `inferenceMs` INTEGER NOT NULL, `uiUpdateMs` INTEGER NOT NULL, `receiveToPredictionMs` INTEGER NOT NULL, `predictionToAlertMs` INTEGER, `totalMs` INTEGER NOT NULL, `coldStart` INTEGER NOT NULL, `synced` INTEGER NOT NULL)",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "recordedAtEpochMs",
+            "columnName": "recordedAtEpochMs",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "preprocessingMs",
+            "columnName": "preprocessingMs",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "inferenceMs",
+            "columnName": "inferenceMs",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "uiUpdateMs",
+            "columnName": "uiUpdateMs",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "receiveToPredictionMs",
+            "columnName": "receiveToPredictionMs",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "predictionToAlertMs",
+            "columnName": "predictionToAlertMs",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "totalMs",
+            "columnName": "totalMs",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "coldStart",
+            "columnName": "coldStart",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "synced",
+            "columnName": "synced",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_latency_metrics_recordedAtEpochMs",
+            "unique": false,
+            "columnNames": [
+              "recordedAtEpochMs"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_latency_metrics_recordedAtEpochMs` ON `${TABLE_NAME}` (`recordedAtEpochMs`)"
+          },
+          {
+            "name": "index_latency_metrics_synced",
+            "unique": false,
+            "columnNames": [
+              "synced"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_latency_metrics_synced` ON `${TABLE_NAME}` (`synced`)"
+          }
+        ],
+        "foreignKeys": []
+      },
+      {
+        "tableName": "alert_events",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `firedAtEpochMs` INTEGER NOT NULL, `reason` TEXT NOT NULL, `highCountInWindow` INTEGER NOT NULL, `windowSize` INTEGER NOT NULL, `modelVersion` TEXT NOT NULL, `dismissed` INTEGER NOT NULL, `synced` INTEGER NOT NULL)",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "firedAtEpochMs",
+            "columnName": "firedAtEpochMs",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "reason",
+            "columnName": "reason",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "highCountInWindow",
+            "columnName": "highCountInWindow",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "windowSize",
+            "columnName": "windowSize",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "modelVersion",
+            "columnName": "modelVersion",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "dismissed",
+            "columnName": "dismissed",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "synced",
+            "columnName": "synced",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_alert_events_firedAtEpochMs",
+            "unique": false,
+            "columnNames": [
+              "firedAtEpochMs"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_alert_events_firedAtEpochMs` ON `${TABLE_NAME}` (`firedAtEpochMs`)"
+          },
+          {
+            "name": "index_alert_events_synced",
+            "unique": false,
+            "columnNames": [
+              "synced"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_alert_events_synced` ON `${TABLE_NAME}` (`synced`)"
+          }
+        ],
+        "foreignKeys": []
+      },
+      {
+        "tableName": "daily_step_totals",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`date` TEXT NOT NULL, `steps` INTEGER NOT NULL, `updatedAtEpochMs` INTEGER NOT NULL, PRIMARY KEY(`date`))",
+        "fields": [
+          {
+            "fieldPath": "date",
+            "columnName": "date",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "steps",
+            "columnName": "steps",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "updatedAtEpochMs",
+            "columnName": "updatedAtEpochMs",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "date"
+          ]
+        },
+        "indices": [],
+        "foreignKeys": []
+      },
+      {
+        "tableName": "health_checklists",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `smoking` INTEGER NOT NULL, `heartCondition` INTEGER NOT NULL, `hypertension` INTEGER NOT NULL, `diabetes` INTEGER NOT NULL, `sleepDisorder` INTEGER NOT NULL, `anxietyHistory` INTEGER NOT NULL, `highCaffeineUse` INTEGER NOT NULL, `physicallyInactive` INTEGER NOT NULL, `updatedAtEpochMs` INTEGER NOT NULL, `synced` INTEGER NOT NULL, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "smoking",
+            "columnName": "smoking",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "heartCondition",
+            "columnName": "heartCondition",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "hypertension",
+            "columnName": "hypertension",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "diabetes",
+            "columnName": "diabetes",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "sleepDisorder",
+            "columnName": "sleepDisorder",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "anxietyHistory",
+            "columnName": "anxietyHistory",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "highCaffeineUse",
+            "columnName": "highCaffeineUse",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "physicallyInactive",
+            "columnName": "physicallyInactive",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "updatedAtEpochMs",
+            "columnName": "updatedAtEpochMs",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "synced",
+            "columnName": "synced",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [],
+        "foreignKeys": []
+      }
+    ],
+    "views": [],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '5ddca14bc71a1d3e1a7e1c9fb880df5b')"
+    ]
+  }
+}

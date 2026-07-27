@@ -19,6 +19,15 @@ data class ProfileRow(
     val gender: String? = null,
     val occupation: String? = null,
     @SerialName("bmi_category") val bmiCategory: String? = null,
+    /**
+     * Whether the account has a password.
+     *
+     * False after a Google sign-up until the user sets one. Defaulted true here so that a server
+     * that has not run the migration yet does not send every user to the set-password screen —
+     * failing towards "no extra step" is the safer direction, since the worst case is a user who
+     * cannot sign in by email, rather than one who cannot get past a screen.
+     */
+    @SerialName("password_set") val passwordSet: Boolean = true,
 ) {
     /** Whether this row carries everything the stress model needs. */
     val isComplete: Boolean
@@ -32,6 +41,28 @@ data class ProfileRow(
         bmi = bmiCategory!!,
     )
 }
+
+/**
+ * What the app writes to `profiles`, which is deliberately less than it reads.
+ *
+ * Separate from [ProfileRow] because `password_set` must never be part of an upsert from this
+ * screen: the row is written whenever the profile form is saved, and sending the read shape's
+ * default would silently mark the password as set on an account that has none. Only
+ * [ProfileRepository.markPasswordSet] may change that column.
+ */
+@Serializable
+private data class ProfileUpsert(
+    val id: String,
+    @SerialName("display_name") val displayName: String? = null,
+    val age: Int? = null,
+    val gender: String? = null,
+    val occupation: String? = null,
+    @SerialName("bmi_category") val bmiCategory: String? = null,
+)
+
+/** Just the password flag, for the one call that is allowed to set it. */
+@Serializable
+private data class PasswordSetUpdate(@SerialName("password_set") val passwordSet: Boolean)
 
 /**
  * Keeps the profile in two places, deliberately.
@@ -69,7 +100,7 @@ object ProfileRepository {
 
         return try {
             SupabaseProvider.client.from(TABLE).upsert(
-                ProfileRow(
+                ProfileUpsert(
                     id = userId,
                     displayName = SessionManager.getUserName(context),
                     age = profile.age,
@@ -82,6 +113,41 @@ object ProfileRepository {
             true
         } catch (error: Exception) {
             Log.w(TAG, "profile push failed; local copy is unaffected", error)
+            false
+        }
+    }
+
+    /**
+     * Whether this account has a password, so the app knows whether to ask for one.
+     *
+     * Returns true when the answer cannot be fetched. Failing towards "no extra step" is the safer
+     * direction: the cost of a wrong true is a user who cannot sign in by email until they try
+     * again, while a wrong false puts a set-password screen in front of someone who already has
+     * one — with no way past it if the network stays down.
+     */
+    suspend fun hasPassword(): Boolean {
+        val userId = AuthRepository.currentUser?.id ?: return true
+        return try {
+            SupabaseProvider.client.from(TABLE)
+                .select { filter { eq("id", userId) } }
+                .decodeSingleOrNull<ProfileRow>()
+                ?.passwordSet ?: true
+        } catch (error: Exception) {
+            Log.w(TAG, "could not read password_set; assuming the account has a password", error)
+            true
+        }
+    }
+
+    /** Records that a password now exists. Called only after Supabase has accepted it. */
+    suspend fun markPasswordSet(): Boolean {
+        val userId = AuthRepository.currentUser?.id ?: return false
+        return try {
+            SupabaseProvider.client.from(TABLE)
+                .update(PasswordSetUpdate(true)) { filter { eq("id", userId) } }
+            Log.i(TAG, "password recorded for $userId")
+            true
+        } catch (error: Exception) {
+            Log.w(TAG, "could not record password_set", error)
             false
         }
     }
