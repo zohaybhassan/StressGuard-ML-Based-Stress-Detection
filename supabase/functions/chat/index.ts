@@ -73,7 +73,14 @@ const CORS_HEADERS = {
 function json(body: ChatResponse | { error: string }, status = 200): Response {
   return new Response(JSON.stringify(body), {
     status,
-    headers: { ...CORS_HEADERS, "Content-Type": "application/json" },
+    headers: {
+      ...CORS_HEADERS,
+      // The charset is stated rather than left to the client to guess. Without it a client that
+      // defaults to Latin-1 renders every non-ASCII character as mojibake, and the reply that
+      // must survive that intact is the crisis one -- a garbled helpline is a helpline nobody
+      // calls.
+      "Content-Type": "application/json; charset=utf-8",
+    },
   });
 }
 
