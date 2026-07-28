@@ -34,7 +34,7 @@
         android:layout_marginTop="2dp"
         android:layout_marginEnd="18dp"
         android:layout_marginBottom="6dp"
-        android:text="A supportive listener, not a therapist or a doctor. It cannot diagnose anything or advise on medication. In an emergency, contact a crisis service."
+        android:text="A supportive listener, not a therapist or a doctor. It cannot diagnose anything or advise on medication. Your latest heart rate, steps and sleep are shared with the AI service so it can respond to how you are doing. In an emergency, contact a crisis service."
         android:textColor="#64706A"
         android:textSize="12sp"
         app:layout_constraintEnd_toEndOf="parent"

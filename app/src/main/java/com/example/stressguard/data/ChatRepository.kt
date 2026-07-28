@@ -37,9 +37,61 @@ data class ChatReply(
 private data class ChatRequest(
     val message: String,
     val history: List<Turn>,
+    /** Null when nothing has been predicted yet, or the profile is incomplete. */
+    val context: StressContext? = null,
 ) {
     @Serializable
     data class Turn(val role: String, val content: String)
+}
+
+/**
+ * What the assistant is told about the person it is talking to.
+ *
+ * This leaves the device and reaches Hugging Face inside the prompt. That is a deliberate choice
+ * and worth stating: the alternative — describing the readings only in relative terms — keeps the
+ * numbers off a third party's servers, and was rejected in favour of an assistant that can speak
+ * concretely. The disclaimer on the assistant screen says so.
+ *
+ * Attribution is included, not just the values, because "your heart rate is 92" invites the model
+ * to interpret a number clinically, whereas "heart rate is what the model weighted most heavily"
+ * is a statement about the model rather than about the person's health.
+ */
+@Serializable
+data class StressContext(
+    val label: String,
+    @SerialName("heart_rate") val heartRate: Int,
+    @SerialName("daily_steps") val dailySteps: Int,
+    @SerialName("sleep_hours") val sleepHours: Float,
+    /** Human-readable, e.g. "heart rate, well above typical". Null when nothing pushed upward. */
+    @SerialName("main_driver") val mainDriver: String? = null,
+    /** Every live input with its standing, so the model can be specific without inventing. */
+    val drivers: List<String> = emptyList(),
+    /** True when the unchangeable profile outweighed everything measured today. */
+    @SerialName("profile_dominates") val profileDominates: Boolean = false,
+    /** The reading sat outside the model's trained ranges, so it extrapolated. */
+    val extrapolating: Boolean = false,
+) {
+    companion object {
+        fun from(explanation: StressExplanation): StressContext {
+            val vitals = explanation.drivers.associateBy { it.feature }
+            return StressContext(
+                label = explanation.label,
+                heartRate = vitals[LiveFeature.HEART_RATE]?.observed?.toInt() ?: 0,
+                dailySteps = vitals[LiveFeature.DAILY_STEPS]?.observed?.toInt() ?: 0,
+                sleepHours = vitals[LiveFeature.SLEEP]?.observed ?: 0f,
+                mainDriver = explanation.leadingDriver?.let { "${it.feature.plain()}, ${it.deviation}" },
+                drivers = explanation.drivers.map { "${it.feature.plain()}: ${it.deviation}" },
+                profileDominates = explanation.profileDominates,
+                extrapolating = explanation.extrapolating,
+            )
+        }
+    }
+}
+
+private fun LiveFeature.plain(): String = when (this) {
+    LiveFeature.HEART_RATE -> "heart rate"
+    LiveFeature.DAILY_STEPS -> "daily activity"
+    LiveFeature.SLEEP -> "sleep"
 }
 
 @Serializable
@@ -152,8 +204,9 @@ object ChatRepository {
         sessionId: String?,
         message: String,
         history: List<ChatMessage>,
+        context: StressContext? = null,
     ): ChatReply {
-        val reply = runCatching { invoke(message, history) }
+        val reply = runCatching { invoke(message, history, context) }
             .onFailure { Log.w(TAG, "chat function call failed", it) }
             .getOrElse {
                 // The server normally owns the crisis check, but it cannot answer if it cannot be
@@ -175,7 +228,11 @@ object ChatRepository {
         return reply
     }
 
-    private suspend fun invoke(message: String, history: List<ChatMessage>): ChatReply {
+    private suspend fun invoke(
+        message: String,
+        history: List<ChatMessage>,
+        context: StressContext?,
+    ): ChatReply {
         val response: HttpResponse = SupabaseProvider.client.functions.invoke(FUNCTION) {
             contentType(ContentType.Application.Json)
             setBody(
@@ -187,6 +244,7 @@ object ChatRepository {
                             content = it.content,
                         )
                     },
+                    context = context,
                 )
             )
         }

@@ -13,6 +13,8 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.stressguard.data.ChatMessage
 import com.example.stressguard.data.ChatRepository
 import com.example.stressguard.data.ChatRole
+import com.example.stressguard.data.StressContext
+import com.example.stressguard.data.StressPipeline
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.button.MaterialButton
@@ -37,6 +39,16 @@ class AssistantActivity : AppCompatActivity() {
 
     /** Null when signed out or Supabase is unreachable; the conversation still works, unstored. */
     private var sessionId: String? = null
+
+    /**
+     * What the app currently reads about the user, refreshed when the screen opens.
+     *
+     * Computed once here rather than per message: attribution costs four inferences, and the
+     * reading will not have changed between two lines of the same conversation. Null until it
+     * arrives, and null forever if nothing has been predicted yet — in which case the assistant
+     * simply talks without it.
+     */
+    private var stressContext: StressContext? = null
 
     /** Guards against a second send while one is in flight, which would interleave the history. */
     private var awaitingReply = false
@@ -95,6 +107,10 @@ class AssistantActivity : AppCompatActivity() {
      */
     private fun restoreConversation() {
         lifecycleScope.launch {
+            // Started first and not waited on: the conversation must open immediately, and the
+            // reading only has to arrive before the user finishes typing their first message.
+            launch { stressContext = loadStressContext() }
+
             sessionId = ChatRepository.openSession(stressAtStart = intent.getStringExtra(EXTRA_STRESS))
 
             val stored = sessionId?.let { ChatRepository.history(it) }.orEmpty()
@@ -108,6 +124,16 @@ class AssistantActivity : AppCompatActivity() {
             rvMessages.scrollToPosition(adapter.itemCount - 1)
         }
     }
+
+    /**
+     * Asks the pipeline which input drove the last prediction.
+     *
+     * Off the main thread and off the real-time path: this runs four extra inferences, which is
+     * fine once when a screen opens and would be indefensible between a reading arriving and an
+     * alert firing.
+     */
+    private suspend fun loadStressContext(): StressContext? =
+        StressPipeline.get(applicationContext).explainLatest()?.let { StressContext.from(it) }
 
     /** Acknowledges why the user is here when the alert sent them, and stays neutral otherwise. */
     private fun greeting(): String =
@@ -131,7 +157,7 @@ class AssistantActivity : AppCompatActivity() {
         setAwaitingReply(true)
 
         lifecycleScope.launch {
-            val reply = ChatRepository.send(sessionId, text, history)
+            val reply = ChatRepository.send(sessionId, text, history, stressContext)
             setAwaitingReply(false)
             rvMessages.scrollToPosition(
                 adapter.add(ChatMessage(ChatRole.ASSISTANT, reply.reply, reply.isFallback))

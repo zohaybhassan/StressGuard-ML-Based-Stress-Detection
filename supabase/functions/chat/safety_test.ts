@@ -8,7 +8,13 @@
  */
 
 import { assert, assertEquals, assertFalse } from "jsr:@std/assert";
-import { CRISIS_REPLY, isCrisis, normalise, SYSTEM_PROMPT } from "./safety.ts";
+import {
+  CRISIS_REPLY,
+  isCrisis,
+  normalise,
+  SYSTEM_PROMPT,
+  withExtrapolationCaveat,
+} from "./safety.ts";
 
 Deno.test("plain statements of intent are caught", () => {
   assert(isCrisis("i want to die"));
@@ -65,6 +71,41 @@ Deno.test("the crisis reply names a real service and does not counsel", () => {
     CRISIS_REPLY.includes("I am an app, not a person"),
     "must not let the user believe they reached a human",
   );
+});
+
+Deno.test("an extrapolated reading gets a caveat the model failed to add", () => {
+  // The exact reply the deployed model gave when told the readings were far outside the trained
+  // range and instructed in capitals to say so. Twice. Hence enforcing it in code.
+  const overconfident =
+    "The app's model reads your current state as stressed. This is largely driven by your " +
+    "heart rate, which is 118 bpm, far above typical.";
+
+  const result = withExtrapolationCaveat(overconfident, true);
+
+  assert(result.includes("unreliable"));
+  assert(result.includes("rough guess"));
+});
+
+Deno.test("a reply that already admits the limitation is left alone", () => {
+  const honest =
+    "Your readings sit outside what the app can measure reliably, so I would not put much " +
+    "weight on that number.";
+
+  assertEquals(withExtrapolationCaveat(honest, true), honest);
+});
+
+Deno.test("nothing is appended when the model is not extrapolating", () => {
+  const reply = "Your heart rate is above typical and the model weighted it most.";
+
+  assertEquals(withExtrapolationCaveat(reply, false), reply);
+});
+
+Deno.test("a reply about something else does not get a disclaimer stapled to it", () => {
+  // Conversations drift. A caveat about heart rate on a reply about someone's brother is noise,
+  // and noise is how disclaimers stop being read.
+  const offTopic = "That sounds like a difficult conversation to have had with your brother.";
+
+  assertEquals(withExtrapolationCaveat(offTopic, true), offTopic);
 });
 
 Deno.test("the system prompt states the boundaries §18 requires", () => {

@@ -16,7 +16,15 @@
  *   supabase functions deploy chat
  */
 
-import { CRISIS_REPLY, isCrisis, SYSTEM_PROMPT, UNAVAILABLE_REPLY } from "./safety.ts";
+import {
+  contextPrompt,
+  CRISIS_REPLY,
+  isCrisis,
+  type StressContext,
+  SYSTEM_PROMPT,
+  UNAVAILABLE_REPLY,
+  withExtrapolationCaveat,
+} from "./safety.ts";
 
 /**
  * OpenAI-compatible chat completions, routed by Hugging Face.
@@ -55,6 +63,8 @@ interface Turn {
 interface ChatRequest {
   message: string;
   history?: Turn[];
+  /** The app's current reading of this person; absent before anything has been predicted. */
+  context?: StressContext | null;
 }
 
 interface ChatResponse {
@@ -144,6 +154,12 @@ Deno.serve(async (req: Request) => {
         temperature: 0.7,
         messages: [
           { role: "system", content: SYSTEM_PROMPT },
+          // A second system message rather than appended to the first, so the standing rules and
+          // the volatile per-request reading stay distinguishable. The boundaries above do not
+          // change; this does, on every turn.
+          ...(body.context
+            ? [{ role: "system", content: contextPrompt(body.context) }]
+            : []),
           ...history,
           { role: "user", content: message },
         ],
@@ -166,7 +182,12 @@ Deno.serve(async (req: Request) => {
       return json({ reply: UNAVAILABLE_REPLY, isFallback: true, isCrisis: false });
     }
 
-    return json({ reply, isFallback: false, isCrisis: false });
+    // Enforced here rather than trusted to the prompt. See withExtrapolationCaveat.
+    return json({
+      reply: withExtrapolationCaveat(reply, body.context?.extrapolating === true),
+      isFallback: false,
+      isCrisis: false,
+    });
   } catch (error) {
     // Timeout, DNS, TLS, upstream outage. All of them mean the same thing to the person waiting.
     console.error("chat upstream failed", error);

@@ -414,6 +414,52 @@ action on the high-stress notification**. The last matters most — the alert fi
 least inclined to go looking for help, so the distance between "you are stressed" and "here is
 someone to talk to" should be one tap.
 
+### Telling the assistant *why* someone is stressed
+
+The assistant is given the current reading and, more usefully, which input produced it.
+
+`StressAttribution` answers "why" by **asking the model rather than guessing**: it re-runs the real
+ensemble with one live input replaced by its training median and measures how far the high-stress
+probability falls. Whichever swap costs most is the input carrying the prediction. Medians come from
+the file the model was fit on — heart rate 75, 5840 steps, 7.9 hours.
+
+Using the model matters. A heuristic like "heart rate over 90 means stress" can confidently
+contradict what the trees actually did, and would be a plausible story rather than an explanation.
+
+**Its limitation, stated plainly:** one-at-a-time ablation cannot see interactions. If a high heart
+rate only matters when sleep is short, that joint effect is invisible and both will look modest.
+Shapley values would capture it at far greater cost; for naming a leading driver to a person this is
+enough, provided it is honest about being a single-factor answer.
+
+**The profile is measured as its own bucket.** Occupation and the other static features carry 1.65×
+the influence of the vitals, so an assistant that always blamed today's readings would be reassuring
+and wrong. Swapping the whole profile to the model's own zero point — Female, Accountant, Normal BMI,
+the `drop_first` baseline — measures what the person's background adds. When it outweighs everything
+measured today, the assistant says so instead of inventing a reason.
+
+Attribution costs four extra inferences and is **deliberately never run on the real-time path**. It
+happens once when the assistant screen opens, reconstructed from the stored row, so a reading that
+arrived in the background is still explainable after the process was killed.
+
+**Two claims are enforced in code rather than asked for in the prompt**, because prompt-only
+enforcement was tested and failed:
+
+- The crisis reply, as above.
+- **The extrapolation caveat.** Told the readings were far outside the trained range and instructed
+  in capitals to say so, the model twice answered "your current state is stressed" as plain fact.
+  `withExtrapolationCaveat` appends a fixed sentence when the reply discusses the reading without
+  hedging, and stands down when the model already hedged or has moved on to another subject. An
+  extrapolation delivered confidently is worse than no reading, because nothing tells the user it
+  was guesswork.
+
+One wording rule earns its place: the prompt forbids "your typical". The app has never established
+this person's resting heart rate, so "typical" is the training population's median, and "higher than
+usual for you" would claim a comparison that was never made.
+
+**Privacy note for the report:** heart rate, step count and sleep hours now travel to Hugging Face
+inside the prompt. That was chosen over describing them only in relative terms, which would have kept
+the numbers off a third party's servers. The assistant screen's disclaimer says so.
+
 ## Planned Next Layers
 
 - Supportive chatbot backend, and the `nav_assistant` tab that goes with it

@@ -251,6 +251,49 @@ class StressPipeline private constructor(private val context: Context) {
             dailySteps !in SensorReading.TRAINED_STEPS ||
             sleepHours !in SensorReading.TRAINED_SLEEP_HOURS
 
+    /**
+     * Why the most recent prediction came out the way it did, or null if there is none.
+     *
+     * Deliberately **not** computed during [process]. Attribution costs four extra inferences, and
+     * putting them on the path between a reading arriving and an alert firing would multiply the
+     * measured latency by five for a figure nobody is waiting on. It is worked out once, when the
+     * assistant screen opens, from what was already stored.
+     *
+     * Reconstructed from the stored row rather than kept in memory, so it survives the process
+     * being killed between a reading arriving in the background and the user opening the chat.
+     */
+    suspend fun explainLatest(): StressExplanation? = mutex.withLock {
+        val profile = SessionManager.readProfile(context) ?: return null
+        val row = runCatching { database.stressPredictions().latest(1).firstOrNull() }
+            .onFailure { Log.w(TAG, "could not read the last prediction to explain it", it) }
+            .getOrNull() ?: return null
+
+        val service = inference ?: withContext(Dispatchers.Default) {
+            StressInferenceService(context)
+        }.also { inference = it }
+
+        val highStressClassIndex = service.modelInfo.classCount - 1
+
+        return runCatching {
+            withContext(Dispatchers.Default) {
+                StressAttribution.explain(
+                    probability = { candidateProfile, candidateVitals ->
+                        service.predict(candidateProfile, candidateVitals)
+                            .probabilities[highStressClassIndex]
+                    },
+                    profile = profile,
+                    // The activity level, not the raw step count: it is what the model was given,
+                    // and explaining a prediction with an input it never saw would be fiction.
+                    vitals = StressVitals(row.heartRate, row.activityLevel, row.sleepHours),
+                    label = row.label,
+                    extrapolating = row.outOfTrainingRange,
+                )
+            }
+        }
+            .onFailure { Log.w(TAG, "could not attribute the last prediction", it) }
+            .getOrNull()
+    }
+
     suspend fun latencySummary(): LatencySummary =
         runCatching { latencyTracker.summary() }.getOrDefault(LatencySummary.EMPTY)
 
