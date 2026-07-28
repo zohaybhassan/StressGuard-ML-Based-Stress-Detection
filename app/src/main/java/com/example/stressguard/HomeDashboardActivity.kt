@@ -133,7 +133,15 @@ class HomeDashboardActivity : AppCompatActivity() {
         stressGauge = findViewById(R.id.stressGauge)
         btnSimulateModelInput = findViewById(R.id.btnSimulateModelInput)
 
+        // "Feeling Overwhelmed?" has been on this screen since the first commit, wired to nothing.
+        // The assistant is what it was always asking for: the button states a need, and now there
+        // is somewhere to take it.
+        findViewById<MaterialButton>(R.id.btnEmergency).setOnClickListener {
+            startActivity(AssistantActivity.fromAlert(this, viewModel.state.value.prediction?.label))
+        }
+
         setUpToolbar()
+        BottomNav.wire(this, findViewById(R.id.bottomNavigation), R.id.nav_home)
 
         cvRecommendation = findViewById(R.id.cvRecommendation)
         tvRecommendationLevel = findViewById(R.id.tvRecommendationLevel)

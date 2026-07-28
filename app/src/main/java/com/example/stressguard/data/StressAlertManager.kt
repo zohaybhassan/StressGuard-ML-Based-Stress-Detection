@@ -15,6 +15,7 @@ import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
+import com.example.stressguard.AssistantActivity
 import com.example.stressguard.HomeDashboardActivity
 import com.example.stressguard.R
 import com.example.stressguard.data.local.AlertEventDao
@@ -120,6 +121,18 @@ class StressAlertManager(
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
         )
 
+        // Plan §18 asks for a quick action from a high-stress alert into the chatbot. It matters
+        // more than it sounds: the alert fires when someone is least inclined to go looking for
+        // help, so the distance between "you are stressed" and "here is someone to talk to"
+        // should be one tap, not a hunt through tabs.
+        val talk = PendingIntent.getActivity(
+            context,
+            REQUEST_TALK,
+            AssistantActivity.fromAlert(context, stressLabel = "high")
+                .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP),
+            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
+        )
+
         val notification = NotificationCompat.Builder(context, CHANNEL_ID)
             .setSmallIcon(R.mipmap.ic_launcher)
             .setContentTitle("Sustained high stress")
@@ -130,6 +143,7 @@ class StressAlertManager(
             .setCategory(NotificationCompat.CATEGORY_REMINDER)
             .setAutoCancel(true)
             .setContentIntent(open)
+            .addAction(0, "Talk it through", talk)
             .build()
 
         runCatching { NotificationManagerCompat.from(context).notify(NOTIFICATION_ID, notification) }
@@ -153,5 +167,8 @@ class StressAlertManager(
         const val TAG = "STRESS_ALERT"
         private const val CHANNEL_ID = "stress_alerts"
         private const val NOTIFICATION_ID = 1001
+
+        /** Distinct from the content intent's request code, or the two PendingIntents collide. */
+        private const val REQUEST_TALK = 1
     }
 }

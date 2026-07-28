@@ -11,6 +11,7 @@ object SessionManager {
     private const val KEY_USER_OCCUPATION = "user_occupation"
     private const val KEY_USER_BMI = "user_bmi"
     private const val KEY_PASSWORD_SET = "password_set"
+    private const val KEY_LAST_USER_ID = "last_user_id"
 
     private fun prefs(context: Context) = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
 
@@ -63,6 +64,22 @@ object SessionManager {
 
     fun getUserBmi(context: Context): String? =
         prefs(context).getString(KEY_USER_BMI, null)?.takeIf { it.isNotBlank() }
+
+    /**
+     * Which account this device's local data belongs to.
+     *
+     * Read on every sign-in to catch a change of user. Sign-out clears local data, but a session can
+     * also end *without* that path running — a revoked or already-used refresh token makes the
+     * Supabase client drop the session on its own, which has been observed in this app's logs. The
+     * next person to sign in would then inherit the previous user's history, so the identity is
+     * checked rather than assumed.
+     */
+    fun getLastUserId(context: Context): String? =
+        prefs(context).getString(KEY_LAST_USER_ID, null)?.takeIf { it.isNotBlank() }
+
+    fun setLastUserId(context: Context, userId: String) {
+        prefs(context).edit().putString(KEY_LAST_USER_ID, userId).apply()
+    }
 
     /**
      * Remembers that this account has a password, so the router does not ask the server again.

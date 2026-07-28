@@ -96,6 +96,7 @@ dependencies {
     implementation(platform(libs.supabase.bom))
     implementation(libs.supabase.auth)
     implementation(libs.supabase.postgrest)
+    implementation(libs.supabase.functions)
     implementation(libs.ktor.client.okhttp)
 
     // Google sign-in through Credential Manager, which replaces the deprecated
@@ -115,6 +116,9 @@ dependencies {
     // WorkManager: drains the local queues to Supabase. Deliberately outside the alert path --
     // plan §4 and §25 both require that detection never waits on the network.
     implementation(libs.androidx.work.runtime.ktx)
+
+    // Charts for the trends screen, plan §17.
+    implementation(libs.mpandroidchart)
 
     testImplementation(libs.junit)
     testImplementation(libs.kotlinx.coroutines.test)

@@ -4,6 +4,7 @@ import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.auth.Auth
 import io.github.jan.supabase.auth.auth
 import io.github.jan.supabase.createSupabaseClient
+import io.github.jan.supabase.functions.Functions
 import io.github.jan.supabase.postgrest.Postgrest
 
 /**
@@ -36,6 +37,9 @@ object SupabaseProvider {
                 alwaysAutoRefresh = true
             }
             install(Postgrest)
+            // The chatbot calls an Edge Function rather than Hugging Face directly, so the API
+            // token stays on the server instead of being shipped inside an APK anyone can unzip.
+            install(Functions)
         }
     }
 

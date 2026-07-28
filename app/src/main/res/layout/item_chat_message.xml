@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    One message bubble. A single layout for both speakers, with the gravity and colours set in the
+    adapter, rather than two view types: the difference between them is presentation only, and two
+    files would drift apart the first time either was edited.
+-->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/bubbleRow"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:paddingTop="4dp"
+    android:paddingBottom="4dp">
+
+    <TextView
+        android:id="@+id/tvBubble"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@drawable/bg_chat_bubble"
+        android:lineSpacingExtra="2dp"
+        android:maxWidth="290dp"
+        android:paddingStart="14dp"
+        android:paddingTop="10dp"
+        android:paddingEnd="14dp"
+        android:paddingBottom="10dp"
+        android:textColor="#101816"
+        android:textIsSelectable="true"
+        android:textSize="15sp" />
+
+</FrameLayout>

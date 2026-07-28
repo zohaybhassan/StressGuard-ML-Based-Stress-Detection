@@ -28,6 +28,7 @@ coroutines = "1.9.0"
 lifecycle = "2.8.7"
 room = "2.6.1"
 work = "2.9.1"
+mpAndroidChart = "v3.1.0"
 # KSP releases are pinned to a Kotlin version: the prefix must match `kotlin` above exactly,
 # or the plugin refuses to load.
 ksp = "2.0.21-1.0.28"
@@ -59,6 +60,8 @@ androidx-core-splashscreen = { group = "androidx.core", name = "core-splashscree
 supabase-bom = { group = "io.github.jan-tennert.supabase", name = "bom", version.ref = "supabase" }
 supabase-auth = { group = "io.github.jan-tennert.supabase", name = "auth-kt" }
 supabase-postgrest = { group = "io.github.jan-tennert.supabase", name = "postgrest-kt" }
+# Edge Functions, so the chatbot's Hugging Face token stays server-side (plan §4, §18).
+supabase-functions = { group = "io.github.jan-tennert.supabase", name = "functions-kt" }
 # supabase-kt is built on Ktor but ships no engine; Android needs one supplied explicitly.
 ktor-client-okhttp = { group = "io.ktor", name = "ktor-client-okhttp", version.ref = "ktor" }
 
@@ -84,6 +87,10 @@ androidx-room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = 
 androidx-room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "room" }
 androidx-room-testing = { group = "androidx.room", name = "room-testing", version.ref = "room" }
 androidx-work-runtime-ktx = { group = "androidx.work", name = "work-runtime-ktx", version.ref = "work" }
+
+# Charts for the trends screen. XML views, matching the rest of the phone UI. Published only to
+# JitPack, which settings.gradle.kts adds for this group alone.
+mpandroidchart = { group = "com.github.PhilJay", name = "MPAndroidChart", version.ref = "mpAndroidChart" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

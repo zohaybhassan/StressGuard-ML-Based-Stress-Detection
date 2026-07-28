@@ -335,10 +335,88 @@ shipped with `exportSchema = false`, so no JSON for them exists. The tests creat
 with the DDL those versions shipped and then open it *through Room*, which is the path a real
 device takes and makes Room's own validation the assertion.
 
+## The trends screen (plan §17)
+
+`TrendsRepository` reads the same rows through the same `StressHistory.summarise` the recommendation
+uses, so the chart and the risk score cannot disagree about what counted as a high-stress day. That
+shared definition is why `StressHistory` is a pure function over rows rather than something each
+caller reimplements — two independent rollups is how a dashboard ends up contradicting its own
+advice.
+
+Three charts, because the quantities do not share a scale. Heart rate sits near 70 and sleep near
+7.5, so they share one chart on two axes; activity is in the thousands and gets its own. The stress
+chart draws a dashed limit line at `StressAlertPolicy.THRESHOLD` and colours each bar by whether it
+cleared it, so a user can see *why* a day did or did not count rather than being handed the verdict.
+
+**Sparse data is a first-class state, not an error.** With passive collection the watch is not worn
+every day, so `StressTrends` separates "no readings at all" from "one day so far" and the screen
+says something different for each. A single-day chart is a dot that implies a week of evidence.
+
+`daysWithData` is quoted in the headline for the same reason: three high-stress days across three
+days of readings and across seven are very different facts, and the chart alone cannot show which.
+
+MPAndroidChart is published only to JitPack, so `settings.gradle.kts` adds that repository scoped to
+`com.github.PhilJay` alone — opened globally, a typo in any other coordinate could silently resolve
+to someone's fork.
+
+The `nav_assistant` tab was **removed** rather than left in place. It had been declared and wired to
+nothing since the first dashboard layout; once the bottom bar actually navigated, a tab that did
+nothing when tapped would read as a broken app rather than an unfinished one. It comes back with the
+chatbot screen.
+
+## The supportive chatbot (plan §18)
+
+Every reply comes from a **Supabase Edge Function**, never from Hugging Face directly. That is not
+a layering preference. An APK is a zip file anyone can unpack, so a token shipped inside one is a
+published token, and §18's exit criteria test for exactly that. `supabase secrets set
+HUGGINGFACE_TOKEN=…` puts it somewhere the app never sees.
+
+The safety behaviour lives there for the same reason: on the client, the system prompt and the
+crisis check could be edited out by anyone with the APK, and the app's only guarantee about what
+the assistant says would be a guarantee about its own good intentions.
+
+**Two mechanisms, and they are not interchangeable.**
+
+The **system prompt** shapes ordinary conversation — listen, reflect, offer grounding; never
+diagnose, never discuss medication, never claim to replace a professional. It is advisory. A model
+can be argued out of an instruction, so it cannot be the only defence.
+
+The **crisis check** is not advisory. A message matching it never reaches the model; a fixed reply
+naming real crisis lines is returned instead. A model asked about suicide may respond well, but
+"may" is the wrong standard for the one case where being wrong is unrecoverable, and a fixed
+response is the only kind whose wording can be reviewed in advance and quoted in a report.
+
+The check deliberately **over-matches**: a false positive shows a helpline to someone who did not
+need one, a false negative sends a person in danger to a language model. It matches phrases rather
+than words, because "kill" alone fires on "this deadline is killing me" — the ordinary stressed
+speech the assistant exists to discuss.
+
+**The check is duplicated in Kotlin** (`data/CrisisCheck.kt`), which is otherwise exactly the kind
+of duplication to avoid. It closes one gap: with no network the repository falls back to a
+breathing exercise, and offering that to someone who has just written "I want to die" is the worst
+thing this app could say. A crisis does not wait for signal. The offline reply gives phone numbers,
+never a URL, because someone offline cannot open one. Both copies are tested —
+`supabase/functions/chat/safety_test.ts` and `CrisisCheckTest` — because a divergence between them
+would otherwise be silent.
+
+A general instruct model constrained by a visible prompt was chosen over a community fine-tune
+trained on counselling transcripts: the behaviour of this one is documented and the constraints on
+it are in this repository, which is what makes the choice defensible in a viva.
+
+Transcripts are stored in `chat_sessions` and `chat_messages` behind RLS, and unlike the history
+tables these grant `delete` — a user who wants a conversation about their mental health gone should
+not have to delete their account to get it. Storage failures are logged and swallowed: losing the
+archive is bad, dropping a conversation someone is mid-way through is worse.
+
+Three entry points, per §18's "quick action from high-stress alert": the Assistant tab, the
+"Feeling Overwhelmed?" button that had been inert since the first commit, and a **"Talk it through"
+action on the high-stress notification**. The last matters most — the alert fires when someone is
+least inclined to go looking for help, so the distance between "you are stressed" and "here is
+someone to talk to" should be one tap.
+
 ## Planned Next Layers
 
-- Trend charts over the stored prediction history (the `nav_trends` tab is still dead UI)
-- Supportive chatbot backend (`nav_assistant` likewise)
+- Supportive chatbot backend, and the `nav_assistant` tab that goes with it
 
 ## Known Structural Gaps
 
@@ -383,8 +461,17 @@ device takes and makes Room's own validation the assertion.
 - Passive batches can arrive minutes apart, so the phone process is often killed in between and
   each batch pays the cold-start model load. This is why `LatencyMetricEntity.coldStart` is
   recorded separately — in background operation cold starts are common, not exceptional.
-- Dead UI declared in `activity_home_dashboard.xml` with no listeners: `btnEmergency`,
-  `bottomNavigation`, and the `nav_trends` / `nav_assistant` menu entries
+- **Local storage is not keyed by user.** The Room tables, the profile and the caches describe "the
+  person using this phone", which was true only while there was no way to sign out. Two things now
+  stand in for a `user_id` column: `LocalUserData.clear` on sign-out, and an identity check in
+  `PostAuthRouter` that wipes local data when the signed-in account differs from the one it belongs
+  to. The second exists because sign-out is not the only way a session ends — the Supabase client
+  drops one on its own when a refresh token is revoked or replayed, which this app's logs have shown
+  happening, and no sign-out path runs in that case. Adding `user_id` to the local tables would make
+  the whole class of defect impossible rather than guarded against; it has not been done yet.
+- `btnEmergency` is still declared in `activity_home_dashboard.xml` with no listener
+- Instrumented tests must be pointed at the phone (`ANDROID_SERIAL`). Gradle installs `:app` on
+  every connected device including the paired watch, where an Activity test cannot resume
 - Command-line Gradle builds require JDK 21; the machine's default JDK 26 is too new for
   Gradle 8.13's embedded Kotlin and fails with `IllegalArgumentException: 26.0.1`. Android
   Studio works because it uses its own bundled JDK at `D:\andriod\jbr`.

@@ -22,6 +22,7 @@ The mobile app is currently functional for:
 - ONNX model inference on device.
 - Local history in Room: predictions, latency samples, alerts.
 - Sustained-stress haptic alerts with smoothing and a cooldown.
+- A trends screen: weekly stress chart plus heart rate, sleep and activity over time.
 - Background sync of local history to Supabase.
 - Debug testing without a smartwatch.
 
@@ -499,6 +500,8 @@ StressGuard/
 - `app/src/main/java/com/example/stressguard/HomeDashboardActivity.kt`: dashboard UI logic, live data display, sleep read path, and debug testing.
 - `app/src/main/java/com/example/stressguard/VitalReceiverService.kt`: receives wearable messages on the phone.
 - `app/src/main/java/com/example/stressguard/data/StressPipeline.kt`: reading in, prediction out — stored, timed and possibly alerted.
+- `app/src/main/java/com/example/stressguard/TrendsActivity.kt`: weekly stress and vitals charts.
+- `app/src/main/java/com/example/stressguard/data/TrendsRepository.kt`: the per-day rollup the charts draw.
 - `app/src/main/java/com/example/stressguard/data/StressAlertPolicy.kt`: pure smoothing and cooldown rule.
 - `app/src/main/java/com/example/stressguard/data/RecommendationPolicy.kt`: pure rule-based checkup score.
 - `app/src/main/java/com/example/stressguard/data/local/StressGuardDatabase.kt`: Room store and its migrations.
@@ -565,30 +568,34 @@ Wear app:
 
 ## Suggested Next Steps
 
-1. Add stress trend charts to the dashboard and wire the dead `nav_trends` tab.
-2. Build the supportive chatbot: a Supabase Edge Function wrapping Hugging Face, keeping the token
-   server-side, plus the `nav_assistant` screen and a quick action from a high-stress alert.
-3. Collect the 30 latency samples the plan asks for, with the network on and in airplane mode.
-4. Add a sign-out control, and an edit-profile screen so different manual inputs can be tested
-   without clearing app data.
-5. Decide what `btnEmergency` should do, or remove it.
-6. Replace the AES/ECB hardcoded-key wearable encryption before presenting it as a security
+1. Build the supportive chatbot: a Supabase Edge Function wrapping Hugging Face, keeping the token
+   server-side, plus the screen, a quick action from a high-stress alert, and restoring the
+   `nav_assistant` tab that was removed until it exists.
+2. Collect the 30 latency samples the plan asks for, with the network on and in airplane mode.
+3. Add an edit-profile screen so different manual inputs can be tested without clearing app data.
+4. Decide what `btnEmergency` should do, or remove it.
+5. Replace the AES/ECB hardcoded-key wearable encryption before presenting it as a security
    measure.
-7. Add final report screenshots and testing evidence.
+6. Add final report screenshots and testing evidence.
 
 ## Testing
 
 ```bash
-./gradlew :app:test                        # 125 unit tests
-./gradlew :app:connectedDebugAndroidTest   # 22 instrumented tests, needs a device
+./gradlew :app:test                        # 143 unit tests
+ANDROID_SERIAL=<phone> ./gradlew :app:connectedDebugAndroidTest   # 29 instrumented tests
 ```
+
+Point the instrumented run at the phone. Gradle installs `:app` on every connected device including
+a paired watch, where an Activity test cannot resume and will fail for reasons that have nothing to
+do with the code.
 
 Command-line Gradle builds require **JDK 21**; JDK 26 fails Gradle 8.13's embedded Kotlin with
 `IllegalArgumentException: 26.0.1`. Android Studio works because it uses its own bundled JDK.
 
 The instrumented suite covers the Python-vs-Android parity of the shipped ONNX bundle
-(`StressInferenceParityTest`), the Room store, and the database migrations. All 22 have been run
-on a Galaxy Watch 4 (Wear OS 6 / API 36) and an Android 15 phone.
+(`StressInferenceParityTest`), the Room store, the database migrations, the trends screen, and the
+sign-out data wipe. All 29 have been run on an Android 15 phone; the non-UI subset also passes on a
+Galaxy Watch 4 (Wear OS 6 / API 36).
 
 ## Build Notes
 

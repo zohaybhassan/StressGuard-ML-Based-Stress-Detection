@@ -5,6 +5,8 @@ import android.util.Log
 import com.example.stressguard.SessionManager
 import com.example.stressguard.data.local.StressGuardDatabase
 import com.example.stressguard.data.sync.SyncState
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 /**
  * Everything on this device that belongs to the signed-in user, and how to remove it.
@@ -51,11 +53,22 @@ object LocalUserData {
      * populated, because a partial wipe is the worst outcome — it looks signed out while still
      * holding the previous user's data.
      */
-    suspend fun clear(context: Context) {
+    suspend fun clear(context: Context): Boolean = withContext(Dispatchers.IO) {
         val database = StressGuardDatabase.get(context)
 
-        runCatching { database.clearAllTables() }
-            .onFailure { Log.w(TAG, "could not clear the local database", it) }
+        // `clearAllTables` is blocking and calls Room's own `assertNotMainThread`, so it *must* run
+        // off the main thread. Without the dispatcher above it threw every time, `runCatching`
+        // swallowed it into a warning, and the database survived a sign-out entirely — the next
+        // user saw the previous one's charts, history and health checklist. The failure was silent
+        // because everything else on this list clears fine from the main thread.
+        val databaseCleared = runCatching { database.clearAllTables() }
+            .onFailure {
+                // Error, not warning. A database that outlives its owner shows one person's
+                // readings and medical answers to another; that is not a degraded state to log
+                // quietly and carry on from.
+                Log.e(TAG, "FAILED to clear the local database; it still holds the previous user's data", it)
+            }
+            .isSuccess
 
         // In-memory state too: the pipeline is process-scoped and outlives every Activity, so
         // clearing only the database would leave the previous user's smoothing window loaded.
@@ -71,6 +84,7 @@ object LocalUserData {
         runCatching { SyncState(context).clear() }
             .onFailure { Log.w(TAG, "could not clear the sync state", it) }
 
-        Log.i(TAG, "local user data cleared")
+        if (databaseCleared) Log.i(TAG, "local user data cleared")
+        databaseCleared
     }
 }

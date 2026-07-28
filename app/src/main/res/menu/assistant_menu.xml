@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <!--
+        Conversations resume by default, which is the point of storing them. This is the way out of
+        that: a user who does not want the assistant carrying this morning's context into this
+        evening should not have to delete anything to get a clean start.
+    -->
+    <item
+        android:id="@+id/action_new_conversation"
+        android:title="New conversation"
+        app:showAsAction="never" />
+</menu>

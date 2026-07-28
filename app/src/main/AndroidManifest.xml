@@ -37,12 +37,25 @@
         <activity
             android:name=".SetPasswordActivity"
             android:exported="false" />
+        <!-- singleTop so a tab tap returns to the existing instance rather than stacking a new
+             one; BottomNav relies on this to keep the back stack from growing. -->
+        <activity
+            android:name=".TrendsActivity"
+            android:exported="false"
+            android:launchMode="singleTop" />
+        <!-- adjustResize so the composer stays above the keyboard rather than under it. -->
+        <activity
+            android:name=".AssistantActivity"
+            android:exported="false"
+            android:launchMode="singleTop"
+            android:windowSoftInputMode="adjustResize" />
         <activity
             android:name=".LoginActivity"
             android:exported="false" />
         <activity
             android:name=".HomeDashboardActivity"
-            android:exported="false" />
+            android:exported="false"
+            android:launchMode="singleTop" />
         <activity
             android:name=".MainActivity"
             android:exported="true">
