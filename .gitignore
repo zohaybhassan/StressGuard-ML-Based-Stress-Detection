@@ -39,9 +39,13 @@ app/google-services.json
 # Supabase CLI scratch. The migrations themselves are schema definitions and MUST stay
 # tracked: they carry no secrets, and versioning them is what makes the database
 # reproducible. Only the CLI's local state is ignored here.
+#
+# config.toml is deliberately NOT ignored, despite an earlier rule here that did so. It is shared
+# project configuration rather than local state -- it decides how `supabase db push` and
+# `functions deploy` behave -- and it holds no secrets. Ignoring it meant every team member got
+# whatever defaults their own `supabase init` produced.
 supabase/.temp/
 supabase/.branches/
-supabase/config.toml
 
 # Logs and reports
 *.log
