@@ -4,6 +4,7 @@ import com.example.stressguard.data.local.AlertEventEntity
 import com.example.stressguard.data.local.HealthChecklistEntity
 import com.example.stressguard.data.local.LatencyMetricEntity
 import com.example.stressguard.data.local.StressPredictionEntity
+import com.example.stressguard.data.local.StressFeedbackEntity
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import java.time.Instant
@@ -155,5 +156,60 @@ data class AlertEventRow(
             modelVersion = entity.modelVersion,
             dismissed = entity.dismissed,
         )
+    }
+}
+
+@Serializable
+data class StressFeedbackRow(
+    @SerialName("user_id") val userId: String,
+    @SerialName("prompt_source") val promptSource: String,
+    @SerialName("alert_fired_at") val alertFiredAt: String,
+    @SerialName("prediction_recorded_at") val predictionRecordedAt: String,
+    @SerialName("responded_at") val respondedAt: String,
+    @SerialName("predicted_label") val predictedLabel: String,
+    @SerialName("predicted_class_index") val predictedClassIndex: Int,
+    val confidence: Float,
+    val probabilities: List<Float>,
+    @SerialName("model_version") val modelVersion: String,
+    @SerialName("heart_rate") val heartRate: Int,
+    @SerialName("daily_steps") val dailySteps: Int,
+    @SerialName("activity_level") val activityLevel: Int,
+    @SerialName("sleep_hours") val sleepHours: Float,
+    @SerialName("out_of_training_range") val outOfTrainingRange: Boolean,
+    @SerialName("profile_age") val profileAge: Int,
+    @SerialName("profile_gender") val profileGender: String,
+    @SerialName("profile_occupation") val profileOccupation: String,
+    @SerialName("profile_bmi") val profileBmi: String,
+    @SerialName("confirmed_stressed") val confirmedStressed: Boolean,
+    val severity: Int?,
+) {
+    companion object {
+        fun from(entity: StressFeedbackEntity, userId: String): StressFeedbackRow {
+            val respondedAt = requireNotNull(entity.respondedAtEpochMs)
+            val confirmed = requireNotNull(entity.confirmedStressed)
+            return StressFeedbackRow(
+                userId = userId,
+                promptSource = entity.promptSource,
+                alertFiredAt = entity.alertFiredAtEpochMs.toIso(),
+                predictionRecordedAt = entity.predictionRecordedAtEpochMs.toIso(),
+                respondedAt = respondedAt.toIso(),
+                predictedLabel = entity.predictedLabel,
+                predictedClassIndex = entity.predictedClassIndex,
+                confidence = entity.confidence,
+                probabilities = entity.probabilities,
+                modelVersion = entity.modelVersion,
+                heartRate = entity.heartRate,
+                dailySteps = entity.dailySteps,
+                activityLevel = entity.activityLevel,
+                sleepHours = entity.sleepHours,
+                outOfTrainingRange = entity.outOfTrainingRange,
+                profileAge = entity.profileAge,
+                profileGender = entity.profileGender,
+                profileOccupation = entity.profileOccupation,
+                profileBmi = entity.profileBmi,
+                confirmedStressed = confirmed,
+                severity = entity.severity,
+            )
+        }
     }
 }

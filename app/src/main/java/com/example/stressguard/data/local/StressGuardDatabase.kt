@@ -23,8 +23,9 @@ import androidx.sqlite.db.SupportSQLiteDatabase
         AlertEventEntity::class,
         DailyStepTotalEntity::class,
         HealthChecklistEntity::class,
+        StressFeedbackEntity::class,
     ],
-    version = 3,
+    version = 4,
     exportSchema = true,
 )
 @TypeConverters(Converters::class)
@@ -35,6 +36,7 @@ abstract class StressGuardDatabase : RoomDatabase() {
     abstract fun alertEvents(): AlertEventDao
     abstract fun dailyStepTotals(): DailyStepTotalDao
     abstract fun healthChecklists(): HealthChecklistDao
+    abstract fun stressFeedback(): StressFeedbackDao
 
     companion object {
         private const val TAG = "STRESS_DB"
@@ -86,7 +88,36 @@ abstract class StressGuardDatabase : RoomDatabase() {
             }
         }
 
-        fun migrations(): Array<Migration> = arrayOf(MIGRATION_1_2, MIGRATION_2_3)
+        /** Adds user-confirmed labels and their immutable alert-time feature snapshots. */
+        val MIGRATION_3_4 = object : Migration(3, 4) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(
+                    "CREATE TABLE IF NOT EXISTS `stress_feedback` (" +
+                        "`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
+                        "`alertEventId` INTEGER NOT NULL, `promptSource` TEXT NOT NULL, " +
+                        "`alertFiredAtEpochMs` INTEGER NOT NULL, " +
+                        "`predictionRecordedAtEpochMs` INTEGER NOT NULL, `predictedLabel` TEXT NOT NULL, " +
+                        "`predictedClassIndex` INTEGER NOT NULL, `confidence` REAL NOT NULL, " +
+                        "`probabilities` TEXT NOT NULL, `modelVersion` TEXT NOT NULL, " +
+                        "`heartRate` INTEGER NOT NULL, `dailySteps` INTEGER NOT NULL, " +
+                        "`activityLevel` INTEGER NOT NULL, `sleepHours` REAL NOT NULL, " +
+                        "`outOfTrainingRange` INTEGER NOT NULL, `profileAge` INTEGER NOT NULL, " +
+                        "`profileGender` TEXT NOT NULL, `profileOccupation` TEXT NOT NULL, " +
+                        "`profileBmi` TEXT NOT NULL, `confirmedStressed` INTEGER, `severity` INTEGER, " +
+                        "`respondedAtEpochMs` INTEGER, `synced` INTEGER NOT NULL)"
+                )
+                db.execSQL(
+                    "CREATE UNIQUE INDEX IF NOT EXISTS `index_stress_feedback_alertFiredAtEpochMs` " +
+                        "ON `stress_feedback` (`alertFiredAtEpochMs`)"
+                )
+                db.execSQL(
+                    "CREATE INDEX IF NOT EXISTS `index_stress_feedback_synced` " +
+                        "ON `stress_feedback` (`synced`)"
+                )
+            }
+        }
+
+        fun migrations(): Array<Migration> = arrayOf(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
 
         @Volatile
         private var instance: StressGuardDatabase? = null
@@ -132,11 +163,13 @@ suspend fun StressGuardDatabase.purgeOlderThan(cutoffEpochMs: Long) {
     val predictions = stressPredictions().deleteSyncedOlderThan(cutoffEpochMs)
     val latency = latencyMetrics().deleteSyncedOlderThan(cutoffEpochMs)
     val alerts = alertEvents().deleteSyncedOlderThan(cutoffEpochMs)
+    val feedback = stressFeedback().deleteSyncedOlderThan(cutoffEpochMs)
 
-    if (predictions + latency + alerts > 0) {
+    if (predictions + latency + alerts + feedback > 0) {
         Log.i(
             "STRESS_DB",
-            "purged $predictions predictions, $latency latency samples, $alerts alerts"
+            "purged $predictions predictions, $latency latency samples, $alerts alerts, " +
+                "$feedback feedback rows"
         )
     }
 }

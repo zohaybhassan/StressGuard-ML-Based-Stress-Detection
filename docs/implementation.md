@@ -357,6 +357,38 @@ runs from the UI.
 thread, and the service can be torn down as soon as it returns, which would cancel the inference
 partway through.
 
+### Sleep-day aggregation
+
+`SleepRepository` reads `SleepSessionRecord` data from Health Connect over a seven-day lookback.
+`SleepDayAggregator` assigns sleep to the local date on which it ends, joins fragments separated by
+at most two hours (including fragments split across midnight), and treats the longest group as the
+main sleep. Other groups ending on that date are naps. The model and `SleepCache` receive the union
+of the main sleep and every nap for that sleep day, so a later nap augments the earlier night rather
+than replacing it. Overlapping provider records are counted once.
+
+Tapping the dashboard sleep card opens `SleepActivity`. It shows the date, total, main sleep, naps,
+available stage durations, and oxygen saturation readings that fall inside those session windows.
+Oxygen access is requested contextually on this screen; if granted, the displayed value is the
+average of Health Connect `OxygenSaturationRecord` samples during sleep. Oxygen is informational and
+is not an input to the current model.
+
+`SessionManager` stores the user's sleep target separately from measured sleep. `SleepActivity`
+offers a 4-12 hour slider in 15-minute increments and renders total sleep against that target. The
+default is eight hours, and changing the target cannot change `SleepCache` or a model feature.
+
+### Activity goals and settings
+
+Tapping the dashboard step card opens `StepsActivity`. It reads the latest seven
+`daily_step_totals` rows, fills missing calendar days with zero, and draws the result with
+MPAndroidChart. A dashed limit line marks the user's saved target. The target defaults to 8,000 and
+can be adjusted from 2,000 to 20,000 in 500-step increments; it is a UI goal and does not replace
+the activity-level resolution used by `StepHistory` for inference.
+
+The dashboard overflow menu opens `SettingsActivity`. It links to edit mode in
+`ProfileSetupActivity`, both goal screens, the health checklist, Health Connect permission
+management, and Android's notification settings. Profile edit mode pre-fills the locally stored
+values and returns to Settings after saving instead of rerunning onboarding.
+
 ### Validation
 
 `SensorReading.from` rejects values no person produces (heart rate outside 30–220, negative steps)
@@ -483,6 +515,7 @@ architecture, and Supabase syncs *from* here rather than being written to direct
 | `alert_events` | fired-at, reason, window counts, model version, dismissed |
 | `daily_step_totals` | one row per day, highest count seen |
 | `health_checklists` | the user's answers |
+| `stress_feedback` | completed human labels plus immutable alert-time model, sensor and profile snapshots |
 
 Every synced table carries a `synced` flag with an `unsynced()` query. Retention deletes rows older
 than **30 days only if already synced**, so a long spell offline cannot silently discard readings
@@ -505,6 +538,9 @@ afterwards.
   not stress; it is a flight of stairs.
 - **Cooldown:** 10 minutes, read from `alert_events` in the database rather than memory, so it
   survives a restart and cannot be bypassed by killing the app.
+- **User pause:** the notification offers 10 minutes, 30 minutes, 1 hour and 4 hours. The expiry is
+  stored in `SessionManager`, survives process restarts, and is checked after smoothing but before
+  vibration or notification. Predictions and local storage continue while paused.
 - **Dispatch:** vibration waveform `[0, 400, 200, 400]` plus a notification.
 - The high-stress class index comes from `modelInfo.classCount - 1`, never a hardcoded 3, so
   swapping in the 3-class bundle does not silently break the rule.
@@ -513,6 +549,34 @@ afterwards.
   should be one tap.
 
 Notification wording avoids diagnostic language, per plan §25.
+
+### Human labels for later retraining
+
+The notification exposes **Check in** and **Mute alerts** actions. Check in opens
+`AlertFeedbackActivity`; mute opens `MuteAlertsActivity`, which is also reachable from Settings.
+
+The shipped bundle is binary (`not_stressed`, `stressed`) and its manifest records the original
+dataset threshold: 1-6 is not stressed and 7-10 is stressed. The check-in therefore stores both an
+explicit yes/no confirmation and, when confirmed, the original 1-10 severity score. It does not
+pretend the current model predicts ten classes.
+
+`StressAlertManager` creates a pending `stress_feedback` row at the exact moment a real alert
+fires. It snapshots the model version, full probability vector, heart rate, raw steps, resolved
+activity level, sleep, extrapolation flag and all profile inputs. Capturing these before the user
+answers prevents later walking, sleep or profile edits from being joined to the wrong label.
+Simulated alerts never create retraining rows. The sync worker uploads only completed responses.
+
+The row records `prompt_source = high_stress_alert` because this collection method is selected on
+the model's own positive prediction. Such data can estimate positive predictive value and identify
+false positives, but cannot measure false negatives or safely retrain the whole classifier alone.
+A future collection round needs sparse periodic prompts across both predicted classes. Retraining
+must split by user, not by row, to prevent one person's near-duplicate samples leaking into train
+and test sets.
+
+`ml_engine/audit_feedback_readiness.py` audits a Supabase CSV export. Its configurable starting
+gates are 500 completed labels, at least 100 labels in each binary class and at least 30 users. It
+reports alert calibration separately and refuses to call an alert-only dataset ready for full
+retraining.
 
 ---
 
@@ -535,6 +599,7 @@ Two details that cost time: the nonce is **hashed for Google and raw for Supabas
 | `20260727000000_create_health_checklists.sql` | `health_checklists` |
 | `20260727010000_add_password_set_to_profiles.sql` | password-set flag |
 | `20260727120000_create_chat_tables.sql` | `chat_sessions`, `chat_messages` |
+| `20260801000000_create_stress_feedback.sql` | `stress_feedback` retraining labels |
 
 ### Row Level Security
 
@@ -791,10 +856,10 @@ was killed. Never on the real-time path.
 | Cross-user access | RLS on every user-owned table, keyed on `auth.uid()` |
 | Watch payloads | AES encrypted |
 | Chat transcripts | RLS, and deletable by the user |
-| Health Connect | Read-only, sleep only |
+| Health Connect | Read-only sleep and oxygen saturation; oxygen is requested on the sleep screen |
 
-**What leaves the device:** predictions, latency metrics, alert events, the checklist and chat
-transcripts go to Supabase. Heart rate, step count and sleep hours additionally travel to **Hugging
+**What leaves the device:** predictions, latency metrics, alert events, completed stress feedback,
+the checklist and chat transcripts go to Supabase. Heart rate, step count and sleep hours additionally travel to **Hugging
 Face** inside the chat prompt — chosen over describing them only in relative terms, which would have
 kept the numbers off a third party's servers. The assistant screen's disclaimer says so.
 
@@ -872,7 +937,7 @@ is arrival-to-prediction.
 It cannot come from the watch at all — Health Services has no sleep data type, and Samsung Health on
 the watch does not write sleep to Health Connect. It arrives only via Samsung Health **on the phone**
 writing to Health Connect, which is a separate install from Galaxy Wearable. When absent, the
-training-set mean (7.5 h) is substituted and labelled `(assumed)`.
+training-set mean (7.5 h) is substituted and visibly labelled as assumed.
 
 Note also that a provider being *connected* does not mean it has *written*: with Samsung Health
 installed and holding `WRITE_SLEEP`, Health Connect still returned zero sleep records over seven

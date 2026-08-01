@@ -11,6 +11,7 @@ import com.example.stressguard.data.AuthRepository
 import com.example.stressguard.data.CredentialRules
 import com.example.stressguard.data.SignInResult
 import com.example.stressguard.data.SupabaseConfig
+import com.example.stressguard.ui.fitSystemBars
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
@@ -55,6 +56,7 @@ class LoginActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_login)
+        fitSystemBars(top = findViewById(R.id.loginRoot))
         bindViews()
 
         // Without a URL and key there is no backend at all, so nothing on this screen can work.

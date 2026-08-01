@@ -129,6 +129,9 @@ interface DailyStepTotalDao {
     @Query("SELECT * FROM daily_step_totals WHERE date < :beforeDate ORDER BY date DESC LIMIT 1")
     suspend fun mostRecentBefore(beforeDate: String): DailyStepTotalEntity?
 
+    @Query("SELECT * FROM daily_step_totals ORDER BY date DESC LIMIT :limit")
+    suspend fun recent(limit: Int = 7): List<DailyStepTotalEntity>
+
     @Query("DELETE FROM daily_step_totals WHERE date < :cutoffDate")
     suspend fun deleteOlderThan(cutoffDate: String): Int
 
@@ -211,4 +214,44 @@ interface AlertEventDao {
 
     @Query("SELECT COUNT(*) FROM alert_events")
     suspend fun count(): Int
+}
+
+@Dao
+interface StressFeedbackDao {
+
+    @Insert
+    suspend fun insert(feedback: StressFeedbackEntity): Long
+
+    @Query("SELECT * FROM stress_feedback WHERE id = :id")
+    suspend fun byId(id: Long): StressFeedbackEntity?
+
+    @Query(
+        """
+        UPDATE stress_feedback SET
+            confirmedStressed = :confirmedStressed,
+            severity = :severity,
+            respondedAtEpochMs = :respondedAtEpochMs,
+            synced = 0
+        WHERE id = :id
+        """
+    )
+    suspend fun recordResponse(
+        id: Long,
+        confirmedStressed: Boolean,
+        severity: Int?,
+        respondedAtEpochMs: Long,
+    ): Int
+
+    /** Pending prompts stay local; only actual human labels are useful to the training store. */
+    @Query("SELECT * FROM stress_feedback WHERE respondedAtEpochMs IS NOT NULL AND synced = 0 ORDER BY respondedAtEpochMs ASC LIMIT :limit")
+    suspend fun unsyncedCompleted(limit: Int = 500): List<StressFeedbackEntity>
+
+    @Query("UPDATE stress_feedback SET synced = 1 WHERE id IN (:ids)")
+    suspend fun markSynced(ids: List<Long>)
+
+    @Query("SELECT COUNT(*) FROM stress_feedback WHERE respondedAtEpochMs IS NOT NULL AND synced = 0")
+    suspend fun countUnsyncedCompleted(): Int
+
+    @Query("DELETE FROM stress_feedback WHERE respondedAtEpochMs < :cutoffEpochMs AND synced = 1")
+    suspend fun deleteSyncedOlderThan(cutoffEpochMs: Long): Int
 }

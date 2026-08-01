@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Night on API 27+: both bars carry light icons. Qualifier precedence puts night above the
+     version code, so this file wins over values-v27 at night and over values-night on API 27+. -->
+<resources>
+    <style name="Theme.StressGuard" parent="Base.Theme.StressGuard">
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:windowLightNavigationBar">false</item>
+    </style>
+</resources>

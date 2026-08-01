@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    The spacing and radius scale.
+
+    A small fixed set, so margins across screens land on the same rhythm instead of being guessed
+    per layout. Everything is a multiple of 4dp; the gaps in the sequence are deliberate, because a
+    scale with every value in it is not a scale.
+-->
+<resources>
+
+    <dimen name="space_xs">4dp</dimen>
+    <dimen name="space_sm">8dp</dimen>
+    <dimen name="space_md">12dp</dimen>
+    <dimen name="space_lg">16dp</dimen>
+    <dimen name="space_xl">24dp</dimen>
+    <dimen name="space_2xl">32dp</dimen>
+
+    <!-- Screen gutter. One value, used by every scrolling screen. -->
+    <dimen name="screen_padding">20dp</dimen>
+
+    <!-- Corner radii. Small for tiles and chips, medium for cards, large for the hero. -->
+    <dimen name="radius_sm">14dp</dimen>
+    <dimen name="radius_md">20dp</dimen>
+    <dimen name="radius_lg">28dp</dimen>
+
+    <dimen name="stroke_width">1dp</dimen>
+
+    <!-- Touch targets. 56dp for primary actions, 48dp for everything else, per the Material
+         accessibility minimum. -->
+    <dimen name="button_height">56dp</dimen>
+    <dimen name="button_height_sm">48dp</dimen>
+
+    <!-- The metric icon tile that leads every vitals card. -->
+    <dimen name="icon_tile">40dp</dimen>
+    <dimen name="icon_tile_lg">48dp</dimen>
+
+    <!-- The stress gauge. Sized so the whole hero card clears the fold on a 5.5" screen. -->
+    <dimen name="gauge_size">216dp</dimen>
+    <dimen name="gauge_thickness">16dp</dimen>
+</resources>

@@ -13,6 +13,9 @@ sealed interface AlertDecision {
 
     /** Sustained, but an alert fired too recently. */
     data class InCooldown(val remainingMs: Long) : AlertDecision
+
+    /** Sustained, but the user explicitly paused alerts. */
+    data class UserMuted(val remainingMs: Long) : AlertDecision
 }
 
 /**
@@ -49,6 +52,7 @@ object StressAlertPolicy {
         highStressClassIndex: Int,
         nowEpochMs: Long,
         lastAlertEpochMs: Long?,
+        mutedUntilEpochMs: Long = 0L,
         cooldownMs: Long = COOLDOWN_MS,
     ): AlertDecision {
         val window = recentClassIndices.takeLast(WINDOW)
@@ -58,6 +62,10 @@ object StressAlertPolicy {
 
         val highCount = window.count { it == highStressClassIndex }
         if (highCount < THRESHOLD) return AlertDecision.NotSustained
+
+        if (mutedUntilEpochMs > nowEpochMs) {
+            return AlertDecision.UserMuted(remainingMs = mutedUntilEpochMs - nowEpochMs)
+        }
 
         if (lastAlertEpochMs != null) {
             val elapsed = nowEpochMs - lastAlertEpochMs

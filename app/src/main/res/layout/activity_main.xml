@@ -1,32 +1,54 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+    The launch screen. It exists for the fraction of a second between the icon being tapped and the
+    router deciding which screen the user belongs on, so it says only what is true at that point:
+    the app is opening. The logo sits on a white disc rather than straight on the gradient, so it
+    stays legible whatever colours it is drawn in.
+-->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@drawable/bg_splash"
     android:gravity="center"
     android:orientation="vertical"
-    android:background="#F5F5F5"
-    android:padding="32dp">
+    android:padding="@dimen/space_2xl">
 
     <ImageView
-        android:layout_width="160dp"
-        android:layout_height="160dp"
-        android:layout_marginBottom="20dp"
+        android:layout_width="120dp"
+        android:layout_height="120dp"
+        android:background="@drawable/bg_circle"
+        android:backgroundTint="@color/white"
+        android:contentDescription="@string/cd_logo"
+        android:padding="@dimen/space_lg"
         android:src="@drawable/logo" />
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="StressGuard"
-        android:textColor="@android:color/black"
+        android:layout_marginTop="@dimen/space_xl"
+        android:letterSpacing="-0.01"
+        android:text="@string/app_name"
+        android:textColor="@color/text_on_dark"
         android:textSize="28sp"
         android:textStyle="bold" />
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:text="Opening your dashboard..."
-        android:textColor="#757575"
-        android:textSize="16sp" />
+        android:layout_marginTop="@dimen/space_sm"
+        android:text="@string/splash_tagline"
+        android:textColor="@color/text_on_dark_muted"
+        android:textSize="14sp" />
+
+    <com.google.android.material.progressindicator.LinearProgressIndicator
+        android:layout_width="96dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/space_xl"
+        android:indeterminate="true"
+        app:indicatorColor="@color/white"
+        app:trackColor="@color/hero_track"
+        app:trackCornerRadius="2dp"
+        app:trackThickness="3dp" />
 
 </LinearLayout>

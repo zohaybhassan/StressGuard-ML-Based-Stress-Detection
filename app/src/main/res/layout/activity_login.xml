@@ -1,74 +1,82 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+    Sign in and register, on one screen.
+
+    The same card serves both: the title, the subtitle, the confirm-password field and the Google
+    hint change, and the user never navigates anywhere to switch. Two screens would mean two
+    layouts to keep in step for a difference of one field.
+-->
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/loginRoot"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F3F6F8"
-    android:fillViewport="true">
+    android:background="@color/canvas"
+    android:clipToPadding="false"
+    android:fillViewport="true"
+    android:scrollbars="none">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center_horizontal"
         android:orientation="vertical"
-        android:padding="24dp">
+        android:paddingStart="@dimen/screen_padding"
+        android:paddingTop="@dimen/space_2xl"
+        android:paddingEnd="@dimen/screen_padding"
+        android:paddingBottom="@dimen/space_xl">
 
         <ImageView
-            android:layout_width="96dp"
-            android:layout_height="96dp"
-            android:layout_marginTop="16dp"
-            android:layout_marginBottom="12dp"
-            android:contentDescription="@string/app_name"
+            android:layout_width="84dp"
+            android:layout_height="84dp"
+            android:background="@drawable/bg_circle"
+            android:backgroundTint="@color/brand_soft"
+            android:contentDescription="@string/cd_logo"
+            android:padding="@dimen/space_md"
             android:src="@drawable/logo" />
 
         <TextView
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"
+            android:layout_marginTop="@dimen/space_lg"
             android:gravity="center"
-            android:text="Live stress awareness for your watch and phone"
-            android:textColor="#5F6B76"
-            android:textSize="15sp" />
+            android:text="@string/login_tagline"
+            android:textAppearance="@style/TextAppearance.StressGuard.Body" />
 
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"
-            app:cardCornerRadius="20dp"
-            app:cardElevation="6dp">
+            android:layout_marginTop="@dimen/space_xl">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:padding="20dp">
+                android:padding="@dimen/space_xl">
 
                 <TextView
                     android:id="@+id/tvAuthTitle"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Sign in"
-                    android:textColor="@android:color/black"
-                    android:textSize="20sp"
-                    android:textStyle="bold" />
+                    android:text="@string/auth_title"
+                    android:textAppearance="@style/TextAppearance.StressGuard.Headline" />
 
                 <TextView
                     android:id="@+id/tvAuthSubtitle"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="6dp"
-                    android:layout_marginBottom="16dp"
-                    android:text="Welcome back. Sign in to reach your dashboard."
-                    android:textColor="#6D7882"
-                    android:textSize="14sp" />
+                    android:layout_marginTop="@dimen/space_xs"
+                    android:layout_marginBottom="@dimen/space_lg"
+                    android:text="@string/auth_subtitle"
+                    android:textAppearance="@style/TextAppearance.StressGuard.Caption" />
 
                 <com.google.android.material.textfield.TextInputLayout
                     android:id="@+id/tilEmail"
-                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginBottom="12dp"
-                    android:hint="Email">
+                    android:layout_marginBottom="@dimen/space_md"
+                    android:hint="@string/hint_email">
 
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/etEmail"
@@ -82,12 +90,11 @@
 
                 <com.google.android.material.textfield.TextInputLayout
                     android:id="@+id/tilPassword"
-                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginBottom="12dp"
-                    android:hint="Password"
-                    app:passwordToggleEnabled="true">
+                    android:layout_marginBottom="@dimen/space_md"
+                    android:hint="@string/hint_password"
+                    app:endIconMode="password_toggle">
 
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/etPassword"
@@ -103,13 +110,13 @@
                      against and a second field would just be one more thing to type. -->
                 <com.google.android.material.textfield.TextInputLayout
                     android:id="@+id/tilConfirmPassword"
-                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginBottom="12dp"
-                    android:hint="Confirm password"
+                    android:layout_marginBottom="@dimen/space_md"
+                    android:hint="@string/hint_confirm_password"
                     android:visibility="gone"
-                    app:passwordToggleEnabled="true">
+                    app:endIconMode="password_toggle"
+                    tools:visibility="visible">
 
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/etConfirmPassword"
@@ -124,38 +131,36 @@
                     android:id="@+id/tvLoginStatus"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginBottom="4dp"
-                    android:text=""
-                    android:textColor="#B00020"
-                    android:textSize="14sp"
-                    android:visibility="gone" />
+                    android:layout_marginBottom="@dimen/space_md"
+                    android:background="@drawable/bg_icon_tile"
+                    android:backgroundTint="@color/danger_soft"
+                    android:padding="@dimen/space_md"
+                    android:textAppearance="@style/TextAppearance.StressGuard.Caption"
+                    android:textColor="@color/danger"
+                    android:visibility="gone"
+                    tools:text="That email and password do not match an account."
+                    tools:visibility="visible" />
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnPrimaryAuth"
                     android:layout_width="match_parent"
-                    android:layout_height="56dp"
-                    android:layout_marginTop="6dp"
-                    android:text="Sign in"
-                    android:textAllCaps="false"
-                    android:textSize="16sp"
-                    app:cornerRadius="14dp" />
+                    android:layout_height="@dimen/button_height"
+                    android:text="@string/auth_title" />
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnToggleAuthMode"
-                    style="@style/Widget.MaterialComponents.Button.TextButton"
+                    style="@style/Widget.StressGuard.Button.Text"
                     android:layout_width="match_parent"
-                    android:layout_height="48dp"
-                    android:layout_marginTop="2dp"
-                    android:text="New here? Create an account"
-                    android:textAllCaps="false"
-                    android:textSize="14sp" />
+                    android:layout_height="@dimen/button_height_sm"
+                    android:layout_marginTop="@dimen/space_xs"
+                    android:text="@string/auth_toggle" />
 
                 <LinearLayout
                     android:id="@+id/googleDivider"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="6dp"
-                    android:layout_marginBottom="6dp"
+                    android:layout_marginTop="@dimen/space_sm"
+                    android:layout_marginBottom="@dimen/space_md"
                     android:gravity="center_vertical"
                     android:orientation="horizontal">
 
@@ -163,22 +168,22 @@
                         android:layout_width="0dp"
                         android:layout_height="1dp"
                         android:layout_weight="1"
-                        android:background="#E0E7E2" />
+                        android:background="@color/outline" />
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:paddingStart="12dp"
-                        android:paddingEnd="12dp"
-                        android:text="or"
-                        android:textColor="#8A96A1"
-                        android:textSize="13sp" />
+                        android:paddingStart="@dimen/space_md"
+                        android:paddingEnd="@dimen/space_md"
+                        android:text="@string/auth_or"
+                        android:textAppearance="@style/TextAppearance.StressGuard.Caption"
+                        android:textColor="@color/text_tertiary" />
 
                     <View
                         android:layout_width="0dp"
                         android:layout_height="1dp"
                         android:layout_weight="1"
-                        android:background="#E0E7E2" />
+                        android:background="@color/outline" />
                 </LinearLayout>
 
                 <!-- Shown only when registering: signing up with Google and then choosing a
@@ -188,32 +193,44 @@
                     android:id="@+id/tvGoogleHint"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginBottom="8dp"
-                    android:text="Recommended"
-                    android:textColor="#2E7D32"
+                    android:layout_marginBottom="@dimen/space_sm"
+                    android:fontFamily="sans-serif-medium"
+                    android:text="@string/auth_google_recommended"
+                    android:textColor="@color/brand_dark"
                     android:textSize="12sp"
-                    android:textStyle="bold"
-                    android:visibility="gone" />
+                    android:visibility="gone"
+                    tools:visibility="visible" />
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnGoogleSignIn"
-                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                    style="@style/Widget.StressGuard.Button.Outlined"
                     android:layout_width="match_parent"
-                    android:layout_height="56dp"
-                    android:text="Continue with Google"
-                    android:textAllCaps="false"
-                    android:textSize="16sp"
-                    app:cornerRadius="14dp" />
+                    android:layout_height="@dimen/button_height"
+                    android:text="@string/auth_google" />
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
-        <TextView
-            android:layout_width="wrap_content"
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="12dp"
-            android:text="Your readings stay on this device and sync only to your own account."
-            android:textAlignment="center"
-            android:textColor="#8A96A1"
-            android:textSize="12sp" />
+            android:layout_marginTop="@dimen/space_lg"
+            android:orientation="horizontal">
+
+            <ImageView
+                android:layout_width="14dp"
+                android:layout_height="14dp"
+                android:layout_marginTop="1dp"
+                android:contentDescription="@null"
+                android:src="@drawable/ic_shield"
+                app:tint="@color/text_tertiary" />
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="6dp"
+                android:layout_weight="1"
+                android:text="@string/auth_privacy_note"
+                android:textAppearance="@style/TextAppearance.StressGuard.Footnote" />
+        </LinearLayout>
     </LinearLayout>
 </ScrollView>

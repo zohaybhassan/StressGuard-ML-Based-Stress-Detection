@@ -1,13 +1,15 @@
 package com.example.stressguard
 
-import android.graphics.Color
+import android.graphics.Rect
 import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
 import android.widget.TextView
-import androidx.core.graphics.drawable.DrawableCompat
+import androidx.annotation.ColorRes
+import androidx.annotation.DrawableRes
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.example.stressguard.data.ChatMessage
 import com.example.stressguard.data.ChatRole
@@ -29,6 +31,19 @@ class ChatAdapter(
     class MessageViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val row: FrameLayout = view.findViewById(R.id.bubbleRow)
         val bubble: TextView = view.findViewById(R.id.tvBubble)
+
+        /**
+         * The bubble's padding, captured before any background is swapped in.
+         *
+         * `setBackgroundResource` re-applies the new drawable's padding, which for a plain shape
+         * is none — so without this the first rebind flattens the text against the bubble edge.
+         */
+        val padding = Rect(
+            bubble.paddingLeft,
+            bubble.paddingTop,
+            bubble.paddingRight,
+            bubble.paddingBottom,
+        )
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) = MessageViewHolder(
@@ -46,19 +61,31 @@ class ChatAdapter(
             if (fromUser) Gravity.END else Gravity.START
         holder.row.requestLayout()
 
-        val background = when {
-            fromUser -> USER_BUBBLE
+        @DrawableRes val background = when {
+            fromUser -> R.drawable.bg_bubble_user
             // Safety and network replies are the app speaking, not the model. Marking them keeps
             // the transcript honest about which is which.
-            message.isFallback -> FALLBACK_BUBBLE
-            else -> ASSISTANT_BUBBLE
+            message.isFallback -> R.drawable.bg_bubble_fallback
+            else -> R.drawable.bg_bubble_assistant
         }
-        holder.bubble.background?.mutate()?.let {
-            DrawableCompat.setTint(it, Color.parseColor(background))
+
+        @ColorRes val textColor = when {
+            fromUser -> R.color.bubble_user_text
+            message.isFallback -> R.color.bubble_fallback_text
+            else -> R.color.bubble_assistant_text
         }
-        holder.bubble.setTextColor(
-            Color.parseColor(if (fromUser) USER_TEXT else ASSISTANT_TEXT)
+
+        // Three drawables rather than one tinted shape, because the speakers no longer differ only
+        // in colour: each bubble squares off the corner nearest its sender, which is what makes
+        // the conversation readable at a glance before any colour is taken in.
+        holder.bubble.setBackgroundResource(background)
+        holder.bubble.setPadding(
+            holder.padding.left,
+            holder.padding.top,
+            holder.padding.right,
+            holder.padding.bottom,
         )
+        holder.bubble.setTextColor(ContextCompat.getColor(holder.itemView.context, textColor))
     }
 
     /** Appends one message and returns its position, for scrolling to it. */
@@ -78,12 +105,4 @@ class ChatAdapter(
     fun snapshot(): List<ChatMessage> = messages.toList()
 
     val isEmpty: Boolean get() = messages.isEmpty()
-
-    private companion object {
-        const val USER_BUBBLE = "#0B57D0"
-        const val USER_TEXT = "#FFFFFF"
-        const val ASSISTANT_BUBBLE = "#FFFFFF"
-        const val ASSISTANT_TEXT = "#101816"
-        const val FALLBACK_BUBBLE = "#FFF3D6"
-    }
 }

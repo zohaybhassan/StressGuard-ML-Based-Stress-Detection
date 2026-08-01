@@ -10,6 +10,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.example.stressguard.data.AuthRepository
 import com.example.stressguard.data.CredentialRules
+import com.example.stressguard.ui.fitSystemBars
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
@@ -42,6 +43,7 @@ class SetPasswordActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_set_password)
+        fitSystemBars(top = findViewById(R.id.setPasswordRoot))
 
         tvEmail = findViewById(R.id.tvSetPasswordEmail)
         tvStatus = findViewById(R.id.tvSetPasswordStatus)

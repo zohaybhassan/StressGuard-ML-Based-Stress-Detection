@@ -1,149 +1,172 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+    The health checklist behind the checkup recommendation.
+
+    Two cards, conditions and habits, because the two are answered differently: one is what a
+    doctor has told you, the other is what you know about yourself. Grouping them makes a
+    ten-checkbox screen read as two short questions instead of one long interrogation.
+-->
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/checklistRoot"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F3F6F8"
-    android:fillViewport="true">
+    android:background="@color/canvas"
+    android:clipToPadding="false"
+    android:fillViewport="true"
+    android:scrollbars="none">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="24dp">
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Health Checklist"
-            android:textColor="@android:color/black"
-            android:textSize="30sp"
-            android:textStyle="bold" />
+        android:paddingStart="@dimen/screen_padding"
+        android:paddingTop="@dimen/space_2xl"
+        android:paddingEnd="@dimen/screen_padding"
+        android:paddingBottom="@dimen/space_xl">
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="6dp"
-            android:layout_marginBottom="24dp"
-            android:text="Tick anything that applies to you. StressGuard combines these with your recent stress pattern to suggest when a routine checkup might be worth booking."
-            android:textColor="#5F6B76"
-            android:textSize="14sp" />
+            android:text="@string/checklist_title"
+            android:textAppearance="@style/TextAppearance.StressGuard.Headline" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_xs"
+            android:text="@string/checklist_subtitle"
+            android:textAppearance="@style/TextAppearance.StressGuard.Body" />
+
+        <TextView
+            style="@style/Widget.StressGuard.SectionLabel"
+            android:layout_marginTop="@dimen/space_xl"
+            android:text="@string/checklist_section_conditions" />
 
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:cardCornerRadius="20dp"
-            app:cardElevation="6dp">
+            android:layout_marginTop="@dimen/space_sm">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:padding="18dp">
-
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="10dp"
-                    android:text="CONDITIONS"
-                    android:textColor="#8A97A3"
-                    android:textSize="12sp"
-                    android:textStyle="bold" />
+                android:paddingStart="@dimen/space_md"
+                android:paddingTop="@dimen/space_sm"
+                android:paddingEnd="@dimen/space_md"
+                android:paddingBottom="@dimen/space_sm">
 
                 <com.google.android.material.checkbox.MaterialCheckBox
                     android:id="@+id/cbHeartCondition"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:minHeight="48dp"
-                    android:text="A diagnosed heart condition" />
+                    android:text="@string/checklist_heart" />
 
                 <com.google.android.material.checkbox.MaterialCheckBox
                     android:id="@+id/cbHypertension"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:minHeight="48dp"
-                    android:text="High blood pressure" />
+                    android:text="@string/checklist_hypertension" />
 
                 <com.google.android.material.checkbox.MaterialCheckBox
                     android:id="@+id/cbDiabetes"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:minHeight="48dp"
-                    android:text="Diabetes" />
+                    android:text="@string/checklist_diabetes" />
 
                 <com.google.android.material.checkbox.MaterialCheckBox
                     android:id="@+id/cbSleepDisorder"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:minHeight="48dp"
-                    android:text="A sleep disorder, such as insomnia or apnoea" />
+                    android:text="@string/checklist_sleep" />
 
                 <com.google.android.material.checkbox.MaterialCheckBox
                     android:id="@+id/cbAnxietyHistory"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:minHeight="48dp"
-                    android:text="A history of anxiety" />
+                    android:text="@string/checklist_anxiety" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
 
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="18dp"
-                    android:layout_marginBottom="10dp"
-                    android:text="HABITS"
-                    android:textColor="#8A97A3"
-                    android:textSize="12sp"
-                    android:textStyle="bold" />
+        <TextView
+            style="@style/Widget.StressGuard.SectionLabel"
+            android:layout_marginTop="@dimen/space_xl"
+            android:text="@string/checklist_section_habits" />
+
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_sm">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:paddingStart="@dimen/space_md"
+                android:paddingTop="@dimen/space_sm"
+                android:paddingEnd="@dimen/space_md"
+                android:paddingBottom="@dimen/space_sm">
 
                 <com.google.android.material.checkbox.MaterialCheckBox
                     android:id="@+id/cbSmoking"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:minHeight="48dp"
-                    android:text="I smoke" />
+                    android:text="@string/checklist_smoking" />
 
                 <com.google.android.material.checkbox.MaterialCheckBox
                     android:id="@+id/cbHighCaffeineUse"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:minHeight="48dp"
-                    android:text="Four or more caffeinated drinks a day" />
+                    android:text="@string/checklist_caffeine" />
 
                 <com.google.android.material.checkbox.MaterialCheckBox
                     android:id="@+id/cbPhysicallyInactive"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:minHeight="48dp"
-                    android:text="Little or no regular exercise" />
-
-                <TextView
-                    android:id="@+id/tvChecklistDisclaimer"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="18dp"
-                    android:layout_marginBottom="16dp"
-                    android:text="StressGuard is not a medical device and does not diagnose anything. These answers are only used to decide when to suggest seeing a doctor, and they are stored against your account."
-                    android:textColor="#5F6B76"
-                    android:textSize="12sp" />
-
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btnSaveChecklist"
-                    android:layout_width="match_parent"
-                    android:layout_height="56dp"
-                    android:text="Save and Continue"
-                    android:textAllCaps="false"
-                    android:textSize="16sp"
-                    app:cornerRadius="14dp" />
-
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btnSkipChecklist"
-                    style="@style/Widget.MaterialComponents.Button.TextButton"
-                    android:layout_width="match_parent"
-                    android:layout_height="48dp"
-                    android:layout_marginTop="4dp"
-                    android:text="Skip for now"
-                    android:textAllCaps="false" />
+                    android:text="@string/checklist_inactive" />
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
+
+        <!-- Plan §7 and §25: the app suggests a checkup, it does not diagnose. The line travels
+             with the questions as well as with the answer. -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_xl"
+            android:orientation="horizontal">
+
+            <ImageView
+                android:layout_width="15dp"
+                android:layout_height="15dp"
+                android:layout_marginTop="1dp"
+                android:contentDescription="@null"
+                android:src="@drawable/ic_info"
+                app:tint="@color/text_tertiary" />
+
+            <TextView
+                android:id="@+id/tvChecklistDisclaimer"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/space_sm"
+                android:layout_weight="1"
+                android:text="@string/checklist_disclaimer"
+                android:textAppearance="@style/TextAppearance.StressGuard.Footnote" />
+        </LinearLayout>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnSaveChecklist"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/button_height"
+            android:layout_marginTop="@dimen/space_xl"
+            android:text="@string/action_save_continue" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnSkipChecklist"
+            style="@style/Widget.StressGuard.Button.Text"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/button_height_sm"
+            android:layout_marginTop="@dimen/space_xs"
+            android:text="@string/checklist_skip" />
     </LinearLayout>
 </ScrollView>

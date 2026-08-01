@@ -53,13 +53,14 @@ class SupabaseSyncWorker(
             val latency = syncLatency(database, userId)
             val alerts = syncAlerts(database, userId)
             val checklists = syncChecklist(database, userId)
+            val feedback = syncFeedback(database, userId)
 
-            val total = predictions + latency + alerts + checklists
+            val total = predictions + latency + alerts + checklists + feedback
             if (total > 0) {
                 Log.i(
                     TAG,
                     "synced $predictions predictions, $latency latency, $alerts alerts, " +
-                        "$checklists checklists"
+                        "$checklists checklists, $feedback feedback labels"
                 )
             }
             SyncState(applicationContext).recordSuccess(System.currentTimeMillis())
@@ -139,12 +140,27 @@ class SupabaseSyncWorker(
         return pending.size
     }
 
+    private suspend fun syncFeedback(database: StressGuardDatabase, userId: String): Int {
+        val dao = database.stressFeedback()
+        val pending = dao.unsyncedCompleted(BATCH)
+        if (pending.isEmpty()) return 0
+
+        SupabaseProvider.client.from("stress_feedback")
+            .upsert(pending.map { StressFeedbackRow.from(it, userId) }) {
+                onConflict = "user_id,alert_fired_at"
+            }
+
+        dao.markSynced(pending.map { it.id })
+        return pending.size
+    }
+
     private suspend fun pendingCount(): Int = runCatching {
         val database = StressGuardDatabase.get(applicationContext)
         database.stressPredictions().unsynced(BATCH).size +
             database.latencyMetrics().unsynced(BATCH).size +
             database.alertEvents().unsynced(BATCH).size +
-            database.healthChecklists().countUnsynced()
+            database.healthChecklists().countUnsynced() +
+            database.stressFeedback().countUnsyncedCompleted()
     }.getOrDefault(0)
 
     companion object {

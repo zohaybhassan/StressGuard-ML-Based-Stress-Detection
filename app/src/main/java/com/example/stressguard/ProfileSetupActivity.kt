@@ -1,14 +1,18 @@
 package com.example.stressguard // UPDATE TO YOUR EXACT PACKAGE NAME
 
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.view.View
 import android.widget.ArrayAdapter
 import android.widget.AutoCompleteTextView
+import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.example.stressguard.data.AuthRepository
 import com.example.stressguard.data.ProfileRepository
+import com.example.stressguard.ui.fitSystemBars
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.textfield.TextInputEditText
 import kotlinx.coroutines.launch
@@ -19,6 +23,8 @@ class ProfileSetupActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_profile_setup)
+        fitSystemBars(top = findViewById(R.id.profileRoot))
+        val editing = intent.getBooleanExtra(EXTRA_EDITING, false)
 
         // 1. Initialize UI Elements
         val etName = findViewById<TextInputEditText>(R.id.etName)
@@ -30,7 +36,7 @@ class ProfileSetupActivity : AppCompatActivity() {
 
         // Prefill from the signed-in identity. This comes from the Supabase session rather
         // than local storage, so it reflects the account actually authenticated.
-        AuthRepository.displayName?.let { etName.setText(it) }
+        if (!editing) AuthRepository.displayName?.let { etName.setText(it) }
 
         // 2. Define the exact lists for the ML Model choices.
         // These must use the dataset's own category names, because StressFeatureBuilder
@@ -60,18 +66,34 @@ class ProfileSetupActivity : AppCompatActivity() {
             "Obese  (BMI 30.0 and over)",
         )
 
-        // 3. Attach the lists to the Dropdown menus
-        val genderAdapter = ArrayAdapter(this, android.R.layout.simple_dropdown_item_1line, genders)
-        dropdownGender.setAdapter(genderAdapter)
-
-        val occupationAdapter = ArrayAdapter(this, android.R.layout.simple_dropdown_item_1line, occupations)
-        dropdownOccupation.setAdapter(occupationAdapter)
+        // 3. Attach the lists to the Dropdown menus. R.layout.item_dropdown rather than the
+        // platform's simple_dropdown_item_1line, which draws with the system's own colours and so
+        // rendered dark text on a dark sheet once the app gained a night theme.
+        dropdownGender.setAdapter(ArrayAdapter(this, R.layout.item_dropdown, genders))
+        dropdownOccupation.setAdapter(ArrayAdapter(this, R.layout.item_dropdown, occupations))
 
         // The dropdown shows the labels with their ranges; what gets saved is the bare category,
         // because that is the string StressFeatureBuilder matches on to set the one-hot flags and
         // the value the profiles table's CHECK constraint accepts.
-        val bmiAdapter = ArrayAdapter(this, android.R.layout.simple_dropdown_item_1line, bmiLabels)
-        dropdownBmi.setAdapter(bmiAdapter)
+        dropdownBmi.setAdapter(ArrayAdapter(this, R.layout.item_dropdown, bmiLabels))
+
+        if (editing) {
+            findViewById<MaterialButton>(R.id.btnProfileBack).apply {
+                visibility = View.VISIBLE
+                setOnClickListener { onBackPressedDispatcher.onBackPressed() }
+            }
+            findViewById<TextView>(R.id.tvProfileTitle).text = getString(R.string.profile_edit_title)
+            findViewById<TextView>(R.id.tvProfileSubtitle).text =
+                getString(R.string.profile_edit_subtitle)
+            btnSaveProfile.text = getString(R.string.profile_save_changes)
+            etName.setText(SessionManager.getUserName(this))
+            etAge.setText(SessionManager.getUserAge(this)?.toString().orEmpty())
+            dropdownGender.setText(SessionManager.getUserGender(this).orEmpty(), false)
+            dropdownOccupation.setText(SessionManager.getUserOccupation(this).orEmpty(), false)
+            val savedBmi = SessionManager.getUserBmi(this)
+            val bmiIndex = bmiCategories.indexOf(savedBmi)
+            dropdownBmi.setText(bmiLabels.getOrNull(bmiIndex).orEmpty(), false)
+        }
 
         // 4. Handle Save Button Click
         btnSaveProfile.setOnClickListener {
@@ -126,11 +148,13 @@ class ProfileSetupActivity : AppCompatActivity() {
                     Toast.LENGTH_SHORT,
                 ).show()
 
-                // On to the health checklist, which feeds the checkup recommendation in plan §7.
-                // It is skippable and continues to the dashboard either way, so a user who does
-                // not want to answer medical questions is not stuck here.
-                startActivity(HealthChecklistActivity.setupIntent(this@ProfileSetupActivity))
-                finish() // Prevent user from going back to setup
+                if (editing) {
+                    finish()
+                } else {
+                    // On to the health checklist, which feeds the checkup recommendation.
+                    startActivity(HealthChecklistActivity.setupIntent(this@ProfileSetupActivity))
+                    finish()
+                }
             }
         }
     }
@@ -141,5 +165,9 @@ class ProfileSetupActivity : AppCompatActivity() {
         private const val MAX_AGE = 80
 
         private const val SYNC_TIMEOUT_MS = 5_000L
+        private const val EXTRA_EDITING = "editing"
+
+        fun editIntent(context: Context) = Intent(context, ProfileSetupActivity::class.java)
+            .putExtra(EXTRA_EDITING, true)
     }
 }

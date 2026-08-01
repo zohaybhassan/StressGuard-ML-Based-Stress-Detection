@@ -73,7 +73,11 @@ class StressPipeline private constructor(private val context: Context) {
 
     private val database = StressGuardDatabase.get(context)
     private val latencyTracker = LatencyTracker(database.latencyMetrics())
-    private val alertManager = StressAlertManager(context, database.alertEvents())
+    private val alertManager = StressAlertManager(
+        context,
+        database.alertEvents(),
+        database.stressFeedback(),
+    )
     private val sleepCache = SleepCache(context)
     private val stepHistory = StepHistory(database.dailyStepTotals())
 
@@ -155,7 +159,13 @@ class StressPipeline private constructor(private val context: Context) {
             }
             sample.markUiUpdated()
 
-            store(prediction, reading, activityLevel, sleepHours, extrapolating)
+            val storedPrediction = store(
+                prediction,
+                reading,
+                activityLevel,
+                sleepHours,
+                extrapolating,
+            )
 
             recentClassIndices.addLast(prediction.classIndex)
             while (recentClassIndices.size > StressAlertPolicy.WINDOW) recentClassIndices.removeFirst()
@@ -164,6 +174,9 @@ class StressPipeline private constructor(private val context: Context) {
                 recentClassIndices = recentClassIndices.toList(),
                 highStressClassIndex = service.modelInfo.classCount - 1,
                 modelVersion = prediction.modelVersion,
+                prediction = storedPrediction,
+                profile = profile,
+                collectFeedback = !simulated,
             )
             if (decision is AlertDecision.Fire) sample.markAlertFired()
 
@@ -191,10 +204,8 @@ class StressPipeline private constructor(private val context: Context) {
         activityLevel: Int,
         sleepHours: Float,
         extrapolating: Boolean,
-    ) {
-        runCatching {
-            database.stressPredictions().insert(
-                StressPredictionEntity(
+    ): StressPredictionEntity {
+        val entity = StressPredictionEntity(
                     // When the vitals were measured, not when the phone heard about them. With
                     // passive batching those differ by minutes, and a trend built from arrival
                     // times would bunch a whole batch at one instant.
@@ -213,11 +224,13 @@ class StressPipeline private constructor(private val context: Context) {
                     sleepHours = sleepHours,
                     outOfTrainingRange = extrapolating,
                 )
-            )
+        return runCatching {
+            val id = database.stressPredictions().insert(entity)
+            entity.copy(id = id)
         }.onFailure {
             // A failed write must not lose the prediction the user is looking at.
             Log.w(TAG, "could not store the prediction", it)
-        }
+        }.getOrDefault(entity)
     }
 
     /** Records a sleep figure just read from Health Connect, for later background predictions. */

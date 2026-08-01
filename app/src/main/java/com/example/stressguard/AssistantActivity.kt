@@ -15,6 +15,7 @@ import com.example.stressguard.data.ChatRepository
 import com.example.stressguard.data.ChatRole
 import com.example.stressguard.data.StressContext
 import com.example.stressguard.data.StressPipeline
+import com.example.stressguard.ui.fitSystemBars
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.button.MaterialButton
@@ -71,7 +72,6 @@ class AssistantActivity : AppCompatActivity() {
 
         findViewById<MaterialToolbar>(R.id.topAppBar).apply {
             inflateMenu(R.menu.assistant_menu)
-            setNavigationIcon(android.R.drawable.ic_menu_revert)
             setNavigationOnClickListener { finish() }
             setOnMenuItemClickListener { item ->
                 if (item.itemId == R.id.action_new_conversation) {
@@ -84,6 +84,14 @@ class AssistantActivity : AppCompatActivity() {
         }
 
         BottomNav.wire(this, findViewById<BottomNavigationView>(R.id.bottomNavigation), R.id.nav_assistant)
+        // The only screen that asks the keyboard to be accounted for: the composer has to stay
+        // reachable while typing, and from API 35 the platform no longer resizes the window to
+        // make that happen on its own.
+        fitSystemBars(
+            top = findViewById(R.id.assistantRoot),
+            bottom = findViewById(R.id.bottomNavigation),
+            bottomFollowsKeyboard = true,
+        )
 
         btnSend.setOnClickListener { sendCurrentMessage() }
         etMessage.setOnEditorActionListener { _, actionId, _ ->

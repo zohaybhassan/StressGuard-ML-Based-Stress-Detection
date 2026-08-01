@@ -8,6 +8,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.example.stressguard.data.HealthChecklistRepository
 import com.example.stressguard.data.local.HealthChecklistEntity
+import com.example.stressguard.ui.fitSystemBars
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.checkbox.MaterialCheckBox
 import kotlinx.coroutines.launch
@@ -33,6 +34,7 @@ class HealthChecklistActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_health_checklist)
+        fitSystemBars(top = findViewById(R.id.checklistRoot))
 
         boxes = mapOf(
             Field.SMOKING to findViewById(R.id.cbSmoking),

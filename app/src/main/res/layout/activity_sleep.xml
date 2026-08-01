@@ -1,0 +1,481 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/sleepRoot"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/canvas">
+
+    <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/sleepToolbar"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:minHeight="@dimen/button_height_sm"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:navigationIcon="@drawable/ic_arrow_back"
+        app:title="@string/sleep_title" />
+
+    <ScrollView
+        android:id="@+id/sleepContent"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:clipToPadding="false"
+        android:fillViewport="true"
+        android:scrollbars="none"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/sleepToolbar"
+        tools:visibility="visible">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingStart="@dimen/screen_padding"
+            android:paddingTop="@dimen/space_md"
+            android:paddingEnd="@dimen/screen_padding"
+            android:paddingBottom="@dimen/space_2xl">
+
+            <TextView
+                android:id="@+id/tvSleepDate"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textAppearance="@style/TextAppearance.StressGuard.Caption"
+                android:textColor="@color/text_tertiary"
+                tools:text="Friday, July 31, 2026" />
+
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_sm"
+                app:cardBackgroundColor="@color/metric_sleep_soft"
+                app:strokeColor="@color/metric_sleep_soft">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="@dimen/space_xl">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/sleep_total"
+                        android:textAppearance="@style/TextAppearance.StressGuard.Caption"
+                        android:textColor="@color/metric_sleep" />
+
+                    <TextView
+                        android:id="@+id/tvSleepTotal"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/space_xs"
+                        android:textAppearance="@style/TextAppearance.StressGuard.Display"
+                        tools:text="6h 30m" />
+
+                    <TextView
+                        android:id="@+id/tvSleepTotalCaption"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp"
+                        android:textAppearance="@style/TextAppearance.StressGuard.Body"
+                        tools:text="Main sleep plus 1 nap" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <TextView
+                style="@style/Widget.StressGuard.SectionLabel"
+                android:layout_marginTop="@dimen/space_xl"
+                android:text="@string/sleep_target_title" />
+
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_sm">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="@dimen/space_lg">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="@string/sleep_nightly_target"
+                            android:textAppearance="@style/TextAppearance.StressGuard.Title" />
+
+                        <TextView
+                            android:id="@+id/tvSleepTarget"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="@dimen/space_md"
+                            android:textAppearance="@style/TextAppearance.StressGuard.Metric"
+                            tools:text="8 hr" />
+                    </LinearLayout>
+
+                    <com.google.android.material.progressindicator.LinearProgressIndicator
+                        android:id="@+id/sleepTargetProgress"
+                        android:layout_width="match_parent"
+                        android:layout_height="8dp"
+                        android:layout_marginTop="@dimen/space_md"
+                        android:max="100"
+                        app:indicatorColor="@color/metric_sleep"
+                        app:trackColor="@color/metric_sleep_soft"
+                        app:trackCornerRadius="4dp"
+                        app:trackThickness="8dp"
+                        tools:progress="71" />
+
+                    <TextView
+                        android:id="@+id/tvSleepTargetProgress"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/space_sm"
+                        android:textAppearance="@style/TextAppearance.StressGuard.Caption"
+                        tools:text="5 hr 40 min of 8 hr" />
+
+                    <com.google.android.material.slider.Slider
+                        android:id="@+id/sleepTargetSlider"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/space_sm"
+                        android:contentDescription="@string/sleep_target_slider"
+                        android:stepSize="0.25"
+                        android:valueFrom="4"
+                        android:valueTo="12"
+                        app:thumbColor="@color/metric_sleep"
+                        app:trackColorActive="@color/metric_sleep"
+                        app:trackColorInactive="@color/metric_sleep_soft" />
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/sleep_target_hint"
+                        android:textAppearance="@style/TextAppearance.StressGuard.Footnote" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <TextView
+                style="@style/Widget.StressGuard.SectionLabel"
+                android:layout_marginTop="@dimen/space_xl"
+                android:text="@string/sleep_sessions" />
+
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_sm">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:padding="@dimen/space_lg">
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/sleep_main"
+                            android:textAppearance="@style/TextAppearance.StressGuard.Title" />
+
+                        <TextView
+                            android:id="@+id/tvMainTime"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="2dp"
+                            android:textAppearance="@style/TextAppearance.StressGuard.Caption"
+                            tools:text="3:18 AM - 8:18 AM" />
+                    </LinearLayout>
+
+                    <TextView
+                        android:id="@+id/tvMainDuration"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="@dimen/space_md"
+                        android:textAppearance="@style/TextAppearance.StressGuard.Metric"
+                        tools:text="5h" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <LinearLayout
+                android:id="@+id/napSection"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <LinearLayout
+                    android:id="@+id/napList"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical" />
+            </LinearLayout>
+
+            <TextView
+                style="@style/Widget.StressGuard.SectionLabel"
+                android:layout_marginTop="@dimen/space_xl"
+                android:text="@string/sleep_stages" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_sm"
+                android:baselineAligned="false"
+                android:orientation="horizontal">
+
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_marginEnd="@dimen/space_xs"
+                    android:layout_weight="1">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="@dimen/space_lg">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/sleep_deep"
+                            android:textAppearance="@style/TextAppearance.StressGuard.Caption" />
+
+                        <TextView
+                            android:id="@+id/tvDeepSleep"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/space_xs"
+                            android:textAppearance="@style/TextAppearance.StressGuard.Metric"
+                            tools:text="44m" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_marginStart="@dimen/space_xs"
+                    android:layout_weight="1">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="@dimen/space_lg">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/sleep_light"
+                            android:textAppearance="@style/TextAppearance.StressGuard.Caption" />
+
+                        <TextView
+                            android:id="@+id/tvLightSleep"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/space_xs"
+                            android:textAppearance="@style/TextAppearance.StressGuard.Metric"
+                            tools:text="3h 12m" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_sm"
+                android:baselineAligned="false"
+                android:orientation="horizontal">
+
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_marginEnd="@dimen/space_xs"
+                    android:layout_weight="1">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="@dimen/space_lg">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/sleep_rem"
+                            android:textAppearance="@style/TextAppearance.StressGuard.Caption" />
+
+                        <TextView
+                            android:id="@+id/tvRemSleep"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/space_xs"
+                            android:textAppearance="@style/TextAppearance.StressGuard.Metric"
+                            tools:text="1h 20m" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_marginStart="@dimen/space_xs"
+                    android:layout_weight="1">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="@dimen/space_lg">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/sleep_awake"
+                            android:textAppearance="@style/TextAppearance.StressGuard.Caption" />
+
+                        <TextView
+                            android:id="@+id/tvAwakeSleep"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/space_xs"
+                            android:textAppearance="@style/TextAppearance.StressGuard.Metric"
+                            tools:text="24m" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+            </LinearLayout>
+
+            <TextView
+                style="@style/Widget.StressGuard.SectionLabel"
+                android:layout_marginTop="@dimen/space_xl"
+                android:text="@string/sleep_oxygen_title" />
+
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_sm">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="@dimen/space_lg">
+
+                    <TextView
+                        android:id="@+id/tvOxygenValue"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textAppearance="@style/TextAppearance.StressGuard.Metric"
+                        tools:text="95%" />
+
+                    <TextView
+                        android:id="@+id/tvOxygenDetail"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp"
+                        android:textAppearance="@style/TextAppearance.StressGuard.Caption"
+                        tools:text="Average of 4 readings taken during sleep" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnManageOxygenAccess"
+                        style="@style/Widget.StressGuard.Button.Text"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/space_sm"
+                        android:text="@string/sleep_manage_access"
+                        android:visibility="gone" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_xl"
+                android:background="@drawable/bg_empty_state"
+                android:orientation="horizontal"
+                android:padding="@dimen/space_lg">
+
+                <ImageView
+                    android:layout_width="18dp"
+                    android:layout_height="18dp"
+                    android:contentDescription="@null"
+                    android:src="@drawable/ic_info"
+                    app:tint="@color/brand" />
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/space_md"
+                    android:layout_weight="1"
+                    android:text="@string/sleep_information"
+                    android:textAppearance="@style/TextAppearance.StressGuard.Body" />
+            </LinearLayout>
+        </LinearLayout>
+    </ScrollView>
+
+    <com.google.android.material.progressindicator.CircularProgressIndicator
+        android:id="@+id/sleepLoading"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:contentDescription="@string/sleep_loading"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/sleepToolbar" />
+
+    <LinearLayout
+        android:id="@+id/sleepUnavailable"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_margin="@dimen/screen_padding"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/sleepToolbar">
+
+        <ImageView
+            android:layout_width="@dimen/icon_tile_lg"
+            android:layout_height="@dimen/icon_tile_lg"
+            android:background="@drawable/bg_icon_tile"
+            android:backgroundTint="@color/metric_sleep_soft"
+            android:contentDescription="@null"
+            android:padding="12dp"
+            android:src="@drawable/ic_sleep"
+            app:tint="@color/metric_sleep" />
+
+        <TextView
+            android:id="@+id/tvSleepUnavailable"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_lg"
+            android:gravity="center"
+            android:textAppearance="@style/TextAppearance.StressGuard.Body"
+            tools:text="Allow sleep access to see your sleep details." />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnManageSleepAccess"
+            style="@style/Widget.StressGuard.Button.Outlined"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_lg"
+            android:text="@string/sleep_manage_access" />
+    </LinearLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

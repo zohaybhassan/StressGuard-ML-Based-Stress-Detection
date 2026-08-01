@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Empty states are drawn with a dashed border rather than a solid one: it reads as a space
+     waiting to be filled, which with passive collection is exactly what it is. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <solid android:color="@color/surface_variant" />
+    <stroke
+        android:width="@dimen/stroke_width"
+        android:color="@color/outline_strong"
+        android:dashGap="5dp"
+        android:dashWidth="7dp" />
+    <corners android:radius="@dimen/radius_md" />
+</shape>

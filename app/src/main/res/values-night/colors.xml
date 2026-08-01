@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    The palette, dark theme.
+
+    Exactly the names from values/colors.xml, re-tuned. Nothing here is new: if a name appears in
+    one file and not the other, some screen renders black-on-black at night, which is precisely
+    what the old hardcoded layouts did.
+
+    Two rules the values follow. Surfaces get lighter as they come forward rather than darker, so
+    a card still reads as a card. And the accents are lifted in lightness and dropped in
+    saturation, because a colour tuned against white glares against near-black.
+-->
+<resources>
+
+    <color name="brand">#2ED3B7</color>
+    <color name="brand_dark">#5FE3CC</color>
+    <color name="brand_soft">#11332D</color>
+    <color name="brand_softer">#0D2723</color>
+    <!-- Dark text on the bright teal: white on #2ED3B7 fails contrast, dark ink passes easily. -->
+    <color name="on_brand">#04231E</color>
+
+    <color name="canvas">#081311</color>
+    <color name="surface">#101D1A</color>
+    <color name="surface_variant">#172723</color>
+    <color name="outline">#22332E</color>
+    <color name="outline_strong">#2E423B</color>
+    <color name="scrim">#66000000</color>
+
+    <color name="text_primary">#E8F1EE</color>
+    <color name="text_secondary">#9CB2AC</color>
+    <color name="text_tertiary">#6F847E</color>
+    <color name="text_on_dark">#FFFFFF</color>
+    <color name="text_on_dark_muted">#9FC3BB</color>
+
+    <!-- Lifted a little from the light values so the hero still separates from a near-black
+         canvas; it is the only surface that is dark in both themes. -->
+    <color name="hero_start">#0D3B34</color>
+    <color name="hero_end">#16564B</color>
+    <color name="hero_track">#20524A</color>
+    <color name="hero_divider">#24504A</color>
+
+    <color name="stress_low">#4FD98F</color>
+    <color name="stress_moderate">#FFC463</color>
+    <color name="stress_elevated">#FF9A5C</color>
+    <color name="stress_high">#FF6B6E</color>
+
+    <color name="metric_heart">#FF7189</color>
+    <color name="metric_heart_soft">#3A1D24</color>
+    <color name="metric_steps">#6A9BFF</color>
+    <color name="metric_steps_soft">#182741</color>
+    <color name="metric_sleep">#9E85FF</color>
+    <color name="metric_sleep_soft">#241E3F</color>
+
+    <color name="danger">#FF6B6E</color>
+    <color name="danger_soft">#3A1B1D</color>
+    <color name="warning">#FFC463</color>
+    <color name="warning_soft">#332811</color>
+    <color name="success">#4FD98F</color>
+    <color name="neutral_soft">#172723</color>
+
+    <color name="bubble_user">#1C6D60</color>
+    <color name="bubble_user_text">#EAFFFA</color>
+    <color name="bubble_assistant">#172723</color>
+    <color name="bubble_assistant_text">#E8F1EE</color>
+    <color name="bubble_fallback">#332811</color>
+    <color name="bubble_fallback_text">#FFDFA3</color>
+
+    <color name="chart_grid">#22332E</color>
+    <color name="chart_axis_text">#6F847E</color>
+</resources>

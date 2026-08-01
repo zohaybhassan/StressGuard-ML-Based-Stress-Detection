@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The message field. A single rounded container holding the input and the send button, rather
+     than a bare EditText on a white strip. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <solid android:color="@color/surface_variant" />
+    <stroke
+        android:width="@dimen/stroke_width"
+        android:color="@color/outline" />
+    <corners android:radius="26dp" />
+</shape>

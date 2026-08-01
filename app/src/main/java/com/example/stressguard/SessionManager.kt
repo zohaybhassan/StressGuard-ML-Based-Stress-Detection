@@ -12,6 +12,9 @@ object SessionManager {
     private const val KEY_USER_BMI = "user_bmi"
     private const val KEY_PASSWORD_SET = "password_set"
     private const val KEY_LAST_USER_ID = "last_user_id"
+    private const val KEY_SLEEP_TARGET_MINUTES = "sleep_target_minutes"
+    private const val KEY_STEP_TARGET = "step_target"
+    private const val KEY_ALERTS_MUTED_UNTIL = "alerts_muted_until"
 
     private fun prefs(context: Context) = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
 
@@ -65,6 +68,35 @@ object SessionManager {
     fun getUserBmi(context: Context): String? =
         prefs(context).getString(KEY_USER_BMI, null)?.takeIf { it.isNotBlank() }
 
+    fun getSleepTargetMinutes(context: Context): Int =
+        prefs(context).getInt(KEY_SLEEP_TARGET_MINUTES, DEFAULT_SLEEP_TARGET_MINUTES)
+
+    fun setSleepTargetMinutes(context: Context, minutes: Int) {
+        prefs(context).edit()
+            .putInt(KEY_SLEEP_TARGET_MINUTES, minutes.coerceIn(MIN_SLEEP_TARGET_MINUTES, MAX_SLEEP_TARGET_MINUTES))
+            .apply()
+    }
+
+    fun getStepTarget(context: Context): Int =
+        prefs(context).getInt(KEY_STEP_TARGET, DEFAULT_STEP_TARGET)
+
+    fun setStepTarget(context: Context, steps: Int) {
+        prefs(context).edit()
+            .putInt(KEY_STEP_TARGET, steps.coerceIn(MIN_STEP_TARGET, MAX_STEP_TARGET))
+            .apply()
+    }
+
+    fun getAlertsMutedUntil(context: Context): Long =
+        prefs(context).getLong(KEY_ALERTS_MUTED_UNTIL, 0L)
+
+    fun muteAlertsUntil(context: Context, epochMs: Long) {
+        prefs(context).edit().putLong(KEY_ALERTS_MUTED_UNTIL, epochMs.coerceAtLeast(0L)).apply()
+    }
+
+    fun clearAlertMute(context: Context) {
+        prefs(context).edit().remove(KEY_ALERTS_MUTED_UNTIL).apply()
+    }
+
     /**
      * Which account this device's local data belongs to.
      *
@@ -106,4 +138,11 @@ object SessionManager {
     fun clear(context: Context) {
         prefs(context).edit().clear().apply()
     }
+
+    const val DEFAULT_SLEEP_TARGET_MINUTES = 8 * 60
+    const val MIN_SLEEP_TARGET_MINUTES = 4 * 60
+    const val MAX_SLEEP_TARGET_MINUTES = 12 * 60
+    const val DEFAULT_STEP_TARGET = 8_000
+    const val MIN_STEP_TARGET = 2_000
+    const val MAX_STEP_TARGET = 20_000
 }

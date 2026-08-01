@@ -22,6 +22,8 @@ The mobile app is currently functional for:
 - ONNX model inference on device.
 - Local history in Room: predictions, latency samples, alerts.
 - Sustained-stress haptic alerts with smoothing and a cooldown.
+- Post-alert user confirmation with an optional 1-10 severity label for future model evaluation.
+- Temporary alert muting for 10 minutes, 30 minutes, 1 hour, or 4 hours.
 - A trends screen: weekly stress chart plus heart rate, sleep and activity over time.
 - Background sync of local history to Supabase.
 - Debug testing without a smartwatch.
@@ -163,6 +165,15 @@ The phone receives these values through the Google Play Services Wearable APIs.
 ### Sleep Data
 
 Sleep duration is read through Health Connect on the phone when permission and data are available.
+Records ending on the same local date form one sleep day: nearby fragments are joined, the longest
+group is shown as the main sleep, and later naps are displayed separately but added to the total
+given to the stress model. This prevents an evening nap from replacing the preceding night's sleep.
+
+Tapping the dashboard sleep card opens a detail screen with session times, naps, available sleep
+stages, and the average oxygen saturation recorded during those sleep sessions. Oxygen access is
+read-only, requested on that screen, and oxygen is not currently used by the stress model.
+The same screen has a persistent 4-12 hour sleep goal, adjustable in 15-minute increments. The goal
+changes progress tracking only; it never replaces or alters the Health Connect measurement.
 
 Current limitation:
 
@@ -206,6 +217,29 @@ The dashboard currently shows:
 - Sync status, tappable to sync now
 - The checkup recommendation card
 - Debug model test button
+
+The step card opens a dedicated activity view with today's progress, a persistent 2,000-20,000
+step goal, a seven-day bar chart backed by `daily_step_totals`, and a dashed target line. The sleep
+card opens the sleep-day detail described above. Settings is available from the dashboard overflow
+menu and provides profile editing, both goals, health-checklist editing, Health Connect access,
+alert pause controls, Android notification settings, and the app's local-data/privacy summary.
+
+### Alert Feedback and Retraining Data
+
+When a real sustained-high-stress alert fires, the app creates a pending `stress_feedback` row and
+the notification offers **Check in**, **Mute alerts**, and **Talk it through** actions. The check-in
+asks whether the user was actually stressed; a confirmed response also records severity on the
+original dataset's 1-10 scale. The shipped model remains binary: source scores of 7-10 map to
+`stressed`, while 1-6 map to `not_stressed`.
+
+Each completed response keeps the alert-time model version, probabilities, sensor inputs and
+profile snapshot. Completed rows sync separately to Supabase; unanswered prompts and simulated
+debug alerts do not enter the retraining dataset.
+
+Alert-triggered feedback alone is suitable for measuring precision and false positives, but not
+false negatives: it never asks when the model predicts low stress. Before full retraining, add a
+small number of periodic check-ins and evaluate with user-grouped train/test splits so one person's
+records cannot appear in both sets.
 
 ### ONNX Stress Prediction
 
@@ -572,11 +606,10 @@ Wear app:
    server-side, plus the screen, a quick action from a high-stress alert, and restoring the
    `nav_assistant` tab that was removed until it exists.
 2. Collect the 30 latency samples the plan asks for, with the network on and in airplane mode.
-3. Add an edit-profile screen so different manual inputs can be tested without clearing app data.
-4. Decide what `btnEmergency` should do, or remove it.
-5. Replace the AES/ECB hardcoded-key wearable encryption before presenting it as a security
+3. Decide what `btnEmergency` should do, or remove it.
+4. Replace the AES/ECB hardcoded-key wearable encryption before presenting it as a security
    measure.
-6. Add final report screenshots and testing evidence.
+5. Add final report screenshots and testing evidence.
 
 ## Testing
 

@@ -43,7 +43,8 @@ object LocalUserData {
         database.stressPredictions().countUnsynced() +
             database.latencyMetrics().countUnsynced() +
             database.alertEvents().countUnsynced() +
-            database.healthChecklists().countUnsynced()
+            database.healthChecklists().countUnsynced() +
+            database.stressFeedback().countUnsyncedCompleted()
     }.getOrDefault(0)
 
     /**

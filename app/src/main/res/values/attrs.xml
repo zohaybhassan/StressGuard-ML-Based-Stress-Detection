@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- StressRingView. Declared so the gauge can be described in the layout and rendered in the
+         editor preview, rather than existing as a blank square until the Activity runs. -->
+    <declare-styleable name="StressRingView">
+        <attr name="ringThickness" format="dimension" />
+        <attr name="ringColor" format="color" />
+        <attr name="ringTrackColor" format="color" />
+        <attr name="ringProgress" format="integer" />
+    </declare-styleable>
+</resources>

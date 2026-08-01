@@ -14,6 +14,7 @@
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
     <uses-permission android:name="android.permission.health.READ_SLEEP" />
+    <uses-permission android:name="android.permission.health.READ_OXYGEN_SATURATION" />
 
     <queries>
         <package android:name="com.google.android.apps.healthdata" />
@@ -33,6 +34,21 @@
             android:exported="false" />
         <activity
             android:name=".HealthChecklistActivity"
+            android:exported="false" />
+        <activity
+            android:name=".SleepActivity"
+            android:exported="false" />
+        <activity
+            android:name=".StepsActivity"
+            android:exported="false" />
+        <activity
+            android:name=".SettingsActivity"
+            android:exported="false" />
+        <activity
+            android:name=".AlertFeedbackActivity"
+            android:exported="false" />
+        <activity
+            android:name=".MuteAlertsActivity"
             android:exported="false" />
         <activity
             android:name=".SetPasswordActivity"
@@ -56,9 +72,12 @@
             android:name=".HomeDashboardActivity"
             android:exported="false"
             android:launchMode="singleTop" />
+        <!-- The one screen with its own theme: it is painted with the brand gradient from the
+             moment the window opens, so the app does not flash white before its first frame. -->
         <activity
             android:name=".MainActivity"
-            android:exported="true">
+            android:exported="true"
+            android:theme="@style/Theme.StressGuard.Splash">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

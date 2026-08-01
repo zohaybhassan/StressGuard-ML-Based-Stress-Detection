@@ -31,6 +31,9 @@ class StepHistoryTest {
         override suspend fun mostRecentBefore(beforeDate: String): DailyStepTotalEntity? =
             rows.values.filter { it.date < beforeDate }.maxByOrNull { it.date }
 
+        override suspend fun recent(limit: Int): List<DailyStepTotalEntity> =
+            rows.values.sortedByDescending { it.date }.take(limit)
+
         override suspend fun deleteOlderThan(cutoffDate: String): Int {
             val doomed = rows.keys.filter { it < cutoffDate }
             doomed.forEach { rows.remove(it) }

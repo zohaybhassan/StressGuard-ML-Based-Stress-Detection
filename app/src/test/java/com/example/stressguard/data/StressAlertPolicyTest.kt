@@ -141,6 +141,32 @@ class StressAlertPolicyTest {
         assertTrue(evaluate(List(5) { high }, lastAlertEpochMs = null) is AlertDecision.Fire)
     }
 
+    @Test
+    fun userMuteSuppressesAnOtherwiseValidAlert() {
+        val decision = StressAlertPolicy.evaluate(
+            recentClassIndices = List(5) { high },
+            highStressClassIndex = high,
+            nowEpochMs = now,
+            lastAlertEpochMs = null,
+            mutedUntilEpochMs = now + 30 * 60 * 1000L,
+        )
+
+        assertEquals(AlertDecision.UserMuted(30 * 60 * 1000L), decision)
+    }
+
+    @Test
+    fun expiredUserMuteDoesNotSuppress() {
+        val decision = StressAlertPolicy.evaluate(
+            recentClassIndices = List(5) { high },
+            highStressClassIndex = high,
+            nowEpochMs = now,
+            lastAlertEpochMs = null,
+            mutedUntilEpochMs = now,
+        )
+
+        assertTrue(decision is AlertDecision.Fire)
+    }
+
     /**
      * With the three-level bundle the high class is index 2, and index 1 ("normal") must not
      * trigger. Guards against the high class being hardcoded.

@@ -202,38 +202,6 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
         )
     }
 
-    /**
-     * Debug scenarios go down the same path as a real reading, so the latency figures and the
-     * alert rule are exercised by them. That is what makes them useful without a watch.
-     */
-    fun runDebugScenario(name: String, heartRate: Int, steps: Int, sleepHours: Float) {
-        val reading = SensorReading.from(
-            heartRate = heartRate,
-            dailySteps = steps,
-            receivedAtElapsedMs = SystemClock.elapsedRealtime(),
-            receivedAtEpochMs = System.currentTimeMillis(),
-        ) ?: run {
-            _state.value = _state.value.copy(error = "Debug scenario $name has implausible values")
-            return
-        }
-
-        // A debug sample has no watch behind it, so there is no measurement to age.
-        measuredAtElapsedMs = null
-        _state.value = _state.value.copy(
-            heartRate = heartRate,
-            steps = steps,
-            sleepHours = sleepHours,
-            sleepAssumed = false,
-            source = ReadingSource.SIMULATED,
-            sourceDetail = "Debug sample: $name",
-            outOfTrainingRange = reading.outOfTrainingRange,
-            readingAgeMs = null,
-        )
-        viewModelScope.launch {
-            pipeline.process(reading, sleepOverride = sleepHours, simulated = true)
-        }
-    }
-
     private suspend fun render(result: PipelineResult) {
         when (result) {
             is PipelineResult.Failed -> {

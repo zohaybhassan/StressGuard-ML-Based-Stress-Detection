@@ -1,11 +1,16 @@
 package com.example.stressguard
 
-import android.graphics.Color
+import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
 import android.view.View
 import android.widget.TextView
+import androidx.annotation.ColorInt
+import androidx.annotation.ColorRes
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
+import androidx.core.graphics.ColorUtils
 import androidx.lifecycle.lifecycleScope
+import com.example.stressguard.ui.fitSystemBars
 import com.example.stressguard.data.DailyStressSummary
 import com.example.stressguard.data.StressAlertPolicy
 import com.example.stressguard.data.StressTrends
@@ -47,6 +52,17 @@ class TrendsActivity : AppCompatActivity() {
     private lateinit var chartVitals: LineChart
     private lateinit var chartActivity: LineChart
 
+    // The palette, resolved once per Activity instance rather than parsed from a literal at every
+    // redraw. Resolved lazily so a theme change simply recreates the Activity and re-reads them,
+    // which is what makes these charts follow the dark theme without a second set of constants.
+    private val colorHigh by lazy { color(R.color.stress_high) }
+    private val colorNormal by lazy { color(R.color.stress_low) }
+    private val colorHeart by lazy { color(R.color.metric_heart) }
+    private val colorSleep by lazy { color(R.color.metric_sleep) }
+    private val colorActivity by lazy { color(R.color.metric_steps) }
+    private val colorAxis by lazy { color(R.color.chart_axis_text) }
+    private val colorGrid by lazy { color(R.color.chart_grid) }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_trends)
@@ -61,6 +77,10 @@ class TrendsActivity : AppCompatActivity() {
         chartActivity = findViewById(R.id.chartActivity)
 
         BottomNav.wire(this, findViewById<BottomNavigationView>(R.id.bottomNavigation), R.id.nav_trends)
+        fitSystemBars(
+            top = findViewById(R.id.trendsRoot),
+            bottom = findViewById(R.id.bottomNavigation),
+        )
     }
 
     /**
@@ -101,7 +121,7 @@ class TrendsActivity : AppCompatActivity() {
     private fun renderHeadline(trends: StressTrends) {
         tvTodayHighStress.text = trends.highStressReadingsToday.toString()
         tvTodayHighStress.setTextColor(
-            if (trends.highStressReadingsToday >= StressAlertPolicy.THRESHOLD) HIGH else NORMAL
+            if (trends.highStressReadingsToday >= StressAlertPolicy.THRESHOLD) colorHigh else colorNormal
         )
 
         tvTodaySummary.text = when {
@@ -133,15 +153,15 @@ class TrendsActivity : AppCompatActivity() {
         }
 
         val set = BarDataSet(entries, "High-stress readings").apply {
-            colors = days.map { if (it.isHighStressDay) HIGH else NORMAL }
+            colors = days.map { if (it.isHighStressDay) colorHigh else colorNormal }
             setDrawValues(true)
             valueTextSize = 10f
-            valueTextColor = AXIS_TEXT
+            valueTextColor = colorAxis
             valueFormatter = IntFormatter
         }
 
         chartStress.apply {
-            data = BarData(set).apply { barWidth = 0.5f }
+            data = BarData(set).apply { barWidth = 0.45f }
             styleCommon(days)
             axisLeft.apply {
                 removeAllLimitLines()
@@ -152,15 +172,16 @@ class TrendsActivity : AppCompatActivity() {
                         StressAlertPolicy.THRESHOLD.toFloat(),
                         "counts as a high-stress day",
                     ).apply {
-                        lineColor = HIGH
+                        lineColor = colorHigh
                         lineWidth = 1f
-                        textColor = AXIS_TEXT
+                        textColor = colorAxis
                         textSize = 9f
                         enableDashedLine(8f, 6f, 0f)
                     }
                 )
             }
             legend.isEnabled = false
+            animateY(ANIMATE_MS)
             invalidate()
         }
     }
@@ -177,12 +198,15 @@ class TrendsActivity : AppCompatActivity() {
             "Heart rate (bpm)",
         ).apply {
             axisDependency = com.github.mikephil.charting.components.YAxis.AxisDependency.LEFT
-            color = HEART
-            setCircleColor(HEART)
-            lineWidth = 2f
+            color = colorHeart
+            setCircleColor(colorHeart)
+            lineWidth = 2.2f
             circleRadius = 3.5f
             setDrawCircleHole(false)
             setDrawValues(false)
+            // Curved rather than jointed: these are daily averages of a continuous signal, and
+            // straight segments imply readings that changed at midnight.
+            mode = LineDataSet.Mode.CUBIC_BEZIER
         }
 
         val sleep = LineDataSet(
@@ -190,12 +214,13 @@ class TrendsActivity : AppCompatActivity() {
             "Sleep (hours)",
         ).apply {
             axisDependency = com.github.mikephil.charting.components.YAxis.AxisDependency.RIGHT
-            color = SLEEP
-            setCircleColor(SLEEP)
-            lineWidth = 2f
+            color = colorSleep
+            setCircleColor(colorSleep)
+            lineWidth = 2.2f
             circleRadius = 3.5f
             setDrawCircleHole(false)
             setDrawValues(false)
+            mode = LineDataSet.Mode.CUBIC_BEZIER
         }
 
         chartVitals.apply {
@@ -209,16 +234,21 @@ class TrendsActivity : AppCompatActivity() {
             axisRight.apply {
                 isEnabled = true
                 setDrawGridLines(false)
-                textColor = AXIS_TEXT
+                setDrawAxisLine(false)
+                textColor = colorAxis
                 textSize = 10f
                 axisMinimum = 0f
             }
             legend.apply {
                 isEnabled = true
-                textColor = AXIS_TEXT
+                textColor = colorAxis
                 textSize = 11f
+                form = Legend.LegendForm.CIRCLE
+                formSize = 8f
+                xEntrySpace = 14f
                 horizontalAlignment = Legend.LegendHorizontalAlignment.LEFT
             }
+            animateY(ANIMATE_MS)
             invalidate()
         }
     }
@@ -228,15 +258,23 @@ class TrendsActivity : AppCompatActivity() {
             days.mapIndexed { index, day -> Entry(index.toFloat(), day.averageActivityLevel.toFloat()) },
             "Activity level (steps)",
         ).apply {
-            color = ACTIVITY
-            setCircleColor(ACTIVITY)
-            lineWidth = 2f
+            color = colorActivity
+            setCircleColor(colorActivity)
+            lineWidth = 2.2f
             circleRadius = 3.5f
             setDrawCircleHole(false)
             setDrawValues(false)
+            mode = LineDataSet.Mode.CUBIC_BEZIER
             setDrawFilled(true)
-            fillColor = ACTIVITY
-            fillAlpha = 40
+            // A gradient rather than a flat wash: a solid 40-alpha block under the line reads as a
+            // second series, where a fade reads as the area it is.
+            fillDrawable = GradientDrawable(
+                GradientDrawable.Orientation.TOP_BOTTOM,
+                intArrayOf(
+                    ColorUtils.setAlphaComponent(colorActivity, 92),
+                    ColorUtils.setAlphaComponent(colorActivity, 0),
+                ),
+            )
         }
 
         chartActivity.apply {
@@ -248,6 +286,7 @@ class TrendsActivity : AppCompatActivity() {
                 resetAxisMaximum()
             }
             legend.isEnabled = false
+            animateY(ANIMATE_MS)
             invalidate()
         }
     }
@@ -266,9 +305,11 @@ class TrendsActivity : AppCompatActivity() {
         xAxis.apply {
             position = XAxis.XAxisPosition.BOTTOM
             setDrawGridLines(false)
+            setDrawAxisLine(false)
             granularity = 1f
-            textColor = AXIS_TEXT
+            textColor = colorAxis
             textSize = 10f
+            yOffset = 8f
             valueFormatter = DayLabelFormatter(days)
             // Half a slot of padding either side, or the first and last bars are clipped by the
             // chart edge.
@@ -278,8 +319,11 @@ class TrendsActivity : AppCompatActivity() {
 
         axisLeft.apply {
             setDrawAxisLine(false)
-            gridColor = GRID
-            textColor = AXIS_TEXT
+            gridColor = colorGrid
+            gridLineWidth = 1f
+            // Dashed, so the grid stays behind the data rather than competing with it.
+            enableGridDashedLine(6f, 6f, 0f)
+            textColor = colorAxis
             textSize = 10f
         }
 
@@ -306,13 +350,11 @@ class TrendsActivity : AppCompatActivity() {
 
     private fun plural(count: Int, one: String, many: String) = if (count == 1) one else many
 
+    @ColorInt
+    private fun color(@ColorRes id: Int): Int = ContextCompat.getColor(this, id)
+
     private companion object {
-        val HIGH = Color.parseColor("#F44336")
-        val NORMAL = Color.parseColor("#69D18F")
-        val HEART = Color.parseColor("#E5556E")
-        val SLEEP = Color.parseColor("#6250A4")
-        val ACTIVITY = Color.parseColor("#0B57D0")
-        val AXIS_TEXT = Color.parseColor("#64706A")
-        val GRID = Color.parseColor("#E0E7E2")
+        /** Long enough to be read as the chart drawing itself, short enough not to be waited on. */
+        const val ANIMATE_MS = 500
     }
 }

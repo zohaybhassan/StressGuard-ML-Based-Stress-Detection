@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/muteRoot"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/canvas">
+
+    <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/muteToolbar"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:navigationIcon="@drawable/ic_arrow_back"
+        app:title="@string/mute_alerts_title" />
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="@dimen/screen_padding"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/muteToolbar">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/mute_alerts_heading"
+            android:textAppearance="@style/TextAppearance.StressGuard.Headline" />
+
+        <TextView
+            android:id="@+id/tvMuteStatus"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_sm"
+            android:textAppearance="@style/TextAppearance.StressGuard.Body" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnMute10Minutes"
+            style="@style/Widget.StressGuard.Button.Outlined"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/button_height"
+            android:layout_marginTop="@dimen/space_xl"
+            android:text="@string/mute_10_minutes" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnMute30Minutes"
+            style="@style/Widget.StressGuard.Button.Outlined"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/button_height"
+            android:layout_marginTop="@dimen/space_sm"
+            android:text="@string/mute_30_minutes" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnMute1Hour"
+            style="@style/Widget.StressGuard.Button.Outlined"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/button_height"
+            android:layout_marginTop="@dimen/space_sm"
+            android:text="@string/mute_1_hour" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnMute4Hours"
+            style="@style/Widget.StressGuard.Button.Outlined"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/button_height"
+            android:layout_marginTop="@dimen/space_sm"
+            android:text="@string/mute_4_hours" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnResumeAlerts"
+            style="@style/Widget.StressGuard.Button.Text"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/button_height"
+            android:layout_marginTop="@dimen/space_lg"
+            android:text="@string/resume_alerts" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnNotificationSettings"
+            style="@style/Widget.StressGuard.Button.Text"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/button_height"
+            android:layout_marginTop="@dimen/space_sm"
+            android:text="@string/open_notification_settings" />
+    </LinearLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

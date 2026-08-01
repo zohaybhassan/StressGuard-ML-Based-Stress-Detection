@@ -1,15 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Three destinations, each with an icon drawn for this app. The stock android.R menu icons the
+     bar used before were a different weight and vintage from everything around them. -->
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item
         android:id="@+id/nav_home"
-        android:icon="@android:drawable/ic_menu_compass"
-        android:title="Home" />
+        android:icon="@drawable/ic_nav_home"
+        android:title="@string/nav_home" />
     <item
         android:id="@+id/nav_trends"
-        android:icon="@android:drawable/ic_menu_recent_history"
-        android:title="Trends" />
+        android:icon="@drawable/ic_nav_trends"
+        android:title="@string/nav_trends" />
     <item
         android:id="@+id/nav_assistant"
-        android:icon="@android:drawable/ic_menu_help"
-        android:title="Assistant" />
+        android:icon="@drawable/ic_nav_assistant"
+        android:title="@string/nav_assistant" />
 </menu>

@@ -1,31 +1,360 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    The theme, and the widget styles that make up the design system.
+
+    The point of this file is that screens stop making appearance decisions. A layout says
+    "MaterialCardView" and gets the app's card; it does not restate the radius, the border and the
+    background every time, which is how the old layouts ended up with four slightly different
+    cards and no dark theme at all.
+
+    Colours are always resource references, never literals, so values-night substitutes the whole
+    palette without a second copy of any of this.
+-->
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- Base application theme. -->
+
     <style name="Base.Theme.StressGuard" parent="Theme.Material3.DayNight.NoActionBar">
-        <!-- Customize your light theme here. -->
-        <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
+
+        <!-- Colour roles. Everything the Material components draw resolves through these. -->
+        <item name="colorPrimary">@color/brand</item>
+        <item name="colorOnPrimary">@color/on_brand</item>
+        <item name="colorPrimaryContainer">@color/brand_soft</item>
+        <item name="colorOnPrimaryContainer">@color/brand_dark</item>
+        <item name="colorSecondary">@color/brand_dark</item>
+        <item name="colorOnSecondary">@color/text_on_dark</item>
+        <item name="colorSecondaryContainer">@color/brand_soft</item>
+        <item name="colorOnSecondaryContainer">@color/brand_dark</item>
+        <item name="colorError">@color/danger</item>
+        <item name="colorOnError">@color/white</item>
+        <item name="colorErrorContainer">@color/danger_soft</item>
+
+        <item name="android:colorBackground">@color/canvas</item>
+        <item name="colorSurface">@color/surface</item>
+        <item name="colorOnSurface">@color/text_primary</item>
+        <item name="colorSurfaceVariant">@color/surface_variant</item>
+        <item name="colorOnSurfaceVariant">@color/text_secondary</item>
+        <item name="colorSurfaceContainerLow">@color/surface</item>
+        <item name="colorSurfaceContainer">@color/surface_variant</item>
+        <item name="colorOutline">@color/outline_strong</item>
+        <item name="colorOutlineVariant">@color/outline</item>
+
+        <!-- System bars. Honoured below API 35; from 35 the window is edge-to-edge and the bars
+             are transparent, which is why every screen pads itself for the insets instead. -->
+        <item name="android:statusBarColor">@color/canvas</item>
+        <item name="android:windowLightStatusBar">true</item>
+        <item name="android:navigationBarColor">@color/surface</item>
+
+        <!-- Shapes, applied to anything that does not override them. -->
+        <item name="shapeAppearanceSmallComponent">@style/ShapeAppearance.StressGuard.Small</item>
+        <item name="shapeAppearanceMediumComponent">@style/ShapeAppearance.StressGuard.Medium</item>
+        <item name="shapeAppearanceLargeComponent">@style/ShapeAppearance.StressGuard.Large</item>
+
+        <!-- Default widget styles, so a plain tag in a layout is already on-design. -->
+        <item name="materialCardViewStyle">@style/Widget.StressGuard.Card</item>
+        <item name="materialButtonStyle">@style/Widget.StressGuard.Button</item>
+        <item name="materialButtonOutlinedStyle">@style/Widget.StressGuard.Button.Outlined</item>
+        <item name="borderlessButtonStyle">@style/Widget.StressGuard.Button.Text</item>
+        <item name="textInputStyle">@style/Widget.StressGuard.TextInput</item>
+        <item name="chipStyle">@style/Widget.StressGuard.Chip</item>
+        <item name="bottomNavigationStyle">@style/Widget.StressGuard.BottomNav</item>
+        <item name="toolbarStyle">@style/Widget.StressGuard.Toolbar</item>
+        <item name="checkboxStyle">@style/Widget.StressGuard.CheckBox</item>
+
+        <!-- Text. The scale is defined once below and referenced by name in layouts. -->
+        <item name="android:textColorPrimary">@color/text_primary</item>
+        <item name="android:textColorSecondary">@color/text_secondary</item>
+        <item name="android:textColorHint">@color/text_tertiary</item>
+
+        <!-- Dialogs, which are the one surface the app does not lay out itself. -->
+        <item name="materialAlertDialogTheme">@style/ThemeOverlay.StressGuard.Dialog</item>
     </style>
 
     <style name="Theme.StressGuard" parent="Base.Theme.StressGuard" />
 
-    <!-- The trends screen stacks three identically framed charts, so the shared chrome lives here
-         rather than being repeated on each card. -->
-    <style name="TrendsSectionHeader">
-        <item name="android:layout_width">match_parent</item>
-        <item name="android:layout_height">wrap_content</item>
-        <item name="android:layout_marginTop">20dp</item>
-        <item name="android:layout_marginBottom">8dp</item>
-        <item name="android:textColor">#8A948F</item>
-        <item name="android:textSize">12sp</item>
-        <item name="android:textStyle">bold</item>
+    <!--
+        The launcher screen. Same theme, but painted with the brand gradient from the moment the
+        window opens, so the app does not flash a white rectangle before its first frame.
+    -->
+    <style name="Theme.StressGuard.Splash">
+        <item name="android:windowBackground">@drawable/bg_splash</item>
+        <item name="android:statusBarColor">@color/hero_start</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:navigationBarColor">@color/hero_end</item>
     </style>
 
-    <style name="TrendsChartCard" parent="Widget.Material3.CardView.Outlined">
+    <!-- ============================================================ Shapes -->
+
+    <style name="ShapeAppearance.StressGuard.Small" parent="ShapeAppearance.Material3.Corner.Small">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">@dimen/radius_sm</item>
+    </style>
+
+    <style name="ShapeAppearance.StressGuard.Medium" parent="ShapeAppearance.Material3.Corner.Medium">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">@dimen/radius_md</item>
+    </style>
+
+    <style name="ShapeAppearance.StressGuard.Large" parent="ShapeAppearance.Material3.Corner.Large">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">@dimen/radius_lg</item>
+    </style>
+
+    <style name="ShapeAppearance.StressGuard.Pill" parent="">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">50%</item>
+    </style>
+
+    <!-- ============================================================ Type -->
+
+    <!--
+        One scale, six steps. Sizes are in sp so they follow the system font setting, which for a
+        health app used by people who are not twenty is not optional.
+    -->
+
+    <style name="TextAppearance.StressGuard.Display" parent="TextAppearance.Material3.DisplaySmall">
+        <item name="android:textSize">52sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:letterSpacing">-0.02</item>
+    </style>
+
+    <style name="TextAppearance.StressGuard.Headline" parent="TextAppearance.Material3.HeadlineSmall">
+        <item name="android:textSize">26sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:letterSpacing">-0.01</item>
+        <item name="android:textColor">@color/text_primary</item>
+    </style>
+
+    <style name="TextAppearance.StressGuard.Title" parent="TextAppearance.Material3.TitleMedium">
+        <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="android:textSize">17sp</item>
+        <item name="android:textColor">@color/text_primary</item>
+    </style>
+
+    <style name="TextAppearance.StressGuard.Body" parent="TextAppearance.Material3.BodyMedium">
+        <item name="android:textSize">15sp</item>
+        <item name="android:lineSpacingExtra">3dp</item>
+        <item name="android:textColor">@color/text_secondary</item>
+    </style>
+
+    <style name="TextAppearance.StressGuard.Caption" parent="TextAppearance.Material3.BodySmall">
+        <item name="android:textSize">13sp</item>
+        <item name="android:textColor">@color/text_secondary</item>
+    </style>
+
+    <style name="TextAppearance.StressGuard.Footnote" parent="TextAppearance.Material3.BodySmall">
+        <item name="android:textSize">11.5sp</item>
+        <item name="android:lineSpacingExtra">2dp</item>
+        <item name="android:textColor">@color/text_tertiary</item>
+    </style>
+
+    <!-- The value on a metric tile: large enough to read at a glance, not so large it competes
+         with the stress figure the screen is actually about. -->
+    <style name="TextAppearance.StressGuard.Metric" parent="TextAppearance.Material3.HeadlineSmall">
+        <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="android:textSize">24sp</item>
+        <item name="android:textColor">@color/text_primary</item>
+    </style>
+
+    <!-- ============================================================ Text views -->
+
+    <!--
+        Section labels. Small, spaced and uppercase; they group the screen without adding another
+        line of prose to read.
+    -->
+    <style name="Widget.StressGuard.SectionLabel" parent="Widget.AppCompat.TextView">
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">wrap_content</item>
-        <item name="cardBackgroundColor">#FFFFFF</item>
-        <item name="cardCornerRadius">8dp</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="android:textSize">12sp</item>
+        <item name="android:textAllCaps">true</item>
+        <item name="android:letterSpacing">0.09</item>
+        <item name="android:textColor">@color/text_tertiary</item>
+    </style>
+
+    <!-- ============================================================ Cards -->
+
+    <style name="Widget.StressGuard.Card" parent="Widget.Material3.CardView.Outlined">
+        <item name="cardBackgroundColor">@color/surface</item>
+        <item name="cardCornerRadius">@dimen/radius_md</item>
         <item name="cardElevation">0dp</item>
-        <item name="strokeColor">#E0E7E2</item>
-        <item name="strokeWidth">1dp</item>
+        <item name="strokeColor">@color/outline</item>
+        <item name="strokeWidth">@dimen/stroke_width</item>
+        <item name="cardPreventCornerOverlap">true</item>
+    </style>
+
+    <!-- Tappable variant: same face, but it ripples and lifts a little on press. -->
+    <style name="Widget.StressGuard.Card.Interactive">
+        <item name="android:clickable">true</item>
+        <item name="android:focusable">true</item>
+        <item name="rippleColor">@color/brand_soft</item>
+    </style>
+
+    <!-- ============================================================ Buttons -->
+
+    <style name="Widget.StressGuard.Button" parent="Widget.Material3.Button">
+        <item name="android:minHeight">@dimen/button_height</item>
+        <item name="android:insetTop">0dp</item>
+        <item name="android:insetBottom">0dp</item>
+        <item name="android:textSize">16sp</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="android:letterSpacing">0</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="cornerRadius">@dimen/button_height</item>
+        <item name="elevation">0dp</item>
+        <item name="iconPadding">10dp</item>
+        <item name="iconSize">20dp</item>
+    </style>
+
+    <style name="Widget.StressGuard.Button.Outlined" parent="Widget.Material3.Button.OutlinedButton">
+        <item name="android:minHeight">@dimen/button_height</item>
+        <item name="android:insetTop">0dp</item>
+        <item name="android:insetBottom">0dp</item>
+        <item name="android:textSize">16sp</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="android:letterSpacing">0</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="android:textColor">@color/text_primary</item>
+        <item name="cornerRadius">@dimen/button_height</item>
+        <item name="strokeColor">@color/outline_strong</item>
+        <item name="strokeWidth">@dimen/stroke_width</item>
+        <item name="iconPadding">10dp</item>
+        <item name="iconSize">20dp</item>
+        <item name="iconTint">@color/text_secondary</item>
+    </style>
+
+    <style name="Widget.StressGuard.Button.Text" parent="Widget.Material3.Button.TextButton">
+        <item name="android:minHeight">@dimen/button_height_sm</item>
+        <item name="android:insetTop">0dp</item>
+        <item name="android:insetBottom">0dp</item>
+        <item name="android:textSize">14sp</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="android:letterSpacing">0</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="android:textColor">@color/brand</item>
+        <item name="iconTint">@color/brand</item>
+        <item name="iconSize">18dp</item>
+    </style>
+
+    <!-- Icon-only actions in headers. Square, quiet, and still a 48dp target. -->
+    <style name="Widget.StressGuard.Button.Icon" parent="Widget.Material3.Button.IconButton">
+        <item name="android:layout_width">@dimen/button_height_sm</item>
+        <item name="android:layout_height">@dimen/button_height_sm</item>
+        <item name="android:insetTop">0dp</item>
+        <item name="android:insetBottom">0dp</item>
+        <item name="iconTint">@color/text_secondary</item>
+        <item name="iconSize">22dp</item>
+    </style>
+
+    <!-- ============================================================ Inputs -->
+
+    <style name="Widget.StressGuard.TextInput" parent="Widget.Material3.TextInputLayout.OutlinedBox">
+        <item name="boxCornerRadiusTopStart">@dimen/radius_sm</item>
+        <item name="boxCornerRadiusTopEnd">@dimen/radius_sm</item>
+        <item name="boxCornerRadiusBottomStart">@dimen/radius_sm</item>
+        <item name="boxCornerRadiusBottomEnd">@dimen/radius_sm</item>
+        <item name="boxStrokeColor">@color/input_stroke</item>
+        <item name="boxStrokeWidth">@dimen/stroke_width</item>
+        <item name="boxStrokeWidthFocused">2dp</item>
+        <item name="hintTextColor">@color/brand</item>
+        <item name="android:textColorHint">@color/text_tertiary</item>
+        <item name="endIconTint">@color/text_tertiary</item>
+        <item name="materialThemeOverlay">@style/ThemeOverlay.StressGuard.TextInput</item>
+    </style>
+
+    <style name="Widget.StressGuard.TextInput.Dropdown"
+        parent="Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu">
+        <item name="boxCornerRadiusTopStart">@dimen/radius_sm</item>
+        <item name="boxCornerRadiusTopEnd">@dimen/radius_sm</item>
+        <item name="boxCornerRadiusBottomStart">@dimen/radius_sm</item>
+        <item name="boxCornerRadiusBottomEnd">@dimen/radius_sm</item>
+        <item name="boxStrokeColor">@color/input_stroke</item>
+        <item name="boxStrokeWidth">@dimen/stroke_width</item>
+        <item name="boxStrokeWidthFocused">2dp</item>
+        <item name="hintTextColor">@color/brand</item>
+        <item name="android:textColorHint">@color/text_tertiary</item>
+    </style>
+
+    <!--
+        The edit text inside a field: 15sp and ink, rather than the M3 default, which is a size
+        larger than every other line of body text in the app.
+
+        Applied through materialThemeOverlay because that is the only hook TextInputLayout offers
+        for its child; the overlay inherits Material's own so nothing else it sets is lost.
+    -->
+    <style name="ThemeOverlay.StressGuard.TextInput"
+        parent="ThemeOverlay.Material3.TextInputEditText.OutlinedBox">
+        <item name="editTextStyle">@style/Widget.StressGuard.EditText</item>
+    </style>
+
+    <style name="Widget.StressGuard.EditText" parent="Widget.Material3.TextInputEditText.OutlinedBox">
+        <item name="android:textSize">15sp</item>
+        <item name="android:textColor">@color/text_primary</item>
+    </style>
+
+    <style name="Widget.StressGuard.CheckBox" parent="Widget.Material3.CompoundButton.CheckBox">
+        <item name="android:textSize">15sp</item>
+        <item name="android:textColor">@color/text_primary</item>
+        <item name="android:minHeight">48dp</item>
+        <item name="android:paddingStart">10dp</item>
+    </style>
+
+    <!-- ============================================================ Chips -->
+
+    <style name="Widget.StressGuard.Chip" parent="Widget.Material3.Chip.Assist">
+        <item name="chipBackgroundColor">@color/surface</item>
+        <item name="chipStrokeColor">@color/outline</item>
+        <item name="chipStrokeWidth">@dimen/stroke_width</item>
+        <item name="chipMinHeight">34dp</item>
+        <item name="chipIconSize">15dp</item>
+        <item name="chipStartPadding">10dp</item>
+        <item name="chipEndPadding">12dp</item>
+        <item name="iconStartPadding">0dp</item>
+        <item name="textStartPadding">7dp</item>
+        <item name="android:textSize">12.5sp</item>
+        <item name="android:textColor">@color/text_secondary</item>
+        <item name="android:checkable">false</item>
+        <item name="ensureMinTouchTargetSize">false</item>
+        <item name="shapeAppearanceOverlay">@style/ShapeAppearance.StressGuard.Pill</item>
+    </style>
+
+    <!-- ============================================================ Navigation -->
+
+    <style name="Widget.StressGuard.BottomNav" parent="Widget.Material3.BottomNavigationView">
+        <item name="android:background">@drawable/bg_bottom_nav</item>
+        <item name="itemIconTint">@color/nav_item</item>
+        <item name="itemTextColor">@color/nav_item</item>
+        <item name="itemActiveIndicatorStyle">@style/Widget.StressGuard.NavIndicator</item>
+        <item name="itemRippleColor">@color/brand_soft</item>
+        <item name="labelVisibilityMode">labeled</item>
+        <item name="elevation">0dp</item>
+        <item name="itemIconSize">22dp</item>
+    </style>
+
+    <style name="Widget.StressGuard.NavIndicator"
+        parent="Widget.Material3.BottomNavigationView.ActiveIndicator">
+        <item name="android:color">@color/brand_soft</item>
+        <item name="android:width">64dp</item>
+        <item name="android:height">32dp</item>
+    </style>
+
+    <style name="Widget.StressGuard.Toolbar" parent="Widget.Material3.Toolbar">
+        <item name="android:background">@color/canvas</item>
+        <item name="titleTextColor">@color/text_primary</item>
+        <item name="subtitleTextColor">@color/text_secondary</item>
+        <item name="navigationIconTint">@color/text_primary</item>
+        <item name="titleTextAppearance">@style/TextAppearance.StressGuard.Title</item>
+        <item name="titleCentered">false</item>
+    </style>
+
+    <!-- ============================================================ Dialogs -->
+
+    <style name="ThemeOverlay.StressGuard.Dialog" parent="ThemeOverlay.Material3.MaterialAlertDialog">
+        <item name="alertDialogStyle">@style/MaterialAlertDialog.StressGuard</item>
+        <item name="buttonBarPositiveButtonStyle">@style/Widget.StressGuard.Button.Text</item>
+        <item name="buttonBarNegativeButtonStyle">@style/Widget.StressGuard.Button.Text</item>
+    </style>
+
+    <style name="MaterialAlertDialog.StressGuard" parent="MaterialAlertDialog.Material3">
+        <item name="shapeAppearance">@style/ShapeAppearance.StressGuard.Large</item>
+        <item name="backgroundTint">@color/surface</item>
     </style>
 </resources>

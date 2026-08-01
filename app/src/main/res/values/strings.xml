@@ -1,3 +1,214 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Every word the layouts show. Copy that changes with state — the sleep caveat, the sync line,
+    the connection detail — is still written in the Activity that decides it, because a format
+    string here would only ever be half of that sentence.
+-->
 <resources>
     <string name="app_name">StressGuard</string>
+
+    <!-- Navigation -->
+    <string name="nav_home">Home</string>
+    <string name="nav_trends">Trends</string>
+    <string name="nav_assistant">Assistant</string>
+
+    <!-- Content descriptions -->
+    <string name="cd_back">Back</string>
+    <string name="cd_menu">More options</string>
+    <string name="cd_send">Send message</string>
+    <string name="cd_new_conversation">Start a new conversation</string>
+    <string name="cd_logo">StressGuard logo</string>
+
+    <!-- Launch -->
+    <string name="splash_tagline">Opening your dashboard…</string>
+
+    <!-- Sign in -->
+    <string name="login_tagline">Live stress awareness for your watch and phone</string>
+    <string name="auth_title">Sign in</string>
+    <string name="auth_subtitle">Welcome back. Sign in to reach your dashboard.</string>
+    <string name="auth_toggle">New here? Create an account</string>
+    <string name="auth_or">or</string>
+    <string name="auth_google">Continue with Google</string>
+    <string name="auth_google_recommended">Recommended</string>
+    <string name="auth_privacy_note">Your readings stay on this device and sync only to your own account.</string>
+
+    <!-- Fields, shared across the auth and profile screens -->
+    <string name="hint_email">Email</string>
+    <string name="hint_password">Password</string>
+    <string name="hint_confirm_password">Confirm password</string>
+    <string name="hint_full_name">Full name</string>
+    <string name="hint_age">Age</string>
+    <string name="hint_gender">Gender</string>
+    <string name="hint_occupation">Occupation</string>
+    <string name="hint_bmi">BMI category</string>
+    <string name="action_save_continue">Save and continue</string>
+
+    <!-- Dashboard -->
+    <string name="dashboard_greeting">Welcome back</string>
+    <string name="dashboard_waiting">Waiting for watch data</string>
+    <string name="dashboard_sync_checking">Checking sync…</string>
+    <string name="chip_watch_not_connected">Watch not connected</string>
+    <string name="chip_encrypted">Encrypted</string>
+    <string name="hero_label">Current stress</string>
+    <string name="hero_live">Live</string>
+    <string name="hero_caption">Read on-device from your wearable stream</string>
+    <string name="section_vitals">Today\'s vitals</string>
+    <string name="metric_heart_rate">Heart rate</string>
+    <string name="metric_steps">Steps</string>
+    <string name="metric_sleep">Sleep</string>
+    <string name="metric_empty">--</string>
+    <string name="metric_sleep_source">Health Connect</string>
+    <string name="steps_title">Steps</string>
+    <string name="steps_today">Today</string>
+    <string name="steps_unit">steps</string>
+    <string name="steps_target_title">Step goal</string>
+    <string name="steps_daily_target">Daily target</string>
+    <string name="steps_target_slider">Daily step target</string>
+    <string name="steps_target_hint">Adjust in 500-step intervals. Choose a goal that fits your current routine and mobility.</string>
+    <string name="steps_remaining">%1$s steps remaining</string>
+    <string name="steps_goal_reached">Goal reached: %1$s steps</string>
+    <string name="steps_last_seven_days">Last 7 days</string>
+    <string name="steps_chart_title">Daily steps</string>
+    <string name="steps_chart_caption">Highest watch count recorded each day; the dashed line is your target.</string>
+    <string name="steps_chart_goal">Goal %1$s</string>
+    <string name="steps_no_history">No step history yet</string>
+    <string name="steps_information">Regular walking supports cardiovascular health, sleep and mood. Short walks accumulated through the day count too; increase your target gradually when it feels sustainable.</string>
+    <string name="section_health_check">Health check</string>
+    <string name="health_check_edit">Update health checklist</string>
+    <string name="health_check_disclaimer">StressGuard is not a medical device and does not diagnose any condition. This is a guide based on your readings and the answers you gave.</string>
+    <string name="support_title">Feeling overwhelmed?</string>
+    <string name="support_subtitle">Talk it through with the assistant</string>
+
+    <!-- Dashboard menu -->
+    <string name="action_health_checklist">Health checklist</string>
+    <string name="action_sign_out">Sign out</string>
+    <string name="action_settings">Settings</string>
+    <string name="settings_title">Settings</string>
+    <string name="settings_account">Account</string>
+    <string name="settings_goals">Goals</string>
+    <string name="settings_health_and_alerts">Health and alerts</string>
+    <string name="settings_about">About</string>
+    <string name="settings_profile_fallback">Your profile</string>
+    <string name="settings_age">%1$d years</string>
+    <string name="settings_sleep_goal">Sleep goal</string>
+    <string name="settings_step_goal">Step goal</string>
+    <string name="settings_checklist">Health checklist</string>
+    <string name="settings_health_connect">Health Connect access</string>
+    <string name="settings_notifications">Stress alert controls</string>
+    <string name="settings_privacy_summary">Stress predictions run on this phone. Health Connect access is read-only. Stress history, completed alert feedback and checklist data sync only to your signed-in account; the assistant shares the latest vitals with its AI service when you send a message.</string>
+    <string name="settings_version">StressGuard %1$s</string>
+
+    <!-- Alert feedback and temporary mute -->
+    <string name="feedback_title">Stress check-in</string>
+    <string name="feedback_heading">Help improve your alerts</string>
+    <string name="feedback_context_loading">Loading the alert details…</string>
+    <string name="feedback_context">StressGuard alerted you at %1$s with %2$d%% model confidence.</string>
+    <string name="feedback_question">Were you actually feeling stressed?</string>
+    <string name="feedback_no">No</string>
+    <string name="feedback_yes">Yes</string>
+    <string name="feedback_severity">Stress level</string>
+    <string name="feedback_scale_low">1 · Mild</string>
+    <string name="feedback_scale_high">10 · Extreme</string>
+    <string name="feedback_privacy">Your answer is stored with the readings and model version that produced this alert. Completed responses sync to your account for future model evaluation and retraining.</string>
+    <string name="feedback_save">Save response</string>
+    <string name="feedback_saved">Response saved. Thank you.</string>
+    <string name="mute_alerts_title">Mute stress alerts</string>
+    <string name="mute_alerts_heading">Pause alert notifications</string>
+    <string name="alerts_active">Alerts are currently active. Monitoring and predictions continue while alerts are muted.</string>
+    <string name="alerts_currently_muted_until">Alerts are muted until %1$s. Monitoring and predictions are still active.</string>
+    <string name="mute_10_minutes">10 minutes</string>
+    <string name="mute_30_minutes">30 minutes</string>
+    <string name="mute_1_hour">1 hour</string>
+    <string name="mute_4_hours">4 hours</string>
+    <string name="resume_alerts">Resume alerts now</string>
+    <string name="alerts_muted_until">Alerts muted until %1$s</string>
+    <string name="alerts_resumed">Stress alerts resumed</string>
+    <string name="open_notification_settings">Android notification settings</string>
+
+    <!-- Trends -->
+    <string name="trends_title">Trends</string>
+    <string name="trends_subtitle">Your last 7 days</string>
+    <string name="trends_today">Today</string>
+    <string name="trends_chart_stress">High-stress readings</string>
+    <string name="trends_chart_stress_caption">Per day, against the threshold that makes a day count</string>
+    <string name="trends_chart_vitals">Heart rate and sleep</string>
+    <string name="trends_chart_vitals_caption">Daily averages, on separate scales</string>
+    <string name="trends_chart_activity">Activity level</string>
+    <string name="trends_chart_activity_caption">The step figure the model was given</string>
+    <string name="trends_footnote">Averages per day, from the readings your watch sent. Activity level is the figure given to the model, which is your best known full-day step count rather than the partial count so far today.</string>
+
+    <!-- Assistant -->
+    <string name="assistant_title">Assistant</string>
+    <string name="assistant_disclaimer">A supportive listener, not a therapist or a doctor. It cannot diagnose anything or advise on medication. Your latest heart rate, steps and sleep are shared with the AI service so it can respond to how you are doing. In an emergency, contact a crisis service.</string>
+    <string name="assistant_hint">How are you feeling?</string>
+    <string name="assistant_thinking">Thinking…</string>
+    <string name="action_new_conversation">New conversation</string>
+
+    <!-- Health checklist -->
+    <string name="checklist_title">Health checklist</string>
+    <string name="checklist_subtitle">Tick anything that applies to you. StressGuard combines these with your recent stress pattern to suggest when a routine checkup might be worth booking.</string>
+    <string name="checklist_section_conditions">Conditions</string>
+    <string name="checklist_section_habits">Habits</string>
+    <string name="checklist_heart">A diagnosed heart condition</string>
+    <string name="checklist_hypertension">High blood pressure</string>
+    <string name="checklist_diabetes">Diabetes</string>
+    <string name="checklist_sleep">A sleep disorder, such as insomnia or apnoea</string>
+    <string name="checklist_anxiety">A history of anxiety</string>
+    <string name="checklist_smoking">I smoke</string>
+    <string name="checklist_caffeine">Four or more caffeinated drinks a day</string>
+    <string name="checklist_inactive">Little or no regular exercise</string>
+    <string name="checklist_disclaimer">StressGuard is not a medical device and does not diagnose anything. These answers are only used to decide when to suggest seeing a doctor, and they are stored against your account.</string>
+    <string name="checklist_skip">Skip for now</string>
+
+    <!-- Health profile -->
+    <string name="profile_title">Health profile</string>
+    <string name="profile_subtitle">Set your baseline so the app can interpret your stress pattern better.</string>
+    <string name="profile_edit_title">Edit profile</string>
+    <string name="profile_edit_subtitle">These values shape the features given to the stress model.</string>
+    <string name="profile_save_changes">Save changes</string>
+
+    <!-- Password -->
+    <string name="set_password_title">Choose a password</string>
+    <string name="set_password_subtitle">Your account is signed in with Google. Add a password so you can also sign in with your email address.</string>
+    <string name="set_password_footnote">You can keep using the Google button to sign in. This just gives you a second way in.</string>
+    <!-- Sleep details -->
+    <string name="sleep_title">Sleep</string>
+    <string name="sleep_total">Total sleep</string>
+    <string name="sleep_sessions">Sleep sessions</string>
+    <string name="sleep_main">Main sleep</string>
+    <string name="sleep_main_only">Main sleep only</string>
+    <string name="sleep_target_title">Sleep goal</string>
+    <string name="sleep_nightly_target">Nightly target</string>
+    <string name="sleep_target_slider">Sleep target in hours</string>
+    <string name="sleep_target_hint">Adjust in 15-minute steps. Your goal changes progress tracking, not the sleep measurement.</string>
+    <string name="sleep_target_progress">%1$s of %2$s</string>
+    <string name="sleep_nap_number">Nap %1$d</string>
+    <string name="sleep_stages">Sleep stages</string>
+    <string name="sleep_deep">Deep sleep</string>
+    <string name="sleep_light">Light sleep</string>
+    <string name="sleep_rem">REM sleep</string>
+    <string name="sleep_awake">Awake</string>
+    <string name="sleep_oxygen_title">Oxygen during sleep</string>
+    <string name="sleep_oxygen_percent">%1$.0f%%</string>
+    <string name="sleep_oxygen_permission">Allow oxygen saturation access to show readings taken while you slept.</string>
+    <string name="sleep_oxygen_no_records">No oxygen saturation readings were found inside these sleep sessions.</string>
+    <string name="sleep_information">Consistent sleep supports attention, mood and recovery. StressGuard adds naps to your main sleep for the day before giving the total to the stress model.</string>
+    <string name="sleep_manage_access">Manage Health Connect access</string>
+    <string name="sleep_loading">Reading sleep data</string>
+    <string name="sleep_health_connect_unavailable">Health Connect is not available on this phone.</string>
+    <string name="sleep_permission_required">Allow sleep access in Health Connect to see your sleep details.</string>
+    <string name="sleep_no_records">No sleep records were found in Health Connect during the last 7 days.</string>
+    <string name="sleep_read_failed">StressGuard could not read sleep data from Health Connect.</string>
+    <string name="sleep_minutes">%1$d min</string>
+    <string name="sleep_hours">%1$d hr</string>
+    <string name="sleep_hours_minutes">%1$d hr %2$d min</string>
+
+    <plurals name="sleep_total_caption">
+        <item quantity="one">Main sleep plus %1$d nap</item>
+        <item quantity="other">Main sleep plus %1$d naps</item>
+    </plurals>
+    <plurals name="sleep_oxygen_samples">
+        <item quantity="one">Average of %1$d reading taken during sleep</item>
+        <item quantity="other">Average of %1$d readings taken during sleep</item>
+    </plurals>
 </resources>

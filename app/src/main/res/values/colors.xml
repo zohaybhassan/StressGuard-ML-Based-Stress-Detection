@@ -1,5 +1,85 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+    The palette, light theme.
+
+    Every colour the app draws is named here and nowhere else. Layouts and Kotlin reference these
+    names, never a literal, which is what makes the dark theme in values-night a straight
+    substitution rather than a second design.
+
+    Names describe a role, not a hue. `stress_high` stays the right name if the red is ever
+    retuned; `red_500` would not be.
+-->
 <resources>
+
+    <!-- Brand. A clinical teal: cool enough to read as medical, warm enough not to feel like a
+         hospital form. Used for primary actions, selected navigation and the user's own words. -->
+    <color name="brand">#10A08A</color>
+    <color name="brand_dark">#0A7466</color>
+    <color name="brand_soft">#DEF4EF</color>
+    <color name="brand_softer">#EDF9F6</color>
+    <color name="on_brand">#FFFFFF</color>
+
+    <!-- Surfaces. The canvas is a barely-green off-white so that white cards lift off it without
+         needing shadows; the whole UI is drawn with borders rather than elevation. -->
+    <color name="canvas">#F4F8F6</color>
+    <color name="surface">#FFFFFF</color>
+    <color name="surface_variant">#EDF3F0</color>
+    <color name="outline">#E1EAE6</color>
+    <color name="outline_strong">#CFDCD7</color>
+    <color name="scrim">#33000000</color>
+
+    <!-- Text. Three weights of emphasis and no more; a fourth always ends up being used at random. -->
+    <color name="text_primary">#0D1B19</color>
+    <color name="text_secondary">#586B66</color>
+    <color name="text_tertiary">#8A9C97</color>
+    <color name="text_on_dark">#FFFFFF</color>
+    <color name="text_on_dark_muted">#9FC3BB</color>
+
+    <!-- The stress hero card. Deliberately dark in both themes: it is the one element that should
+         read as an instrument panel, and a dark face makes the gauge colour carry the meaning. -->
+    <color name="hero_start">#0A2E29</color>
+    <color name="hero_end">#124A41</color>
+    <color name="hero_track">#1E4B44</color>
+    <color name="hero_divider">#1D423C</color>
+
+    <!-- Severity. The same four colours everywhere: gauge, risk level, chart bars, alerts. A user
+         who learns them once should not have to relearn them on the trends screen. -->
+    <color name="stress_low">#34C77B</color>
+    <color name="stress_moderate">#F5B13D</color>
+    <color name="stress_elevated">#F2833C</color>
+    <color name="stress_high">#E5484D</color>
+
+    <!-- Per-metric accents, so heart rate is the same colour on the dashboard tile and the chart. -->
+    <color name="metric_heart">#F0526B</color>
+    <color name="metric_heart_soft">#FDE8EC</color>
+    <color name="metric_steps">#3C7DF6</color>
+    <color name="metric_steps_soft">#E6EEFE</color>
+    <color name="metric_sleep">#7C5CF0</color>
+    <color name="metric_sleep_soft">#EDE8FE</color>
+
+    <!-- Status and feedback. -->
+    <color name="danger">#E5484D</color>
+    <color name="danger_soft">#FDECED</color>
+    <color name="warning">#F5B13D</color>
+    <color name="warning_soft">#FFF5E2</color>
+    <color name="success">#34C77B</color>
+    <color name="neutral_soft">#EDF3F0</color>
+
+    <!-- Chat. The user speaks in brand colour, the assistant on a plain card, and anything the app
+         said on its own behalf (a crisis reply, a network fallback) sits on amber so the transcript
+         never passes it off as the model's. -->
+    <color name="bubble_user">#10A08A</color>
+    <color name="bubble_user_text">#FFFFFF</color>
+    <color name="bubble_assistant">#FFFFFF</color>
+    <color name="bubble_assistant_text">#0D1B19</color>
+    <color name="bubble_fallback">#FFF5E2</color>
+    <color name="bubble_fallback_text">#5A4413</color>
+
+    <!-- Charts. Separated from the metric accents because a chart needs a grid and axis colour
+         that no card ever uses. -->
+    <color name="chart_grid">#E1EAE6</color>
+    <color name="chart_axis_text">#8A9C97</color>
+
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
 </resources>

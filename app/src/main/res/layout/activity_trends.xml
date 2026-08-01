@@ -1,108 +1,128 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+    Trends.
+
+    The headline card answers "how is today going" before any chart is drawn, because that is the
+    question someone opening this screen actually has; the charts underneath are for the week that
+    led up to it. All three charts share one card shape and one internal layout — title, one line
+    of what it is measuring, then the plot — so the screen reads as one instrument rather than
+    three widgets that happened to land on the same page.
+-->
 <androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/trendsRoot"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F4F7F3">
-
-    <com.google.android.material.appbar.MaterialToolbar
-        android:id="@+id/topAppBar"
-        android:layout_width="0dp"
-        android:layout_height="64dp"
-        android:background="#F4F7F3"
-        android:paddingStart="8dp"
-        android:paddingEnd="8dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:title="Trends"
-        app:titleCentered="false"
-        app:titleTextColor="#101816" />
+    android:background="@color/canvas">
 
     <ScrollView
         android:layout_width="0dp"
         android:layout_height="0dp"
+        android:clipToPadding="false"
         android:fillViewport="true"
+        android:scrollbars="none"
         app:layout_constraintBottom_toTopOf="@id/bottomNavigation"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/topAppBar">
+        app:layout_constraintTop_toTopOf="parent">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:paddingStart="18dp"
-            android:paddingEnd="18dp"
-            android:paddingBottom="24dp">
+            android:paddingStart="@dimen/screen_padding"
+            android:paddingTop="@dimen/space_lg"
+            android:paddingEnd="@dimen/screen_padding"
+            android:paddingBottom="@dimen/space_xl">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/trends_title"
+                android:textAppearance="@style/TextAppearance.StressGuard.Headline" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:text="@string/trends_subtitle"
+                android:textAppearance="@style/TextAppearance.StressGuard.Caption"
+                android:textColor="@color/text_tertiary" />
 
             <!-- Today, as a headline. A live count rather than a rollup: a day that has not yet
                  reached the high-stress threshold still has readings worth showing. -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                app:cardBackgroundColor="#FFFFFF"
-                app:cardCornerRadius="8dp"
-                app:cardElevation="0dp"
-                app:strokeColor="#E0E7E2"
-                app:strokeWidth="1dp">
+                android:layout_marginTop="@dimen/space_lg">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:padding="18dp">
+                    android:padding="@dimen/space_xl">
 
                     <TextView
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:text="TODAY"
-                        android:textColor="#8A948F"
-                        android:textSize="12sp"
-                        android:textStyle="bold" />
+                        style="@style/Widget.StressGuard.SectionLabel"
+                        android:text="@string/trends_today" />
 
                     <TextView
                         android:id="@+id/tvTodayHighStress"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
-                        android:text="--"
-                        android:textColor="#101816"
-                        android:textSize="34sp"
-                        android:textStyle="bold" />
+                        android:layout_marginTop="@dimen/space_sm"
+                        android:text="@string/metric_empty"
+                        android:textAppearance="@style/TextAppearance.StressGuard.Display"
+                        tools:text="3" />
 
                     <TextView
                         android:id="@+id/tvTodaySummary"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="2dp"
-                        android:textColor="#64706A"
-                        android:textSize="14sp" />
+                        android:textAppearance="@style/TextAppearance.StressGuard.Body"
+                        tools:text="of 14 readings today were high stress" />
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:layout_marginTop="@dimen/space_lg"
+                        android:background="@color/outline" />
 
                     <TextView
                         android:id="@+id/tvWeekSummary"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="10dp"
-                        android:textColor="#5F6B76"
-                        android:textSize="13sp" />
+                        android:layout_marginTop="@dimen/space_md"
+                        android:textAppearance="@style/TextAppearance.StressGuard.Caption"
+                        tools:text="2 high-stress days across 4 days with readings, in the last 7 days." />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
             <!-- Shown instead of the charts when there is nothing, or too little, to draw. With
                  passive collection a gap is normal, so this is a routine state rather than an
-                 error. -->
+                 error, and it is drawn as a waiting space rather than a warning. -->
             <TextView
                 android:id="@+id/tvTrendsEmpty"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="24dp"
+                android:layout_marginTop="@dimen/space_lg"
+                android:background="@drawable/bg_empty_state"
+                android:drawablePadding="@dimen/space_md"
                 android:gravity="center"
                 android:lineSpacingExtra="4dp"
-                android:textColor="#64706A"
-                android:textSize="15sp"
-                android:visibility="gone" />
+                android:paddingStart="@dimen/space_xl"
+                android:paddingTop="@dimen/space_2xl"
+                android:paddingEnd="@dimen/space_xl"
+                android:paddingBottom="@dimen/space_2xl"
+                android:textAppearance="@style/TextAppearance.StressGuard.Body"
+                android:visibility="gone"
+                app:drawableTopCompat="@drawable/ic_nav_trends"
+                app:drawableTint="@color/text_tertiary"
+                tools:text="No readings stored yet.\nWear your watch for a day and your trend will appear here."
+                tools:visibility="visible" />
 
             <LinearLayout
                 android:id="@+id/chartGroup"
@@ -110,58 +130,127 @@
                 android:layout_height="wrap_content"
                 android:orientation="vertical">
 
-                <TextView
-                    style="@style/TrendsSectionHeader"
-                    android:text="HIGH-STRESS READINGS" />
-
                 <com.google.android.material.card.MaterialCardView
-                    style="@style/TrendsChartCard">
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/space_lg">
 
-                    <com.github.mikephil.charting.charts.BarChart
-                        android:id="@+id/chartStress"
+                    <LinearLayout
                         android:layout_width="match_parent"
-                        android:layout_height="200dp"
-                        android:padding="10dp" />
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="@dimen/space_lg">
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="@string/trends_chart_stress"
+                            android:textAppearance="@style/TextAppearance.StressGuard.Title" />
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="1dp"
+                            android:text="@string/trends_chart_stress_caption"
+                            android:textAppearance="@style/TextAppearance.StressGuard.Footnote" />
+
+                        <com.github.mikephil.charting.charts.BarChart
+                            android:id="@+id/chartStress"
+                            android:layout_width="match_parent"
+                            android:layout_height="190dp"
+                            android:layout_marginTop="@dimen/space_md" />
+                    </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 
-                <TextView
-                    style="@style/TrendsSectionHeader"
-                    android:text="HEART RATE AND SLEEP" />
-
                 <com.google.android.material.card.MaterialCardView
-                    style="@style/TrendsChartCard">
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/space_md">
 
-                    <com.github.mikephil.charting.charts.LineChart
-                        android:id="@+id/chartVitals"
+                    <LinearLayout
                         android:layout_width="match_parent"
-                        android:layout_height="200dp"
-                        android:padding="10dp" />
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="@dimen/space_lg">
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="@string/trends_chart_vitals"
+                            android:textAppearance="@style/TextAppearance.StressGuard.Title" />
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="1dp"
+                            android:text="@string/trends_chart_vitals_caption"
+                            android:textAppearance="@style/TextAppearance.StressGuard.Footnote" />
+
+                        <com.github.mikephil.charting.charts.LineChart
+                            android:id="@+id/chartVitals"
+                            android:layout_width="match_parent"
+                            android:layout_height="190dp"
+                            android:layout_marginTop="@dimen/space_md" />
+                    </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 
-                <TextView
-                    style="@style/TrendsSectionHeader"
-                    android:text="ACTIVITY LEVEL" />
-
                 <com.google.android.material.card.MaterialCardView
-                    style="@style/TrendsChartCard">
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/space_md">
 
-                    <com.github.mikephil.charting.charts.LineChart
-                        android:id="@+id/chartActivity"
+                    <LinearLayout
                         android:layout_width="match_parent"
-                        android:layout_height="180dp"
-                        android:padding="10dp" />
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="@dimen/space_lg">
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="@string/trends_chart_activity"
+                            android:textAppearance="@style/TextAppearance.StressGuard.Title" />
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="1dp"
+                            android:text="@string/trends_chart_activity_caption"
+                            android:textAppearance="@style/TextAppearance.StressGuard.Footnote" />
+
+                        <com.github.mikephil.charting.charts.LineChart
+                            android:id="@+id/chartActivity"
+                            android:layout_width="match_parent"
+                            android:layout_height="170dp"
+                            android:layout_marginTop="@dimen/space_md" />
+                    </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 
                 <!-- The vitals charts show what the model was actually fed, so the caveat about
                      what it can do with those numbers belongs beside them. -->
-                <TextView
-                    android:id="@+id/tvTrendsFootnote"
+                <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="14dp"
-                    android:text="Averages per day, from the readings your watch sent. Activity level is the figure given to the model, which is your best known full-day step count rather than the partial count so far today."
-                    android:textColor="#8A948F"
-                    android:textSize="11sp" />
+                    android:layout_marginTop="@dimen/space_lg"
+                    android:orientation="horizontal">
+
+                    <ImageView
+                        android:layout_width="15dp"
+                        android:layout_height="15dp"
+                        android:layout_marginTop="1dp"
+                        android:contentDescription="@null"
+                        android:src="@drawable/ic_info"
+                        app:tint="@color/text_tertiary" />
+
+                    <TextView
+                        android:id="@+id/tvTrendsFootnote"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="@dimen/space_sm"
+                        android:layout_weight="1"
+                        android:text="@string/trends_footnote"
+                        android:textAppearance="@style/TextAppearance.StressGuard.Footnote" />
+                </LinearLayout>
             </LinearLayout>
         </LinearLayout>
     </ScrollView>
@@ -170,10 +259,6 @@
         android:id="@+id/bottomNavigation"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:background="#FFFFFF"
-        app:itemIconTint="#59635E"
-        app:itemTextColor="#59635E"
-        app:labelVisibilityMode="labeled"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"

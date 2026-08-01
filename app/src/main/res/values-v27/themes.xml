@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    From API 27 the navigation bar can carry dark icons, which the light theme needs: without it a
+    white three-button bar draws white glyphs on a white background and the buttons disappear.
+-->
+<resources>
+    <style name="Theme.StressGuard" parent="Base.Theme.StressGuard">
+        <item name="android:windowLightNavigationBar">true</item>
+    </style>
+</resources>

@@ -1,14 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
-<menu xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
+<!-- Shown from the header's overflow button. Sign-out lives here rather than on the dashboard
+     itself: a destructive, rarely used action does not want a place next to what people tap daily. -->
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
 
     <item
         android:id="@+id/action_edit_checklist"
-        android:title="Health checklist"
-        app:showAsAction="never" />
+        android:title="@string/action_health_checklist" />
+
+    <item
+        android:id="@+id/action_settings"
+        android:title="@string/action_settings" />
 
     <item
         android:id="@+id/action_sign_out"
-        android:title="Sign out"
-        app:showAsAction="never" />
+        android:title="@string/action_sign_out" />
 </menu>

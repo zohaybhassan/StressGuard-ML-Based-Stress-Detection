@@ -1,124 +1,151 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+    The health profile, asked once after registering.
+
+    Everything on it is a demographic the model was trained against, which is why it is a form and
+    not a wizard: five fields that someone can fill in one sitting do not need five screens.
+-->
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/profileRoot"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F3F6F8"
-    android:fillViewport="true">
+    android:background="@color/canvas"
+    android:clipToPadding="false"
+    android:fillViewport="true"
+    android:scrollbars="none">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="24dp">
+        android:paddingStart="@dimen/screen_padding"
+        android:paddingTop="@dimen/space_2xl"
+        android:paddingEnd="@dimen/screen_padding"
+        android:paddingBottom="@dimen/space_xl">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnProfileBack"
+            style="@style/Widget.StressGuard.Button.Icon"
+            android:layout_width="@dimen/button_height_sm"
+            android:layout_height="@dimen/button_height_sm"
+            android:layout_marginBottom="@dimen/space_sm"
+            android:contentDescription="@string/cd_back"
+            android:visibility="gone"
+            app:icon="@drawable/ic_arrow_back"
+            tools:visibility="visible" />
 
         <TextView
-            android:layout_width="wrap_content"
+            android:id="@+id/tvProfileTitle"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Health Profile"
-            android:textColor="@android:color/black"
-            android:textSize="30sp"
-            android:textStyle="bold" />
+            android:text="@string/profile_title"
+            android:textAppearance="@style/TextAppearance.StressGuard.Headline" />
 
         <TextView
-            android:layout_width="wrap_content"
+            android:id="@+id/tvProfileSubtitle"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="6dp"
-            android:layout_marginBottom="24dp"
-            android:text="Set your baseline so the app can interpret your stress pattern better."
-            android:textColor="#5F6B76"
-            android:textSize="14sp" />
+            android:layout_marginTop="@dimen/space_xs"
+            android:text="@string/profile_subtitle"
+            android:textAppearance="@style/TextAppearance.StressGuard.Body" />
 
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:cardCornerRadius="20dp"
-            app:cardElevation="6dp">
+            android:layout_marginTop="@dimen/space_xl">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:padding="18dp">
+                android:padding="@dimen/space_xl">
 
                 <com.google.android.material.textfield.TextInputLayout
-                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="Full Name"
-                    android:layout_marginBottom="14dp">
+                    android:layout_marginBottom="@dimen/space_md"
+                    android:hint="@string/hint_full_name">
 
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/etName"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:inputType="textPersonName" />
+                        android:autofillHints="name"
+                        android:imeOptions="actionNext"
+                        android:inputType="textPersonName"
+                        android:maxLines="1" />
                 </com.google.android.material.textfield.TextInputLayout>
 
                 <com.google.android.material.textfield.TextInputLayout
-                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="Age"
-                    android:layout_marginBottom="14dp">
+                    android:layout_marginBottom="@dimen/space_md"
+                    android:hint="@string/hint_age">
 
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/etAge"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:inputType="number" />
+                        android:imeOptions="actionDone"
+                        android:inputType="number"
+                        android:maxLines="1" />
                 </com.google.android.material.textfield.TextInputLayout>
 
                 <com.google.android.material.textfield.TextInputLayout
-                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+                    style="@style/Widget.StressGuard.TextInput.Dropdown"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="Gender"
-                    android:layout_marginBottom="14dp">
+                    android:layout_marginBottom="@dimen/space_md"
+                    android:hint="@string/hint_gender">
 
                     <AutoCompleteTextView
                         android:id="@+id/dropdownGender"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:inputType="none" />
+                        android:inputType="none"
+                        android:textColor="@color/text_primary"
+                        android:textSize="15sp" />
                 </com.google.android.material.textfield.TextInputLayout>
 
                 <com.google.android.material.textfield.TextInputLayout
-                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+                    style="@style/Widget.StressGuard.TextInput.Dropdown"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="Occupation"
-                    android:layout_marginBottom="14dp">
+                    android:layout_marginBottom="@dimen/space_md"
+                    android:hint="@string/hint_occupation">
 
                     <AutoCompleteTextView
                         android:id="@+id/dropdownOccupation"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:inputType="none" />
+                        android:inputType="none"
+                        android:textColor="@color/text_primary"
+                        android:textSize="15sp" />
                 </com.google.android.material.textfield.TextInputLayout>
 
                 <com.google.android.material.textfield.TextInputLayout
-                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+                    style="@style/Widget.StressGuard.TextInput.Dropdown"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="BMI Category"
-                    android:layout_marginBottom="16dp">
+                    android:layout_marginBottom="@dimen/space_xl"
+                    android:hint="@string/hint_bmi">
 
                     <AutoCompleteTextView
                         android:id="@+id/dropdownBmi"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:inputType="none" />
+                        android:inputType="none"
+                        android:textColor="@color/text_primary"
+                        android:textSize="15sp" />
                 </com.google.android.material.textfield.TextInputLayout>
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnSaveProfile"
                     android:layout_width="match_parent"
-                    android:layout_height="56dp"
-                    android:text="Save and Continue"
-                    android:textAllCaps="false"
-                    android:textSize="16sp"
-                    app:cornerRadius="14dp" />
+                    android:layout_height="@dimen/button_height"
+                    android:text="@string/action_save_continue" />
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
     </LinearLayout>

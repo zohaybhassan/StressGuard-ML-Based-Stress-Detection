@@ -16,10 +16,17 @@ import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 import com.example.stressguard.AssistantActivity
+import com.example.stressguard.AlertFeedbackActivity
 import com.example.stressguard.HomeDashboardActivity
+import com.example.stressguard.MuteAlertsActivity
 import com.example.stressguard.R
+import com.example.stressguard.SessionManager
+import com.example.stressguard.StressProfile
 import com.example.stressguard.data.local.AlertEventDao
 import com.example.stressguard.data.local.AlertEventEntity
+import com.example.stressguard.data.local.StressFeedbackDao
+import com.example.stressguard.data.local.StressFeedbackEntity
+import com.example.stressguard.data.local.StressPredictionEntity
 
 /**
  * Turns a sustained run of high-stress predictions into something the user notices.
@@ -34,6 +41,7 @@ import com.example.stressguard.data.local.AlertEventEntity
 class StressAlertManager(
     private val context: Context,
     private val dao: AlertEventDao,
+    private val feedbackDao: StressFeedbackDao,
 ) {
 
     /**
@@ -44,6 +52,9 @@ class StressAlertManager(
         recentClassIndices: List<Int>,
         highStressClassIndex: Int,
         modelVersion: String,
+        prediction: StressPredictionEntity,
+        profile: StressProfile,
+        collectFeedback: Boolean,
         nowEpochMs: Long = System.currentTimeMillis(),
     ): AlertDecision {
         val decision = StressAlertPolicy.evaluate(
@@ -51,16 +62,19 @@ class StressAlertManager(
             highStressClassIndex = highStressClassIndex,
             nowEpochMs = nowEpochMs,
             lastAlertEpochMs = dao.mostRecent()?.firedAtEpochMs,
+            mutedUntilEpochMs = SessionManager.getAlertsMutedUntil(context),
         )
 
         if (decision !is AlertDecision.Fire) {
             if (decision is AlertDecision.InCooldown) {
                 Log.d(TAG, "sustained stress, suppressed for ${decision.remainingMs / 1000}s more")
+            } else if (decision is AlertDecision.UserMuted) {
+                Log.d(TAG, "sustained stress, user-muted for ${decision.remainingMs / 1000}s more")
             }
             return decision
         }
 
-        dao.insert(
+        val alertId = dao.insert(
             AlertEventEntity(
                 firedAtEpochMs = nowEpochMs,
                 reason = decision.reason,
@@ -70,8 +84,37 @@ class StressAlertManager(
             )
         )
 
+        val feedbackId = if (collectFeedback) {
+            runCatching {
+                feedbackDao.insert(
+                    StressFeedbackEntity(
+                    alertEventId = alertId,
+                    alertFiredAtEpochMs = nowEpochMs,
+                    predictionRecordedAtEpochMs = prediction.recordedAtEpochMs,
+                    predictedLabel = prediction.label,
+                    predictedClassIndex = prediction.classIndex,
+                    confidence = prediction.confidence,
+                    probabilities = prediction.probabilities,
+                    modelVersion = prediction.modelVersion,
+                    heartRate = prediction.heartRate,
+                    dailySteps = prediction.dailySteps,
+                    activityLevel = prediction.activityLevel,
+                    sleepHours = prediction.sleepHours,
+                    outOfTrainingRange = prediction.outOfTrainingRange,
+                    profileAge = profile.age,
+                    profileGender = profile.gender,
+                    profileOccupation = profile.occupation,
+                    profileBmi = profile.bmi,
+                    )
+                )
+            }.onFailure {
+                // Feedback improves a future model; it must never prevent today's alert.
+                Log.w(TAG, "could not create the pending stress check-in", it)
+            }.getOrNull()
+        } else null
+
         vibrate()
-        notify(decision.reason)
+        notify(decision.reason, feedbackId)
         Log.i(TAG, "alert fired: ${decision.reason}")
         return decision
     }
@@ -99,7 +142,7 @@ class StressAlertManager(
         vibrator.vibrate(VibrationEffect.createWaveform(timings, amplitudes, -1))
     }
 
-    private fun notify(reason: String) {
+    private fun notify(reason: String, feedbackId: Long?) {
         // POST_NOTIFICATIONS is runtime-granted from API 33. Without it, notify() is a silent
         // no-op, so check rather than assume: the vibration still happened and the alert is
         // still recorded, and the dashboard shows it.
@@ -113,10 +156,19 @@ class StressAlertManager(
 
         createChannel()
 
+        val openIntent = feedbackId?.let { AlertFeedbackActivity.intent(context, it) }
+            ?: Intent(context, HomeDashboardActivity::class.java)
         val open = PendingIntent.getActivity(
             context,
             0,
-            Intent(context, HomeDashboardActivity::class.java)
+            openIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP),
+            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
+        )
+
+        val mute = PendingIntent.getActivity(
+            context,
+            REQUEST_MUTE,
+            Intent(context, MuteAlertsActivity::class.java)
                 .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP),
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
         )
@@ -143,6 +195,10 @@ class StressAlertManager(
             .setCategory(NotificationCompat.CATEGORY_REMINDER)
             .setAutoCancel(true)
             .setContentIntent(open)
+            .apply {
+                if (feedbackId != null) addAction(0, "Check in", open)
+            }
+            .addAction(0, "Mute alerts", mute)
             .addAction(0, "Talk it through", talk)
             .build()
 
@@ -170,5 +226,6 @@ class StressAlertManager(
 
         /** Distinct from the content intent's request code, or the two PendingIntents collide. */
         private const val REQUEST_TALK = 1
+        private const val REQUEST_MUTE = 2
     }
 }

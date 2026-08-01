@@ -5,9 +5,13 @@
         Conversations resume by default, which is the point of storing them. This is the way out of
         that: a user who does not want the assistant carrying this morning's context into this
         evening should not have to delete anything to get a clean start.
+
+        Promoted to the toolbar because starting over is the only action this screen has, and one
+        item hidden behind an overflow menu is a menu that will never be opened.
     -->
     <item
         android:id="@+id/action_new_conversation"
-        android:title="New conversation"
-        app:showAsAction="never" />
+        android:icon="@drawable/ic_chat_new"
+        android:title="@string/action_new_conversation"
+        app:showAsAction="always" />
 </menu>

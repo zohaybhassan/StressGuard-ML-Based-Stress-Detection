@@ -4,6 +4,7 @@ import com.example.stressguard.data.local.AlertEventEntity
 import com.example.stressguard.data.local.HealthChecklistEntity
 import com.example.stressguard.data.local.LatencyMetricEntity
 import com.example.stressguard.data.local.StressPredictionEntity
+import com.example.stressguard.data.local.StressFeedbackEntity
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
@@ -188,5 +189,41 @@ class SyncRowsTest {
         // Marked synced on the way back: it came from the server, so re-uploading it would push a
         // fresher updated_at over the answer's real age.
         assertEquals(original.copy(synced = true), restored)
+    }
+
+    @Test
+    fun `completed feedback keeps the alert-time training snapshot`() {
+        val entity = StressFeedbackEntity(
+            id = 9,
+            alertEventId = 3,
+            alertFiredAtEpochMs = recordedAt + 500,
+            predictionRecordedAtEpochMs = recordedAt,
+            predictedLabel = "stressed",
+            predictedClassIndex = 1,
+            confidence = 0.91f,
+            probabilities = listOf(0.09f, 0.91f),
+            modelVersion = "binary-v1",
+            heartRate = 96,
+            dailySteps = 1200,
+            activityLevel = 6400,
+            sleepHours = 6.5f,
+            outOfTrainingRange = false,
+            profileAge = 22,
+            profileGender = "Male",
+            profileOccupation = "Student",
+            profileBmi = "Normal",
+            confirmedStressed = true,
+            severity = 8,
+            respondedAtEpochMs = recordedAt + 60_000,
+        )
+
+        val row = StressFeedbackRow.from(entity, userId)
+
+        assertEquals("high_stress_alert", row.promptSource)
+        assertEquals("2026-07-26T09:00:00Z", row.predictionRecordedAt)
+        assertEquals(96, row.heartRate)
+        assertEquals(6400, row.activityLevel)
+        assertTrue(row.confirmedStressed)
+        assertEquals(8, row.severity)
     }
 }

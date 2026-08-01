@@ -119,6 +119,46 @@ data class AlertEventEntity(
 )
 
 /**
+ * Human ground truth captured after a sustained-stress alert.
+ *
+ * The model and profile inputs are snapshotted when the alert fires. Keeping them on this row is
+ * intentional: a response may arrive hours later, after the user has walked more, slept again, or
+ * edited their profile. Joining against "latest" values at response time would create mislabeled
+ * training examples.
+ */
+@Entity(
+    tableName = "stress_feedback",
+    indices = [Index(value = ["alertFiredAtEpochMs"], unique = true), Index("synced")],
+)
+data class StressFeedbackEntity(
+    @PrimaryKey(autoGenerate = true) val id: Long = 0,
+    val alertEventId: Long,
+    val promptSource: String = "high_stress_alert",
+    val alertFiredAtEpochMs: Long,
+    val predictionRecordedAtEpochMs: Long,
+    val predictedLabel: String,
+    val predictedClassIndex: Int,
+    val confidence: Float,
+    val probabilities: List<Float>,
+    val modelVersion: String,
+    val heartRate: Int,
+    val dailySteps: Int,
+    val activityLevel: Int,
+    val sleepHours: Float,
+    val outOfTrainingRange: Boolean,
+    val profileAge: Int,
+    val profileGender: String,
+    val profileOccupation: String,
+    val profileBmi: String,
+    /** Null until the user answers the alert check-in. */
+    val confirmedStressed: Boolean? = null,
+    /** Original dataset scale. Required for a confirmed stress response, otherwise null. */
+    val severity: Int? = null,
+    val respondedAtEpochMs: Long? = null,
+    val synced: Boolean = false,
+)
+
+/**
  * The user's self-reported health risk factors, as plan §7 scores them.
  *
  * One row, always id [SINGLETON_ID]. The table holds the *current* answers for whoever is signed

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Text field outline. Focused is the only state that gets the brand colour: an unfocused field
+    outlined in teal reads as active when it is not.
+-->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:color="@color/danger" android:state_activated="true" />
+    <item android:color="@color/brand" android:state_focused="true" />
+    <item android:color="@color/outline_strong" android:state_hovered="true" />
+    <item android:color="@color/outline" />
+</selector>
