@@ -635,6 +635,25 @@ upsert returns, so a crash midway re-sends rather than loses.
 Nothing syncs while signed out — there is no `user_id` to attach rows to. Rows stay queued and the
 dashboard says why, because a pending count with no explanation reads as a broken sync.
 
+### History restoration after login
+
+Logout still clears Room, SharedPreferences and in-memory pipeline state. That isolation is
+required because local tables are not keyed by user; retaining them would show one account's health
+history to the next account using the phone. The missing half was restoration: only profile and
+checklist data were previously pulled back, so Trends started over after every logout.
+
+`PredictionHistoryRepository` now pages through the signed-in user's latest 14 days of
+`stress_predictions` before the dashboard opens. The existing table already contains every value
+the weekly charts need: prediction class, heart rate, raw and resolved steps, and sleep. Separate
+heart-rate and sleep tables would duplicate these snapshots and risk the copies disagreeing.
+
+Server rows are converted back to `StressPredictionEntity(synced = true)` and transactionally
+merged by `recordedAtEpochMs`; they never overwrite fresh offline readings or re-enter the upload
+queue. The 14-day window restores both seven-day Trends and the recommendation's wider window.
+Supabase pagination uses 500-row pages so the project-level PostgREST row cap cannot silently cut a
+busy week short. Trends renders Room immediately and retries the pull in the background if the
+login-time request timed out.
+
 ---
 
 ## 13. Health checklist and the checkup recommendation

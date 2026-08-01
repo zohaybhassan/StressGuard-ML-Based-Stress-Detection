@@ -5,6 +5,7 @@ import android.util.Log
 import com.example.stressguard.data.AuthRepository
 import com.example.stressguard.data.LocalUserData
 import com.example.stressguard.data.ProfileRepository
+import com.example.stressguard.data.PredictionHistoryRepository
 
 /**
  * Where a signed-in user should go next.
@@ -34,6 +35,7 @@ object PostAuthRouter {
         // No local profile usually means a reinstall rather than a new user, so recover it from
         // the backend before asking them to fill the form in again.
         val hasProfile = ProfileRepository.ensureLocalProfile(context)
+        if (hasProfile) PredictionHistoryRepository.ensureRecentLocal(context)
         return if (hasProfile) HomeDashboardActivity::class.java else ProfileSetupActivity::class.java
     }
 

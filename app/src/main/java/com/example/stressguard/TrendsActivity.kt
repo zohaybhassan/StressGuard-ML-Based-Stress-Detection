@@ -15,6 +15,7 @@ import com.example.stressguard.data.DailyStressSummary
 import com.example.stressguard.data.StressAlertPolicy
 import com.example.stressguard.data.StressTrends
 import com.example.stressguard.data.TrendsRepository
+import com.example.stressguard.data.PredictionHistoryRepository
 import com.github.mikephil.charting.charts.BarChart
 import com.github.mikephil.charting.charts.LineChart
 import com.github.mikephil.charting.components.LimitLine
@@ -91,7 +92,18 @@ class TrendsActivity : AppCompatActivity() {
      */
     override fun onResume() {
         super.onResume()
-        lifecycleScope.launch { render(TrendsRepository.load(this@TrendsActivity)) }
+        lifecycleScope.launch {
+            val local = TrendsRepository.load(this@TrendsActivity)
+            render(local)
+
+            // Login normally restores before the dashboard opens. This retry covers a temporary
+            // timeout without making an offline user stare at a loading screen: local data is
+            // rendered first, then the chart redraws only if the merged server history changed it.
+            if (PredictionHistoryRepository.ensureRecentLocal(this@TrendsActivity)) {
+                val refreshed = TrendsRepository.load(this@TrendsActivity)
+                if (refreshed != local) render(refreshed)
+            }
+        }
     }
 
     private fun render(trends: StressTrends) {

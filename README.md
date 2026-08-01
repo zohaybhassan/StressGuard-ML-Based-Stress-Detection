@@ -48,6 +48,8 @@ and labels from the bundle manifest rather than hardcoding them.
 4. `PostAuthRouter` decides where a signed-in user goes: `SetPasswordActivity` if the account has
    no password yet, otherwise the profile form or the dashboard. Shared by every entry point, so
    the same user cannot get a different destination depending on which door they came through.
+   Before opening the dashboard it restores the authenticated user's latest 14 days of synced
+   prediction history from Supabase into Room, which restores Trends after logout or reinstall.
 5. `ProfileSetupActivity` saves profile values such as name, age, gender, occupation, and BMI
    category. A missing local profile is first recovered from Supabase, so a reinstall does not
    re-ask.
@@ -536,6 +538,7 @@ StressGuard/
 - `app/src/main/java/com/example/stressguard/data/StressPipeline.kt`: reading in, prediction out — stored, timed and possibly alerted.
 - `app/src/main/java/com/example/stressguard/TrendsActivity.kt`: weekly stress and vitals charts.
 - `app/src/main/java/com/example/stressguard/data/TrendsRepository.kt`: the per-day rollup the charts draw.
+- `app/src/main/java/com/example/stressguard/data/PredictionHistoryRepository.kt`: paged, authenticated recent-history restoration after login.
 - `app/src/main/java/com/example/stressguard/data/StressAlertPolicy.kt`: pure smoothing and cooldown rule.
 - `app/src/main/java/com/example/stressguard/data/RecommendationPolicy.kt`: pure rule-based checkup score.
 - `app/src/main/java/com/example/stressguard/data/local/StressGuardDatabase.kt`: Room store and its migrations.

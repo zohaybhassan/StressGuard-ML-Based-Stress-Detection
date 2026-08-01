@@ -4,6 +4,7 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.Transaction
 import kotlinx.coroutines.flow.Flow
 
 /**
@@ -50,6 +51,21 @@ interface StressPredictionDao {
 
     @Query("SELECT COUNT(*) FROM stress_predictions")
     suspend fun count(): Int
+
+    @Query("SELECT recordedAtEpochMs FROM stress_predictions WHERE recordedAtEpochMs >= :sinceEpochMs")
+    suspend fun timestampsSince(sinceEpochMs: Long): List<Long>
+
+    /** Merges server history without replacing fresh offline rows from the live pipeline. */
+    @Transaction
+    suspend fun mergeRestored(rows: List<StressPredictionEntity>): Int {
+        if (rows.isEmpty()) return 0
+        val existing = timestampsSince(rows.minOf { it.recordedAtEpochMs }).toHashSet()
+        val missing = rows
+            .distinctBy { it.recordedAtEpochMs }
+            .filterNot { it.recordedAtEpochMs in existing }
+        missing.forEach { insert(it.copy(id = 0, synced = true)) }
+        return missing.size
+    }
 }
 
 @Dao

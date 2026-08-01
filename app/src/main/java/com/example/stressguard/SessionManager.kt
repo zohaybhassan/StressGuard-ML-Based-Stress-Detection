@@ -15,6 +15,7 @@ object SessionManager {
     private const val KEY_SLEEP_TARGET_MINUTES = "sleep_target_minutes"
     private const val KEY_STEP_TARGET = "step_target"
     private const val KEY_ALERTS_MUTED_UNTIL = "alerts_muted_until"
+    private const val KEY_HISTORY_RESTORED_AT = "history_restored_at"
 
     private fun prefs(context: Context) = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
 
@@ -95,6 +96,13 @@ object SessionManager {
 
     fun clearAlertMute(context: Context) {
         prefs(context).edit().remove(KEY_ALERTS_MUTED_UNTIL).apply()
+    }
+
+    fun getHistoryRestoredAt(context: Context): Long =
+        prefs(context).getLong(KEY_HISTORY_RESTORED_AT, 0L)
+
+    fun markHistoryRestored(context: Context, epochMs: Long) {
+        prefs(context).edit().putLong(KEY_HISTORY_RESTORED_AT, epochMs).apply()
     }
 
     /**

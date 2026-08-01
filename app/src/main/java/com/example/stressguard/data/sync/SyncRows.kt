@@ -55,6 +55,21 @@ data class StressPredictionRow(
             outOfTrainingRange = entity.outOfTrainingRange,
         )
     }
+    /** A server row restored after login. It must not be queued for upload again. */
+    fun toEntity(): StressPredictionEntity = StressPredictionEntity(
+        recordedAtEpochMs = Instant.parse(recordedAt).toEpochMilli(),
+        label = label,
+        classIndex = classIndex,
+        confidence = confidence,
+        probabilities = probabilities,
+        modelVersion = modelVersion,
+        heartRate = heartRate,
+        dailySteps = dailySteps,
+        activityLevel = activityLevel,
+        sleepHours = sleepHours,
+        outOfTrainingRange = outOfTrainingRange,
+        synced = true,
+    )
 }
 
 @Serializable
@@ -209,7 +224,8 @@ data class StressFeedbackRow(
                 profileBmi = entity.profileBmi,
                 confirmedStressed = confirmed,
                 severity = entity.severity,
-            )
-        }
+        )
     }
+
+}
 }

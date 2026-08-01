@@ -59,6 +59,28 @@ class SyncRowsTest {
     }
 
     @Test
+    fun `a synced prediction round-trips back into Room after login`() {
+        val original = StressPredictionEntity(
+            id = 42,
+            recordedAtEpochMs = recordedAt,
+            label = "stressed",
+            classIndex = 1,
+            confidence = 0.908f,
+            probabilities = listOf(0.092f, 0.908f),
+            modelVersion = "binary-2026-07-24",
+            heartRate = 84,
+            dailySteps = 458,
+            activityLevel = 8000,
+            sleepHours = 7.5f,
+            outOfTrainingRange = false,
+        )
+
+        val restored = StressPredictionRow.from(original, userId).toEntity()
+
+        assertEquals(original.copy(id = 0, synced = true), restored)
+    }
+
+    @Test
     fun `a latency sample with no alert sends a null rather than a zero`() {
         val entity = LatencyMetricEntity(
             id = 7,
