@@ -78,6 +78,8 @@
     <string name="health_check_disclaimer">StressGuard is not a medical device and does not diagnose any condition. This is a guide based on your readings and the answers you gave.</string>
     <string name="support_title">Feeling overwhelmed?</string>
     <string name="support_subtitle">Talk it through with the assistant</string>
+    <string name="workout_mode_title">Workout mode</string>
+    <string name="workout_mode_dashboard_subtitle">Pause stress predictions during exercise</string>
 
     <!-- Dashboard menu -->
     <string name="action_health_checklist">Health checklist</string>
@@ -124,6 +126,16 @@
     <string name="alerts_muted_until">Alerts muted until %1$s</string>
     <string name="alerts_resumed">Stress alerts resumed</string>
     <string name="open_notification_settings">Android notification settings</string>
+    <string name="workout_mode_heading">Workout mode</string>
+    <string name="workout_mode_inactive">Workout mode is off. Use this before running, gym sessions or other exercise so elevated heart rate does not count as stress.</string>
+    <string name="workout_mode_active_until">Workout mode is active until %1$s. Stress predictions are paused; heart rate and steps still update.</string>
+    <string name="workout_30_minutes">30 minutes</string>
+    <string name="workout_1_hour">1 hour</string>
+    <string name="workout_90_minutes">90 minutes</string>
+    <string name="workout_2_hours">2 hours</string>
+    <string name="workout_mode_end">End workout mode</string>
+    <string name="workout_mode_started_until">Workout mode active until %1$s</string>
+    <string name="workout_mode_ended">Workout mode ended</string>
 
     <!-- Trends -->
     <string name="trends_title">Trends</string>

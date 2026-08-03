@@ -544,6 +544,63 @@
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/btnWorkoutMode"
+                style="@style/Widget.StressGuard.Card.Interactive"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_md"
+                app:cardBackgroundColor="@color/metric_steps_soft"
+                app:strokeColor="@color/metric_steps_soft">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:baselineAligned="false"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:padding="@dimen/space_lg">
+
+                    <ImageView
+                        android:layout_width="@dimen/icon_tile_lg"
+                        android:layout_height="@dimen/icon_tile_lg"
+                        android:background="@drawable/bg_circle"
+                        android:backgroundTint="@color/surface"
+                        android:contentDescription="@null"
+                        android:padding="12dp"
+                        android:src="@drawable/ic_steps"
+                        app:tint="@color/metric_steps" />
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="@dimen/space_md"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/workout_mode_title"
+                            android:textAppearance="@style/TextAppearance.StressGuard.Title" />
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="1dp"
+                            android:text="@string/workout_mode_dashboard_subtitle"
+                            android:textAppearance="@style/TextAppearance.StressGuard.Caption" />
+                    </LinearLayout>
+
+                    <ImageView
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:contentDescription="@null"
+                        android:src="@drawable/ic_chevron_right"
+                        app:tint="@color/metric_steps" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
             <!--
                 The route to the assistant. It was a red alarm button wired to nothing for most of
                 this project's life; as a card it reads as an offer rather than an emergency, which

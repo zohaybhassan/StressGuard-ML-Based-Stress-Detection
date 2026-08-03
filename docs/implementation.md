@@ -541,6 +541,10 @@ afterwards.
 - **User pause:** the notification offers 10 minutes, 30 minutes, 1 hour and 4 hours. The expiry is
   stored in `SessionManager`, survives process restarts, and is checked after smoothing but before
   vibration or notification. Predictions and local storage continue while paused.
+- **Workout Mode:** manual, separate from alert pause. When active, real watch readings update the
+  dashboard and daily step totals but **skip inference and prediction storage**, so exercise heart
+  rate does not count as stress in Trends or the checkup recommendation. Simulated/debug readings
+  still run normally.
 - **Dispatch:** vibration waveform `[0, 400, 200, 400]` plus a notification.
 - The high-stress class index comes from `modelInfo.classCount - 1`, never a hardcoded 3, so
   swapping in the 3-class bundle does not silently break the rule.
@@ -894,12 +898,13 @@ kept the numbers off a third party's servers. The assistant screen's disclaimer 
 
 ## 18. Testing
 
-- **161 unit tests** (`app/src/test/`, 17 classes) — pure logic: feature building, alert smoothing
-  and cooldown, sensor validation, sample-age parsing, staleness, step history, attribution, sync
-  row mapping, recommendation scoring, crisis detection, the `service_role` guard.
-- **Instrumented tests** (`app/src/androidTest/`, 5 classes) — Room DAO behaviour, the trends screen,
+- **179 JVM unit tests** (`app/src/test/` and `wear/src/test/`) — pure logic: feature building,
+  alert smoothing and cooldown, sensor validation, sample-age parsing, staleness, step history,
+  attribution, sync row mapping, recommendation scoring, crisis detection, Workout Mode timing,
+  the `service_role` guard and watch-side passive store behaviour.
+- **29 instrumented tests** (`app/src/androidTest/`, 5 classes) — Room DAO behaviour, the trends screen,
   local user data, and `StressInferenceParityTest`.
-- **Edge Function tests** (`supabase/functions/chat/safety_test.ts`) — crisis detection including
+- **12 Edge Function tests** (`supabase/functions/chat/safety_test.ts`) — crisis detection including
   false positives, and the extrapolation caveat. Written but **not yet executed**: Deno is not
   installed on the development machine. Run them with `deno test` before relying on them.
 
@@ -936,22 +941,31 @@ Kept and disclosed rather than re-engineered, which was a deliberate decision. I
 The dataset's 43–109 bpm is resting rate. A wearable during ordinary activity routinely exceeds 109.
 Every such reading is an extrapolation, flagged as one.
 
-### 3. Oversampling runs before the train/test split
+### 3. Exercise can look like stress
+
+The current model and wire format do not know that someone is running or lifting weights. The app
+therefore offers manual Workout Mode: while it is active, incoming real watch readings do not run
+stress inference and do not create prediction rows. This prevents workouts from inflating the day's
+high-stress count, Trends, alert windows or checkup recommendation. Automatic workout detection is
+not implemented yet; doing it responsibly would require richer activity context than heart rate,
+daily steps and sample age.
+
+### 4. Oversampling runs before the train/test split
 
 SMOTENC is applied to the whole dataset, so synthetic rows derived from training neighbours can
 appear in the test set. **The reported 88.77% is therefore optimistic.** Reproduced deliberately to
 keep the numbers comparable with earlier iterations; state it in the report.
 
-### 4. Latency is measured from the phone, not the watch
+### 5. Latency is measured from the phone, not the watch
 
 Watch-to-phone transmission is not included and cannot be without clock synchronisation. The figure
 is arrival-to-prediction.
 
-### 5. The transport is not BLE
+### 6. The transport is not BLE
 
 `MessageClient`, not GATT. Plan §23's wording is wrong.
 
-### 6. Sleep is often unavailable
+### 7. Sleep is often unavailable
 
 It cannot come from the watch at all — Health Services has no sleep data type, and Samsung Health on
 the watch does not write sleep to Health Connect. It arrives only via Samsung Health **on the phone**
@@ -962,32 +976,32 @@ Note also that a provider being *connected* does not mean it has *written*: with
 installed and holding `WRITE_SLEEP`, Health Connect still returned zero sleep records over seven
 days.
 
-### 7. Attribution cannot see interactions
+### 8. Attribution cannot see interactions
 
 One-at-a-time ablation misses joint effects. If a high heart rate only matters when sleep is short,
 both will look modest. Shapley values would capture it at far greater cost.
 
-### 8. No battery measurement
+### 9. No battery measurement
 
 The power reasoning in [§9](#9-battery-and-power) is architectural. No drain figure has been taken.
 
-### 9. Encryption is a placeholder
+### 10. Encryption is a placeholder
 
 AES/ECB with a hardcoded key, duplicated across modules.
 
-### 10. Background inference needs the dashboard's Health Connect read
+### 11. Background inference needs the dashboard's Health Connect read
 
 The pipeline runs without an Activity, but `SleepCache` is only written when the dashboard reads
 Health Connect. A user who never opens the dashboard gets the assumed sleep value on every
 background prediction.
 
-### 11. The chatbot requires a network
+### 12. The chatbot requires a network
 
 Unlike detection, it cannot work offline — the model is on Hugging Face's infrastructure. The
 offline path is a crisis check plus a breathing exercise, not a conversation. This is a deliberate
 split, and the contrast is the point: detection is local and offline, support is not.
 
-### 12. Reproducibility of the reported metrics
+### 13. Reproducibility of the reported metrics
 
 `prepare_dataset.py` uses a fixed seed, so the balanced dataset regenerates identically. The
 training scripts were inherited rather than written for this iteration; a full retrain has not been

@@ -16,74 +16,136 @@
         app:navigationIcon="@drawable/ic_arrow_back"
         app:title="@string/mute_alerts_title" />
 
-    <LinearLayout
+    <ScrollView
         android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="@dimen/screen_padding"
+        android:layout_height="0dp"
+        android:clipToPadding="false"
+        android:scrollbars="none"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/muteToolbar">
 
-        <TextView
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/mute_alerts_heading"
-            android:textAppearance="@style/TextAppearance.StressGuard.Headline" />
+            android:orientation="vertical"
+            android:padding="@dimen/screen_padding">
 
-        <TextView
-            android:id="@+id/tvMuteStatus"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/space_sm"
-            android:textAppearance="@style/TextAppearance.StressGuard.Body" />
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/mute_alerts_heading"
+                android:textAppearance="@style/TextAppearance.StressGuard.Headline" />
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnMute10Minutes"
-            style="@style/Widget.StressGuard.Button.Outlined"
-            android:layout_width="match_parent"
-            android:layout_height="@dimen/button_height"
-            android:layout_marginTop="@dimen/space_xl"
-            android:text="@string/mute_10_minutes" />
+            <TextView
+                android:id="@+id/tvMuteStatus"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_sm"
+                android:textAppearance="@style/TextAppearance.StressGuard.Body" />
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnMute30Minutes"
-            style="@style/Widget.StressGuard.Button.Outlined"
-            android:layout_width="match_parent"
-            android:layout_height="@dimen/button_height"
-            android:layout_marginTop="@dimen/space_sm"
-            android:text="@string/mute_30_minutes" />
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnMute10Minutes"
+                style="@style/Widget.StressGuard.Button.Outlined"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/button_height"
+                android:layout_marginTop="@dimen/space_xl"
+                android:text="@string/mute_10_minutes" />
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnMute1Hour"
-            style="@style/Widget.StressGuard.Button.Outlined"
-            android:layout_width="match_parent"
-            android:layout_height="@dimen/button_height"
-            android:layout_marginTop="@dimen/space_sm"
-            android:text="@string/mute_1_hour" />
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnMute30Minutes"
+                style="@style/Widget.StressGuard.Button.Outlined"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/button_height"
+                android:layout_marginTop="@dimen/space_sm"
+                android:text="@string/mute_30_minutes" />
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnMute4Hours"
-            style="@style/Widget.StressGuard.Button.Outlined"
-            android:layout_width="match_parent"
-            android:layout_height="@dimen/button_height"
-            android:layout_marginTop="@dimen/space_sm"
-            android:text="@string/mute_4_hours" />
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnMute1Hour"
+                style="@style/Widget.StressGuard.Button.Outlined"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/button_height"
+                android:layout_marginTop="@dimen/space_sm"
+                android:text="@string/mute_1_hour" />
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnResumeAlerts"
-            style="@style/Widget.StressGuard.Button.Text"
-            android:layout_width="match_parent"
-            android:layout_height="@dimen/button_height"
-            android:layout_marginTop="@dimen/space_lg"
-            android:text="@string/resume_alerts" />
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnMute4Hours"
+                style="@style/Widget.StressGuard.Button.Outlined"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/button_height"
+                android:layout_marginTop="@dimen/space_sm"
+                android:text="@string/mute_4_hours" />
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnNotificationSettings"
-            style="@style/Widget.StressGuard.Button.Text"
-            android:layout_width="match_parent"
-            android:layout_height="@dimen/button_height"
-            android:layout_marginTop="@dimen/space_sm"
-            android:text="@string/open_notification_settings" />
-    </LinearLayout>
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnResumeAlerts"
+                style="@style/Widget.StressGuard.Button.Text"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/button_height"
+                android:layout_marginTop="@dimen/space_lg"
+                android:text="@string/resume_alerts" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_xl"
+                android:text="@string/workout_mode_heading"
+                android:textAppearance="@style/TextAppearance.StressGuard.Headline" />
+
+            <TextView
+                android:id="@+id/tvWorkoutModeStatus"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_sm"
+                android:textAppearance="@style/TextAppearance.StressGuard.Body" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnWorkout30Minutes"
+                style="@style/Widget.StressGuard.Button.Outlined"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/button_height"
+                android:layout_marginTop="@dimen/space_lg"
+                android:text="@string/workout_30_minutes" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnWorkout1Hour"
+                style="@style/Widget.StressGuard.Button.Outlined"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/button_height"
+                android:layout_marginTop="@dimen/space_sm"
+                android:text="@string/workout_1_hour" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnWorkout90Minutes"
+                style="@style/Widget.StressGuard.Button.Outlined"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/button_height"
+                android:layout_marginTop="@dimen/space_sm"
+                android:text="@string/workout_90_minutes" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnWorkout2Hours"
+                style="@style/Widget.StressGuard.Button.Outlined"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/button_height"
+                android:layout_marginTop="@dimen/space_sm"
+                android:text="@string/workout_2_hours" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnEndWorkoutMode"
+                style="@style/Widget.StressGuard.Button.Text"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/button_height"
+                android:layout_marginTop="@dimen/space_lg"
+                android:text="@string/workout_mode_end" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnNotificationSettings"
+                style="@style/Widget.StressGuard.Button.Text"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/button_height"
+                android:layout_marginTop="@dimen/space_sm"
+                android:text="@string/open_notification_settings" />
+        </LinearLayout>
+    </ScrollView>
 </androidx.constraintlayout.widget.ConstraintLayout>

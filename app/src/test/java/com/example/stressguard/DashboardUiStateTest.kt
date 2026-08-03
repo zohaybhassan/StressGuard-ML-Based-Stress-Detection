@@ -56,4 +56,20 @@ class DashboardUiStateTest {
         // Nothing is on screen yet, so there is nothing to call old; WatchLink covers this case.
         assertFalse(DashboardUiState().isReadingStale)
     }
+
+    @Test
+    fun `workout pause is distinct from stale or error states`() {
+        val paused = DashboardUiState(
+            heartRate = 132,
+            source = ReadingSource.WATCH,
+            watchLink = WatchLink.STREAMING,
+            readingAgeMs = 0L,
+            workoutModeUntilEpochMs = 1_700_000_060_000L,
+            error = null,
+        )
+
+        assertTrue(paused.isWorkoutPaused)
+        assertFalse(paused.isReadingStale)
+        assertFalse(paused.watchLink == WatchLink.NO_WATCH)
+    }
 }

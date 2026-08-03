@@ -37,6 +37,9 @@ import com.google.android.material.button.MaterialButton
 import com.google.android.material.card.MaterialCardView
 import com.google.android.material.chip.Chip
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import java.time.Instant
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
 import java.util.concurrent.TimeUnit
 import kotlinx.coroutines.launch
@@ -162,6 +165,9 @@ class HomeDashboardActivity : AppCompatActivity() {
         // is somewhere to take it.
         findViewById<View>(R.id.btnEmergency).setOnClickListener {
             startActivity(AssistantActivity.fromAlert(this, viewModel.state.value.prediction?.label))
+        }
+        findViewById<View>(R.id.btnWorkoutMode).setOnClickListener {
+            startActivity(Intent(this, MuteAlertsActivity::class.java))
         }
 
         setUpMenu()
@@ -425,13 +431,36 @@ class HomeDashboardActivity : AppCompatActivity() {
     }
 
     private fun renderPrediction(state: DashboardUiState) {
+        state.workoutModeUntilEpochMs?.let { until ->
+            val paused = color(R.color.metric_steps)
+            stressGauge.setProgress(0)
+            stressGauge.ringColor = paused
+            liveDot.backgroundTintList = ColorStateList.valueOf(paused)
+            tvStressPercentage.text = "--"
+            tvStressStatus.text = "WORKOUT MODE"
+            tvStressStatus.setTextColor(paused)
+            tvConnectionState.text =
+                "Stress predictions paused until ${formatClockTime(until)}. " +
+                    "Heart rate and steps are still shown, but this workout will not affect Trends."
+            return
+        }
+
         if (state.error != null) {
             tvStressStatus.text = state.error
             tvStressStatus.setTextColor(color(R.color.text_on_dark_muted))
             return
         }
 
-        val prediction = state.prediction ?: return
+        val prediction = state.prediction ?: run {
+            val neutral = color(R.color.text_on_dark_muted)
+            stressGauge.setProgress(0)
+            stressGauge.ringColor = neutral
+            liveDot.backgroundTintList = ColorStateList.valueOf(neutral)
+            tvStressPercentage.text = "--"
+            tvStressStatus.text = "WAITING"
+            tvStressStatus.setTextColor(neutral)
+            return
+        }
         val score = gaugeScore(prediction.probabilities)
         stressGauge.setProgress(score)
         tvStressPercentage.text = "$score%"
@@ -522,6 +551,11 @@ class HomeDashboardActivity : AppCompatActivity() {
      *  theme is a matter of which resource file answers rather than a second set of branches. */
     @ColorInt
     private fun color(@ColorRes id: Int): Int = ContextCompat.getColor(this, id)
+
+    private fun formatClockTime(epochMs: Long): String =
+        Instant.ofEpochMilli(epochMs)
+            .atZone(ZoneId.systemDefault())
+            .format(DateTimeFormatter.ofPattern("h:mm a"))
 
     private fun askForNotificationPermission() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {

@@ -359,10 +359,9 @@ MPAndroidChart is published only to JitPack, so `settings.gradle.kts` adds that 
 `com.github.PhilJay` alone — opened globally, a typo in any other coordinate could silently resolve
 to someone's fork.
 
-The `nav_assistant` tab was **removed** rather than left in place. It had been declared and wired to
-nothing since the first dashboard layout; once the bottom bar actually navigated, a tab that did
-nothing when tapped would read as a broken app rather than an unfinished one. It comes back with the
-chatbot screen.
+The `nav_assistant` tab is now present and wired through `BottomNav` to `AssistantActivity`. It had
+previously been declared and wired to nothing; leaving a visible tab that did nothing read as a
+broken app rather than an unfinished one, so it was only restored once the chatbot screen existed.
 
 ## The supportive chatbot (plan §18)
 
@@ -460,16 +459,28 @@ usual for you" would claim a comparison that was never made.
 inside the prompt. That was chosen over describing them only in relative terms, which would have kept
 the numbers off a third party's servers. The assistant screen's disclaimer says so.
 
-## Planned Next Layers
+## Recently Completed Layers
 
-- Supportive chatbot backend, and the `nav_assistant` tab that goes with it
+- Supportive chatbot backend, Assistant tab, dashboard support card and high-stress notification
+  action are implemented.
+- Alert feedback is implemented: real sustained-stress alerts create pending `stress_feedback`
+  rows, and completed responses sync to Supabase for later evaluation.
+- Manual Workout Mode is implemented separately from alert mute. Alert mute suppresses haptics and
+  notifications only; Workout Mode skips stress inference and prediction storage so exercise heart
+  rate does not enter Trends or the recommendation.
 
 ## Known Structural Gaps
 
 - `EncryptionUtil.kt` is duplicated byte-for-byte across both modules, with a hardcoded
   AES/ECB key committed to the repository
-- `AuthRepository.signOut()` has no caller; there is no sign-out anywhere in the UI
-- Watch-side sleep is a hardcoded placeholder; only the phone's Health Connect read is real
+- Local storage is still not keyed by user. Sign-out and the post-auth identity check clear local
+  data, but adding `user_id` to the local tables would remove the class of defect instead of
+  guarding around it.
+- Sleep exists only through the phone's Health Connect read and the pipeline cache. A user who
+  never opens the dashboard still gets the assumed sleep value on background predictions.
+- Workout Mode is manual. The current watch payload carries heart rate, daily steps and sample age,
+  not exercise-session state or movement intensity, so automatic workout detection is not yet
+  implemented.
 - **`checkSelfPermission` is not authoritative for health permissions.** On Wear OS 5+ these are
   managed by the Health Connect permission controller, not the platform runtime-permission store.
   The two can disagree: `dumpsys package` reporting
@@ -507,15 +518,6 @@ the numbers off a third party's servers. The assistant screen's disclaimer says 
 - Passive batches can arrive minutes apart, so the phone process is often killed in between and
   each batch pays the cold-start model load. This is why `LatencyMetricEntity.coldStart` is
   recorded separately — in background operation cold starts are common, not exceptional.
-- **Local storage is not keyed by user.** The Room tables, the profile and the caches describe "the
-  person using this phone", which was true only while there was no way to sign out. Two things now
-  stand in for a `user_id` column: `LocalUserData.clear` on sign-out, and an identity check in
-  `PostAuthRouter` that wipes local data when the signed-in account differs from the one it belongs
-  to. The second exists because sign-out is not the only way a session ends — the Supabase client
-  drops one on its own when a refresh token is revoked or replayed, which this app's logs have shown
-  happening, and no sign-out path runs in that case. Adding `user_id` to the local tables would make
-  the whole class of defect impossible rather than guarded against; it has not been done yet.
-- `btnEmergency` is still declared in `activity_home_dashboard.xml` with no listener
 - Instrumented tests must be pointed at the phone (`ANDROID_SERIAL`). Gradle installs `:app` on
   every connected device including the paired watch, where an Activity test cannot resume
 - Command-line Gradle builds require JDK 21; the machine's default JDK 26 is too new for

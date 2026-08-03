@@ -15,6 +15,7 @@ object SessionManager {
     private const val KEY_SLEEP_TARGET_MINUTES = "sleep_target_minutes"
     private const val KEY_STEP_TARGET = "step_target"
     private const val KEY_ALERTS_MUTED_UNTIL = "alerts_muted_until"
+    private const val KEY_WORKOUT_MODE_UNTIL = "workout_mode_until"
     private const val KEY_HISTORY_RESTORED_AT = "history_restored_at"
 
     private fun prefs(context: Context) = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
@@ -97,6 +98,20 @@ object SessionManager {
     fun clearAlertMute(context: Context) {
         prefs(context).edit().remove(KEY_ALERTS_MUTED_UNTIL).apply()
     }
+
+    fun getWorkoutModeUntil(context: Context): Long =
+        prefs(context).getLong(KEY_WORKOUT_MODE_UNTIL, 0L)
+
+    fun startWorkoutModeUntil(context: Context, epochMs: Long) {
+        prefs(context).edit().putLong(KEY_WORKOUT_MODE_UNTIL, epochMs.coerceAtLeast(0L)).apply()
+    }
+
+    fun clearWorkoutMode(context: Context) {
+        prefs(context).edit().remove(KEY_WORKOUT_MODE_UNTIL).apply()
+    }
+
+    fun isWorkoutModeActive(untilEpochMs: Long, nowEpochMs: Long): Boolean =
+        untilEpochMs > nowEpochMs
 
     fun getHistoryRestoredAt(context: Context): Long =
         prefs(context).getLong(KEY_HISTORY_RESTORED_AT, 0L)

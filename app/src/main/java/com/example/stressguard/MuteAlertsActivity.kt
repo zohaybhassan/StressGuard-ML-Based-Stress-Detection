@@ -26,9 +26,18 @@ class MuteAlertsActivity : AppCompatActivity() {
         bind(R.id.btnMute30Minutes, 30 * 60_000L)
         bind(R.id.btnMute1Hour, 60 * 60_000L)
         bind(R.id.btnMute4Hours, 4 * 60 * 60_000L)
+        bindWorkout(R.id.btnWorkout30Minutes, 30 * 60_000L)
+        bindWorkout(R.id.btnWorkout1Hour, 60 * 60_000L)
+        bindWorkout(R.id.btnWorkout90Minutes, 90 * 60_000L)
+        bindWorkout(R.id.btnWorkout2Hours, 2 * 60 * 60_000L)
         findViewById<MaterialButton>(R.id.btnResumeAlerts).setOnClickListener {
             SessionManager.clearAlertMute(this)
             Toast.makeText(this, R.string.alerts_resumed, Toast.LENGTH_SHORT).show()
+            finish()
+        }
+        findViewById<MaterialButton>(R.id.btnEndWorkoutMode).setOnClickListener {
+            SessionManager.clearWorkoutMode(this)
+            Toast.makeText(this, R.string.workout_mode_ended, Toast.LENGTH_SHORT).show()
             finish()
         }
         findViewById<MaterialButton>(R.id.btnNotificationSettings).setOnClickListener {
@@ -39,6 +48,7 @@ class MuteAlertsActivity : AppCompatActivity() {
         }
 
         renderCurrentMute()
+        renderCurrentWorkoutMode()
         fitSystemBars(top = findViewById(R.id.muteRoot))
     }
 
@@ -54,6 +64,22 @@ class MuteAlertsActivity : AppCompatActivity() {
         }
     }
 
+    private fun bindWorkout(buttonId: Int, durationMs: Long) {
+        findViewById<MaterialButton>(buttonId).setOnClickListener {
+            val until = System.currentTimeMillis() + durationMs
+            SessionManager.startWorkoutModeUntil(this, until)
+            getSystemService(NotificationManager::class.java)?.cancel(ALERT_NOTIFICATION_ID)
+            val time = Instant.ofEpochMilli(until).atZone(ZoneId.systemDefault())
+                .format(DateTimeFormatter.ofPattern("h:mm a"))
+            Toast.makeText(
+                this,
+                getString(R.string.workout_mode_started_until, time),
+                Toast.LENGTH_SHORT,
+            ).show()
+            finish()
+        }
+    }
+
     private fun renderCurrentMute() {
         val until = SessionManager.getAlertsMutedUntil(this)
         val status = findViewById<TextView>(R.id.tvMuteStatus)
@@ -65,6 +91,19 @@ class MuteAlertsActivity : AppCompatActivity() {
         val time = Instant.ofEpochMilli(until).atZone(ZoneId.systemDefault())
             .format(DateTimeFormatter.ofPattern("h:mm a"))
         status.text = getString(R.string.alerts_currently_muted_until, time)
+    }
+
+    private fun renderCurrentWorkoutMode() {
+        val until = SessionManager.getWorkoutModeUntil(this)
+        val status = findViewById<TextView>(R.id.tvWorkoutModeStatus)
+        if (!SessionManager.isWorkoutModeActive(until, System.currentTimeMillis())) {
+            status.setText(R.string.workout_mode_inactive)
+            findViewById<MaterialButton>(R.id.btnEndWorkoutMode).isEnabled = false
+            return
+        }
+        val time = Instant.ofEpochMilli(until).atZone(ZoneId.systemDefault())
+            .format(DateTimeFormatter.ofPattern("h:mm a"))
+        status.text = getString(R.string.workout_mode_active_until, time)
     }
 
     companion object {

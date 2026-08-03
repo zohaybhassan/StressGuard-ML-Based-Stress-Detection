@@ -77,6 +77,11 @@ data class DashboardUiState(
     val lastAlertAtEpochMs: Long? = null,
     val lastDecision: AlertDecision? = null,
     /**
+     * When non-null, Workout Mode is active and real watch readings update vitals but skip stress
+     * inference/storage. Kept separate from alert mute, which still allows predictions.
+     */
+    val workoutModeUntilEpochMs: Long? = null,
+    /**
      * The rule-based checkup recommendation, or null until enough history exists to compute one.
      *
      * Null rather than a zero-scored default, because "we have not seen enough of your week to
@@ -92,6 +97,9 @@ data class DashboardUiState(
     val isReadingStale: Boolean
         get() = source == ReadingSource.WATCH &&
             (readingAgeMs ?: 0L) >= SensorReading.STALE_SAMPLE_MS
+
+    val isWorkoutPaused: Boolean
+        get() = workoutModeUntilEpochMs != null
 }
 
 /**
@@ -238,6 +246,28 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
                         if (result.simulated) null
                         else SystemClock.elapsedRealtime() - measuredAt,
                     lastDecision = result.decision,
+                    workoutModeUntilEpochMs = readWorkoutModeUntil(),
+                    error = null,
+                )
+                refreshDerivedState()
+            }
+
+            is PipelineResult.PausedForWorkout -> {
+                val reading = result.reading
+                val measuredAt = reading.receivedAtElapsedMs - reading.sampleAgeMs
+                measuredAtElapsedMs = measuredAt
+
+                _state.value = _state.value.copy(
+                    heartRate = reading.heartRate,
+                    steps = reading.dailySteps,
+                    source = ReadingSource.WATCH,
+                    sourceDetail = "Workout mode active",
+                    watchLink = WatchLink.STREAMING,
+                    prediction = null,
+                    outOfTrainingRange = false,
+                    readingAgeMs = SystemClock.elapsedRealtime() - measuredAt,
+                    lastDecision = null,
+                    workoutModeUntilEpochMs = result.workoutModeUntilEpochMs,
                     error = null,
                 )
                 refreshDerivedState()
@@ -262,6 +292,7 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
             val measuredAt = measuredAtElapsedMs
             _state.value = _state.value.copy(
                 sync = sync,
+                workoutModeUntilEpochMs = readWorkoutModeUntil(),
                 readingAgeMs = measuredAt?.let { SystemClock.elapsedRealtime() - it }
                     ?: _state.value.readingAgeMs,
             )
@@ -292,6 +323,12 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
             backendConfigured = SupabaseConfig.isBackendConfigured,
         )
     }.getOrDefault(SyncStatus.UNKNOWN)
+
+    private fun readWorkoutModeUntil(): Long? {
+        val until = SessionManager.getWorkoutModeUntil(getApplication())
+        val now = System.currentTimeMillis()
+        return until.takeIf { SessionManager.isWorkoutModeActive(it, now) }
+    }
 
     private suspend fun purgeOldHistory() {
         runCatching {

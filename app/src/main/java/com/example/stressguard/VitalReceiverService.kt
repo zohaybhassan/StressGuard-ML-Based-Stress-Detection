@@ -69,6 +69,11 @@ class VitalReceiverService : WearableListenerService() {
                     "(${result.prediction.confidence}) from hr=${reading.heartRate}, " +
                     "sample was ${reading.sampleAgeMs} ms old"
             )
+            is PipelineResult.PausedForWorkout -> Log.i(
+                TAG,
+                "workout mode active; skipped prediction for hr=${reading.heartRate}, " +
+                    "steps=${reading.dailySteps}"
+            )
             // Worth a warning rather than silence: with no dashboard open this is the only place
             // a background failure is visible at all.
             is PipelineResult.Failed -> Log.w(TAG, "could not predict: ${result.message}")

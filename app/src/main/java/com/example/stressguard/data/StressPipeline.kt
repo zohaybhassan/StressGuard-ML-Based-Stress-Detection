@@ -44,6 +44,18 @@ sealed interface PipelineResult {
         val extrapolating: Boolean,
     ) : PipelineResult
 
+    /**
+     * A real watch reading arrived while the user had Workout Mode active.
+     *
+     * This is not a model failure and not alert mute. The reading is deliberately stopped before
+     * inference and prediction storage so exercise heart-rate spikes do not enter Trends or the
+     * checkup recommendation as stress evidence.
+     */
+    data class PausedForWorkout(
+        val reading: SensorReading,
+        val workoutModeUntilEpochMs: Long,
+    ) : PipelineResult
+
     /** A message fit for the dashboard: "PROFILE NEEDED", "MODEL ERROR". */
     data class Failed(val message: String) : PipelineResult
 }
@@ -116,6 +128,17 @@ class StressPipeline private constructor(private val context: Context) {
         sleepOverride: Float?,
         simulated: Boolean,
     ): PipelineResult {
+        if (!simulated) {
+            stepHistory.record(reading.dailySteps, reading.measuredAtEpochMs)
+            val workoutModeUntil = SessionManager.getWorkoutModeUntil(context)
+            if (SessionManager.isWorkoutModeActive(workoutModeUntil, reading.receivedAtEpochMs)) {
+                return PipelineResult.PausedForWorkout(
+                    reading = reading,
+                    workoutModeUntilEpochMs = workoutModeUntil,
+                ).also { _latest.value = it }
+            }
+        }
+
         val profile = SessionManager.readProfile(context)
             ?: return PipelineResult.Failed("PROFILE NEEDED").also { _latest.value = it }
 
@@ -128,7 +151,6 @@ class StressPipeline private constructor(private val context: Context) {
         val activityLevel = if (simulated) {
             reading.dailySteps
         } else {
-            stepHistory.record(reading.dailySteps, reading.measuredAtEpochMs)
             stepHistory.activityLevel(reading.dailySteps, reading.measuredAtEpochMs)
         }
 
