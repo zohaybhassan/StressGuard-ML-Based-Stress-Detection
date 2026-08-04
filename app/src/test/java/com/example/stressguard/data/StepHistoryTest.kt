@@ -100,14 +100,14 @@ class StepHistoryTest {
     }
 
     @Test
-    fun `today's own total never counts as history for today`() = runTest {
+    fun `today's corrected total can raise the model input`() = runTest {
         val dao = FakeDao()
         val history = StepHistory(dao)
         history.record(dailySteps = 5000, atEpochMs = morningToday)
 
-        // Reading back today's stored maximum would make the figure ratchet up and never fall,
-        // so a single active morning would pin the input for the rest of the day.
-        assertEquals(300, history.activityLevel(todaySteps = 300, nowEpochMs = morningToday))
+        // Health Connect/Samsung Health reconciliation writes into today's stored maximum. A
+        // later watch reading can be lower, but the model should receive the corrected daily total.
+        assertEquals(5000, history.activityLevel(todaySteps = 300, nowEpochMs = morningToday))
     }
 
     @Test

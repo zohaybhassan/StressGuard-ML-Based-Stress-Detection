@@ -54,13 +54,14 @@ class SupabaseSyncWorker(
             val alerts = syncAlerts(database, userId)
             val checklists = syncChecklist(database, userId)
             val feedback = syncFeedback(database, userId)
+            val workouts = syncWorkouts(database, userId)
 
-            val total = predictions + latency + alerts + checklists + feedback
+            val total = predictions + latency + alerts + checklists + feedback + workouts
             if (total > 0) {
                 Log.i(
                     TAG,
                     "synced $predictions predictions, $latency latency, $alerts alerts, " +
-                        "$checklists checklists, $feedback feedback labels"
+                        "$checklists checklists, $feedback feedback labels, $workouts workouts"
                 )
             }
             SyncState(applicationContext).recordSuccess(System.currentTimeMillis())
@@ -154,13 +155,28 @@ class SupabaseSyncWorker(
         return pending.size
     }
 
+    private suspend fun syncWorkouts(database: StressGuardDatabase, userId: String): Int {
+        val dao = database.workoutSessions()
+        val pending = dao.unsyncedCompleted(BATCH)
+        if (pending.isEmpty()) return 0
+
+        SupabaseProvider.client.from("workout_sessions")
+            .upsert(pending.map { WorkoutSessionRow.from(it, userId) }) {
+                onConflict = "user_id,started_at"
+            }
+
+        dao.markSynced(pending.map { it.id })
+        return pending.size
+    }
+
     private suspend fun pendingCount(): Int = runCatching {
         val database = StressGuardDatabase.get(applicationContext)
         database.stressPredictions().unsynced(BATCH).size +
             database.latencyMetrics().unsynced(BATCH).size +
             database.alertEvents().unsynced(BATCH).size +
             database.healthChecklists().countUnsynced() +
-            database.stressFeedback().countUnsyncedCompleted()
+            database.stressFeedback().countUnsyncedCompleted() +
+            database.workoutSessions().countUnsyncedCompleted()
     }.getOrDefault(0)
 
     companion object {

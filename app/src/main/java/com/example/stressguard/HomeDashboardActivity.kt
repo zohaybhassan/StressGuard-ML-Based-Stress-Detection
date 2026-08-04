@@ -31,6 +31,7 @@ import com.example.stressguard.data.Recommendation
 import com.example.stressguard.data.RecommendationAction
 import com.example.stressguard.data.RiskLevel
 import com.example.stressguard.data.SleepRepository
+import com.example.stressguard.data.StepReconciliationRepository
 import com.example.stressguard.ui.StressRingView
 import com.example.stressguard.ui.fitSystemBars
 import com.google.android.material.button.MaterialButton
@@ -78,14 +79,17 @@ class HomeDashboardActivity : AppCompatActivity() {
     private lateinit var tvRecommendationFactors: TextView
 
     private val sleepPermission = HealthPermission.getReadPermission(SleepSessionRecord::class)
+    private val stepPermission = StepReconciliationRepository.stepPermission
 
     private val requestSleepPermission = registerForActivityResult(
         PermissionController.createRequestPermissionResultContract()
-    ) { granted ->
-        if (sleepPermission in granted) {
-            fetchSleepData()
-        } else {
-            useAssumedSleep("permission denied")
+    ) {
+        lifecycleScope.launch {
+            val granted = HealthConnectClient.getOrCreate(this@HomeDashboardActivity)
+                .permissionController.getGrantedPermissions()
+            if (stepPermission in granted) viewModel.reconcileStepsNow()
+            if (sleepPermission in granted) fetchSleepData()
+            else useAssumedSleep("permission denied")
         }
     }
 
@@ -122,6 +126,7 @@ class HomeDashboardActivity : AppCompatActivity() {
             val granted = HealthConnectClient.getOrCreate(this@HomeDashboardActivity)
                 .permissionController.getGrantedPermissions()
             if (sleepPermission in granted) fetchSleepData()
+            if (stepPermission in granted) viewModel.reconcileStepsNow()
         }
     }
 
@@ -167,7 +172,7 @@ class HomeDashboardActivity : AppCompatActivity() {
             startActivity(AssistantActivity.fromAlert(this, viewModel.state.value.prediction?.label))
         }
         findViewById<View>(R.id.btnWorkoutMode).setOnClickListener {
-            startActivity(Intent(this, MuteAlertsActivity::class.java))
+            startActivity(Intent(this, WorkoutActivity::class.java))
         }
 
         setUpMenu()
@@ -572,11 +577,11 @@ class HomeDashboardActivity : AppCompatActivity() {
         val client = HealthConnectClient.getOrCreate(this)
         lifecycleScope.launch {
             val granted = client.permissionController.getGrantedPermissions()
-            if (sleepPermission in granted) {
-                fetchSleepData()
-            } else {
-                requestSleepPermission.launch(setOf(sleepPermission))
-            }
+            if (stepPermission in granted) viewModel.reconcileStepsNow()
+            if (sleepPermission in granted) fetchSleepData()
+
+            val missing = setOf(sleepPermission, stepPermission).filterNot { it in granted }
+            if (missing.isNotEmpty()) requestSleepPermission.launch(missing.toSet())
         }
     }
 

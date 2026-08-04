@@ -22,10 +22,11 @@ import androidx.sqlite.db.SupportSQLiteDatabase
         LatencyMetricEntity::class,
         AlertEventEntity::class,
         DailyStepTotalEntity::class,
+        WorkoutSessionEntity::class,
         HealthChecklistEntity::class,
         StressFeedbackEntity::class,
     ],
-    version = 4,
+    version = 5,
     exportSchema = true,
 )
 @TypeConverters(Converters::class)
@@ -35,6 +36,7 @@ abstract class StressGuardDatabase : RoomDatabase() {
     abstract fun latencyMetrics(): LatencyMetricDao
     abstract fun alertEvents(): AlertEventDao
     abstract fun dailyStepTotals(): DailyStepTotalDao
+    abstract fun workoutSessions(): WorkoutSessionDao
     abstract fun healthChecklists(): HealthChecklistDao
     abstract fun stressFeedback(): StressFeedbackDao
 
@@ -117,7 +119,37 @@ abstract class StressGuardDatabase : RoomDatabase() {
             }
         }
 
-        fun migrations(): Array<Migration> = arrayOf(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
+        /** Adds manually tracked workout sessions whose readings are excluded from stress counts. */
+        val MIGRATION_4_5 = object : Migration(4, 5) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(
+                    "CREATE TABLE IF NOT EXISTS `workout_sessions` (" +
+                        "`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
+                        "`startedAtEpochMs` INTEGER NOT NULL, `plannedEndAtEpochMs` INTEGER NOT NULL, " +
+                        "`endedAtEpochMs` INTEGER, `status` TEXT NOT NULL, " +
+                        "`pausedAtEpochMs` INTEGER, `totalPausedMs` INTEGER NOT NULL, " +
+                        "`firstSteps` INTEGER, `lastSteps` INTEGER, `minHeartRate` INTEGER, " +
+                        "`maxHeartRate` INTEGER, `heartRateSum` INTEGER NOT NULL, " +
+                        "`heartRateSamples` INTEGER NOT NULL, `updatedAtEpochMs` INTEGER NOT NULL, " +
+                        "`synced` INTEGER NOT NULL)"
+                )
+                db.execSQL(
+                    "CREATE INDEX IF NOT EXISTS `index_workout_sessions_startedAtEpochMs` " +
+                        "ON `workout_sessions` (`startedAtEpochMs`)"
+                )
+                db.execSQL(
+                    "CREATE INDEX IF NOT EXISTS `index_workout_sessions_status` " +
+                        "ON `workout_sessions` (`status`)"
+                )
+            }
+        }
+
+        fun migrations(): Array<Migration> = arrayOf(
+            MIGRATION_1_2,
+            MIGRATION_2_3,
+            MIGRATION_3_4,
+            MIGRATION_4_5,
+        )
 
         @Volatile
         private var instance: StressGuardDatabase? = null

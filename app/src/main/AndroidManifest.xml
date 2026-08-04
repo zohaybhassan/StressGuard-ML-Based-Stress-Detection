@@ -15,6 +15,7 @@
 
     <uses-permission android:name="android.permission.health.READ_SLEEP" />
     <uses-permission android:name="android.permission.health.READ_OXYGEN_SATURATION" />
+    <uses-permission android:name="android.permission.health.READ_STEPS" />
 
     <queries>
         <package android:name="com.google.android.apps.healthdata" />
@@ -49,6 +50,9 @@
             android:exported="false" />
         <activity
             android:name=".MuteAlertsActivity"
+            android:exported="false" />
+        <activity
+            android:name=".WorkoutActivity"
             android:exported="false" />
         <activity
             android:name=".SetPasswordActivity"

@@ -292,4 +292,29 @@ class StressGuardMigrationTest {
             database.close()
         }
     }
+
+    /** Workout history added in version 5 is available after older databases migrate. */
+    @Test
+    fun theMigratedDatabaseAcceptsAWorkoutSession() = runTest {
+        createOldDatabase(version = 2)
+
+        val database = openThroughRoom()
+        try {
+            val dao = database.workoutSessions()
+            dao.insert(
+                WorkoutSessionEntity(
+                    startedAtEpochMs = recordedAt,
+                    plannedEndAtEpochMs = recordedAt + 60 * 60_000L,
+                    status = WorkoutSessionStatus.ACTIVE,
+                    updatedAtEpochMs = recordedAt,
+                )
+            )
+
+            val stored = dao.current()!!
+            assertEquals(recordedAt, stored.startedAtEpochMs)
+            assertEquals(WorkoutSessionStatus.ACTIVE, stored.status)
+        } finally {
+            database.close()
+        }
+    }
 }

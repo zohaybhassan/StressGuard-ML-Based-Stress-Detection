@@ -20,10 +20,10 @@ import java.util.TimeZone
  * as extrapolation, on step counts of 0 to 458. It is the same class of defect as the z-scored
  * training data fixed earlier: the right number for the wrong quantity.
  *
- * The rule is `max(today so far, most recent complete day)`. It is in range once a single day has
- * elapsed, still rises when someone is genuinely more active today than yesterday, and is
- * defensible in a sentence: the model wants this user's daily activity level, so supply the best
- * estimate available rather than one that is structurally too low every morning.
+ * The rule is `max(today so far, stored corrected total today, most recent complete day)`. It is in
+ * range once a single day has elapsed, still rises when someone is genuinely more active today than
+ * yesterday, and can be reconciled from Health Connect when Samsung Health has a higher count than
+ * the live watch stream.
  */
 class StepHistory(private val dao: DailyStepTotalDao) {
 
@@ -41,8 +41,10 @@ class StepHistory(private val dao: DailyStepTotalDao) {
      * prediction is correctly flagged as an extrapolation until a full day exists.
      */
     suspend fun activityLevel(todaySteps: Int, nowEpochMs: Long): Int {
-        val previous = dao.mostRecentBefore(dateKey(nowEpochMs))?.steps ?: return todaySteps
-        return maxOf(todaySteps, previous)
+        val todayKey = dateKey(nowEpochMs)
+        val storedToday = dao.totalFor(todayKey) ?: todaySteps
+        val previous = dao.mostRecentBefore(todayKey)?.steps ?: todaySteps
+        return maxOf(todaySteps, storedToday, previous)
     }
 
     companion object {

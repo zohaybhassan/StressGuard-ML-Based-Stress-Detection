@@ -12,8 +12,10 @@ import com.example.stressguard.data.PipelineResult
 import com.example.stressguard.data.Recommendation
 import com.example.stressguard.data.RecommendationRepository
 import com.example.stressguard.data.SensorReading
+import com.example.stressguard.data.StepHistory
 import com.example.stressguard.data.StressPipeline
 import com.example.stressguard.data.SupabaseConfig
+import com.example.stressguard.data.sync.StepReconciliationScheduler
 import com.example.stressguard.data.sync.SyncScheduler
 import com.example.stressguard.data.sync.SyncState
 import com.example.stressguard.data.sync.SyncStatus
@@ -139,11 +141,16 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
         // from StressPipeline: plan §4 and §25 both require sync to stay off the real-time path,
         // and enqueuing work per prediction would put it right beside one.
         SyncScheduler.ensureScheduled(application)
+        StepReconciliationScheduler.ensureScheduled(application)
     }
 
     /** Asks for a sync now, for the moments where waiting half an hour would be wrong. */
     fun syncNow() {
         SyncScheduler.syncNow(getApplication())
+    }
+
+    fun reconcileStepsNow() {
+        StepReconciliationScheduler.reconcileNow(getApplication())
     }
 
     /**
@@ -229,7 +236,7 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
 
                 _state.value = current.copy(
                     heartRate = reading.heartRate,
-                    steps = reading.dailySteps,
+                    steps = if (result.simulated) reading.dailySteps else displaySteps(reading),
                     sleepHours = result.sleepHours,
                     sleepAssumed = result.sleepAssumed,
                     source = if (result.simulated) ReadingSource.SIMULATED else ReadingSource.WATCH,
@@ -259,7 +266,7 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
 
                 _state.value = _state.value.copy(
                     heartRate = reading.heartRate,
-                    steps = reading.dailySteps,
+                    steps = displaySteps(reading),
                     source = ReadingSource.WATCH,
                     sourceDetail = "Workout mode active",
                     watchLink = WatchLink.STREAMING,
@@ -305,6 +312,12 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
             lastAlertAtEpochMs = pipeline.lastAlertAtEpochMs(),
             sync = readSyncStatus(),
         )
+    }
+
+    private suspend fun displaySteps(reading: SensorReading): Int {
+        val key = StepHistory.dateKey(reading.measuredAtEpochMs)
+        val storedToday = database.dailyStepTotals().totalFor(key) ?: reading.dailySteps
+        return maxOf(reading.dailySteps, storedToday)
     }
 
     /**

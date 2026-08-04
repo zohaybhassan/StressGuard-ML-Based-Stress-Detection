@@ -5,6 +5,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Transaction
+import androidx.room.Update
 import kotlinx.coroutines.flow.Flow
 
 /**
@@ -153,6 +154,63 @@ interface DailyStepTotalDao {
 
     @Query("SELECT COUNT(*) FROM daily_step_totals")
     suspend fun count(): Int
+}
+
+@Dao
+interface WorkoutSessionDao {
+
+    @Insert
+    suspend fun insert(session: WorkoutSessionEntity): Long
+
+    @Update
+    suspend fun update(session: WorkoutSessionEntity)
+
+    @Query(
+        """
+        SELECT * FROM workout_sessions
+        WHERE status IN (:activeStatus, :pausedStatus)
+        ORDER BY startedAtEpochMs DESC
+        LIMIT 1
+        """
+    )
+    suspend fun current(
+        activeStatus: String = WorkoutSessionStatus.ACTIVE,
+        pausedStatus: String = WorkoutSessionStatus.PAUSED,
+    ): WorkoutSessionEntity?
+
+    @Query("SELECT * FROM workout_sessions WHERE id = :id")
+    suspend fun byId(id: Long): WorkoutSessionEntity?
+
+    @Query("SELECT * FROM workout_sessions ORDER BY startedAtEpochMs DESC LIMIT :limit")
+    suspend fun latest(limit: Int = 10): List<WorkoutSessionEntity>
+
+    @Query(
+        """
+        SELECT * FROM workout_sessions
+        WHERE synced = 0 AND status = :completedStatus
+        ORDER BY startedAtEpochMs
+        LIMIT :limit
+        """
+    )
+    suspend fun unsyncedCompleted(
+        limit: Int = 500,
+        completedStatus: String = WorkoutSessionStatus.COMPLETED,
+    ): List<WorkoutSessionEntity>
+
+    @Query("UPDATE workout_sessions SET synced = 1 WHERE id IN (:ids)")
+    suspend fun markSynced(ids: List<Long>)
+
+    @Query("SELECT COUNT(*) FROM workout_sessions WHERE synced = 0 AND status = :completedStatus")
+    suspend fun countUnsyncedCompleted(completedStatus: String = WorkoutSessionStatus.COMPLETED): Int
+
+    @Query("SELECT COUNT(*) FROM workout_sessions")
+    suspend fun count(): Int
+}
+
+object WorkoutSessionStatus {
+    const val ACTIVE = "active"
+    const val PAUSED = "paused"
+    const val COMPLETED = "completed"
 }
 
 @Dao
