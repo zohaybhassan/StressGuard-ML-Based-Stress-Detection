@@ -24,8 +24,13 @@ The mobile app is currently functional for:
 - Sustained-stress haptic alerts with smoothing and a cooldown.
 - Post-alert user confirmation with an optional 1-10 severity label for future model evaluation.
 - Temporary alert muting for 10 minutes, 30 minutes, 1 hour, or 4 hours.
+- Manual Workout Mode, which pauses inference during exercise without stopping vital collection.
 - A trends screen: weekly stress chart plus heart rate, sleep and activity over time.
+- Dedicated step and sleep detail screens with persistent goals.
+- A supportive assistant backed by a Supabase Edge Function, including crisis routing, offline
+  fallback guidance, conversation history, and explanations of the latest model prediction.
 - Background sync of local history to Supabase.
+- Restoration of the signed-in user's recent prediction history after logout or reinstall.
 - Debug testing without a smartwatch.
 
 The current stress classes are:
@@ -242,6 +247,34 @@ Alert-triggered feedback alone is suitable for measuring precision and false pos
 false negatives: it never asks when the model predicts low stress. Before full retraining, add a
 small number of periodic check-ins and evaluate with user-grouped train/test splits so one person's
 records cannot appear in both sets.
+
+### Workout Mode
+
+Workout Mode is separate from alert muting. Muting suppresses haptics and notifications while
+predictions continue; Workout Mode stops real watch readings before inference and prediction
+storage so exercise-related heart-rate increases do not enter Trends, the alert window, or the
+checkup recommendation. Heart rate and steps still update on the dashboard. The user can start it
+for 30, 60, 90, or 120 minutes and end it early.
+
+Automatic exercise detection is not implemented. The current watch payload contains heart rate,
+daily steps, and sample age, but no workout-session state or movement intensity.
+
+### Supportive Assistant
+
+The Assistant tab, dashboard support card, and **Talk it through** notification action open a
+supportive chat. Android calls the Supabase `chat` Edge Function; the function then calls
+`meta-llama/Llama-3.1-8B-Instruct` through Hugging Face. The Hugging Face token remains a Supabase
+secret and is never shipped in the APK.
+
+The assistant receives the latest stress label, heart rate, activity level, sleep duration, model
+attribution, and extrapolation status so it can discuss what the app actually calculated. These
+values leave the device when the user sends a message, which is disclosed on the assistant screen.
+Full transcripts are stored in `chat_sessions` and `chat_messages` behind user-scoped RLS.
+
+Safety has two layers: a restrictive system prompt for ordinary conversation and a deterministic
+crisis-phrase check that bypasses the model and returns reviewed Pakistan-specific emergency
+information. The Android client repeats the crisis check when the network is unavailable. Other
+offline failures return a breathing exercise rather than an error-only response.
 
 ### ONNX Stress Prediction
 
@@ -478,6 +511,13 @@ StressGuard/
           ProfileSetupActivity.kt
           HealthChecklistActivity.kt
           HomeDashboardActivity.kt
+          SettingsActivity.kt
+          StepsActivity.kt
+          SleepActivity.kt
+          TrendsActivity.kt
+          AssistantActivity.kt
+          AlertFeedbackActivity.kt
+          MuteAlertsActivity.kt
           DashboardViewModel.kt
           VitalReceiverService.kt       receives watch messages, app open or not
           StressInferenceService.kt     ONNX soft-vote ensemble
@@ -493,6 +533,8 @@ StressGuard/
             LatencyTracker.kt
             StressAlertPolicy.kt        pure: 3-of-5 smoothing, 10 min cooldown
             StressAlertManager.kt       haptics, notification, alert record
+            StressAttribution.kt        model-based explanation of the latest prediction
+            ChatRepository.kt           Edge Function calls and transcript persistence
             DailyStressSummary.kt       pure: per-day rollup of stored predictions
             RecommendationPolicy.kt     pure: rule-based checkup score (plan section 7)
             RecommendationRepository.kt
@@ -503,7 +545,7 @@ StressGuard/
             SupabaseProvider.kt
             local/                      Room: entities, DAOs, database, migrations
             sync/                       WorkManager sync worker, wire rows, scheduler
-        res/layout/                     activity_{main,login,profile_setup,health_checklist,home_dashboard}.xml
+        res/layout/                     XML layouts for phone activities and list items
       test/java/com/example/stressguard/  JVM unit tests
   wear/                                 Wear OS module (Jetpack Compose)
     src/main/java/com/example/stressguard/presentation/
@@ -519,7 +561,8 @@ StressGuard/
     mobile_export/                      four bundles; binary_voting_top3_raw ships
     artifacts_tuned_*/                  tuning reports (joblib files are gitignored)
   supabase/migrations/                  SQL schema and RLS policies
-  docs/                                 architecture-notes.md, model-limitations.md
+  supabase/functions/chat/              assistant backend and deterministic safety layer
+  docs/                                 implementation.md, architecture-notes.md, model-limitations.md
   supabase.properties.template          backend config template
   build.gradle.kts, settings.gradle.kts, gradle/, gradlew
 ```
@@ -536,16 +579,23 @@ StressGuard/
 - `app/src/main/java/com/example/stressguard/HomeDashboardActivity.kt`: dashboard UI logic, live data display, sleep read path, and debug testing.
 - `app/src/main/java/com/example/stressguard/VitalReceiverService.kt`: receives wearable messages on the phone.
 - `app/src/main/java/com/example/stressguard/data/StressPipeline.kt`: reading in, prediction out — stored, timed and possibly alerted.
+- `app/src/main/java/com/example/stressguard/StepsActivity.kt`: daily goal and seven-day step history.
+- `app/src/main/java/com/example/stressguard/SleepActivity.kt`: sleep sessions, stages, oxygen readings, and sleep goal.
 - `app/src/main/java/com/example/stressguard/TrendsActivity.kt`: weekly stress and vitals charts.
 - `app/src/main/java/com/example/stressguard/data/TrendsRepository.kt`: the per-day rollup the charts draw.
 - `app/src/main/java/com/example/stressguard/data/PredictionHistoryRepository.kt`: paged, authenticated recent-history restoration after login.
 - `app/src/main/java/com/example/stressguard/data/StressAlertPolicy.kt`: pure smoothing and cooldown rule.
+- `app/src/main/java/com/example/stressguard/data/StressAttribution.kt`: explains the latest prediction using model ablations.
+- `app/src/main/java/com/example/stressguard/AssistantActivity.kt`: supportive-chat UI and conversation lifecycle.
+- `app/src/main/java/com/example/stressguard/data/ChatRepository.kt`: Edge Function calls and transcript persistence.
 - `app/src/main/java/com/example/stressguard/data/RecommendationPolicy.kt`: pure rule-based checkup score.
 - `app/src/main/java/com/example/stressguard/data/local/StressGuardDatabase.kt`: Room store and its migrations.
 - `app/src/main/java/com/example/stressguard/data/sync/SupabaseSyncWorker.kt`: drains the local queues to Supabase.
 - `app/src/main/java/com/example/stressguard/StressFeatureBuilder.kt`: builds the 22-feature model input vector, ordered by the manifest.
 - `app/src/main/java/com/example/stressguard/StressModelInfo.kt`: parses the bundle manifest (feature order, class labels, per-model ONNX input/output names).
 - `app/src/main/java/com/example/stressguard/StressInferenceService.kt`: loads the ONNX graphs and runs the soft-voting ensemble.
+- `supabase/functions/chat/index.ts`: authenticated Hugging Face proxy and fallback handling.
+- `supabase/functions/chat/safety.ts`: system prompt, crisis routing, and enforced extrapolation caveat.
 
 ML engine scripts:
 
@@ -568,7 +618,7 @@ Mobile app:
 - Health Connect client
 - Lifecycle Runtime/ViewModel KTX
 - ONNX Runtime Android
-- Supabase Kotlin (auth + postgrest), with the Ktor OkHttp engine
+- Supabase Kotlin (auth, postgrest, and Edge Functions), with the Ktor OkHttp engine
 - AndroidX Credential Manager + Google ID (replaces the deprecated `play-services-auth`)
 - Room (runtime, ktx, compiler via KSP)
 - WorkManager
@@ -600,25 +650,33 @@ Wear app:
   Supabase dashboard.
 - The wearable payload uses AES/ECB with a hardcoded key duplicated in both modules. This needs
   replacing before it is presented as a security measure.
-- `btnEmergency` and the Trends/Assistant tabs are visible but not wired to anything.
+- Workout Mode is manual; the wearable payload does not contain enough activity context for
+  reliable automatic workout detection.
+- The assistant requires a network for generated replies. Its offline path is limited to crisis
+  routing and a fixed breathing exercise.
+- Local Room data is not keyed by user. Sign-out and post-auth identity checks wipe it to prevent
+  cross-account leakage, but adding a local `user_id` would remove that structural limitation.
 - No clinical validation has been performed.
 
 ## Suggested Next Steps
 
-1. Build the supportive chatbot: a Supabase Edge Function wrapping Hugging Face, keeping the token
-   server-side, plus the screen, a quick action from a high-stress alert, and restoring the
-   `nav_assistant` tab that was removed until it exists.
-2. Collect the 30 latency samples the plan asks for, with the network on and in airplane mode.
-3. Decide what `btnEmergency` should do, or remove it.
-4. Replace the AES/ECB hardcoded-key wearable encryption before presenting it as a security
-   measure.
-5. Add final report screenshots and testing evidence.
+1. Replace the AES/ECB hardcoded-key wearable encryption before presenting transport security as a
+   project claim.
+2. Collect the 30 latency samples the implementation plan asks for, with the network on and in
+   airplane mode, and report cold-start and steady-state figures separately.
+3. Add sparse periodic check-ins across both predicted classes, then evaluate collected feedback
+   with user-grouped train/test splits before retraining.
+4. Add richer activity context if automatic workout detection becomes a requirement.
+5. Add a user-facing password-reset flow.
+6. Capture final report screenshots, device-test evidence, battery measurements, and the remaining
+   reproducibility runs.
 
 ## Testing
 
 ```bash
-./gradlew :app:test                        # 143 unit tests
-ANDROID_SERIAL=<phone> ./gradlew :app:connectedDebugAndroidTest   # 29 instrumented tests
+./gradlew :app:testDebugUnitTest :wear:testDebugUnitTest           # 179 JVM tests
+ANDROID_SERIAL=<phone> ./gradlew :app:connectedDebugAndroidTest    # 29 instrumented tests
+deno test supabase/functions/chat/safety_test.ts                    # 12 Edge Function tests
 ```
 
 Point the instrumented run at the phone. Gradle installs `:app` on every connected device including
@@ -628,10 +686,16 @@ do with the code.
 Command-line Gradle builds require **JDK 21**; JDK 26 fails Gradle 8.13's embedded Kotlin with
 `IllegalArgumentException: 26.0.1`. Android Studio works because it uses its own bundled JDK.
 
-The instrumented suite covers the Python-vs-Android parity of the shipped ONNX bundle
+The JVM suites cover feature building, sensor validation, alerting, recommendation scoring,
+attribution, sync mapping, crisis detection, Workout Mode, and watch-side passive-store logic. The
+instrumented suite covers the Python-vs-Android parity of the shipped ONNX bundle
 (`StressInferenceParityTest`), the Room store, the database migrations, the trends screen, and the
 sign-out data wipe. All 29 have been run on an Android 15 phone; the non-UI subset also passes on a
 Galaxy Watch 4 (Wear OS 6 / API 36).
+
+The 12 Deno tests cover crisis detection, false positives, prompt boundaries, and the enforced
+out-of-range caveat. They are present in the repository but still need to be executed on a machine
+with Deno installed.
 
 ## Build Notes
 
