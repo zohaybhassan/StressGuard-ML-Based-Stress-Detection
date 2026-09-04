@@ -94,7 +94,7 @@ settings screen later.
 
 Whether an account still needs one is tracked in `profiles.password_set`, set by the signup trigger
 from `auth.users.encrypted_password` — so email sign-ups start as `true` and never see the screen.
-A column rather than `user.identities`, which depends on GoTrue internals, or a local flag, which
+This uses a column rather than `user.identities`, which depends on GoTrue internals, or a local flag, which
 would not survive a reinstall. `PostAuthRouter` caches a `true` locally so the check is not a
 network round trip on every launch; a `false` is never cached, so the step cannot be skipped by a
 stale flag.
