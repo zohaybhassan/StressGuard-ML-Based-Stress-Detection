@@ -49,7 +49,7 @@ and labels from the bundle manifest rather than hardcoding them.
 1. `MainActivity` starts first and waits for Supabase to restore a stored session before routing.
 2. If the user is not signed in, the app opens `LoginActivity`.
 3. `LoginActivity` signs the user in or registers them, by email and password or through Google.
-   Either way the result is a Supabase session, which persists until they sign out.
+   Either way, the result is a Supabase session, which persists until they sign out.
 4. `PostAuthRouter` decides where a signed-in user goes: `SetPasswordActivity` if the account has
    no password yet, otherwise the profile form or the dashboard. Shared by every entry point, so
    the same user cannot get a different destination depending on which door they came through.
