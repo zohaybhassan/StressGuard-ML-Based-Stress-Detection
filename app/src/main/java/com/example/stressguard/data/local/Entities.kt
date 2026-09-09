@@ -99,7 +99,15 @@ data class DailyStepTotalEntity(
     /** Highest count seen for the day. The watch's counter only climbs until it resets. */
     val steps: Int,
     val updatedAtEpochMs: Long,
+    /** Which source owns [steps], so Health Connect cannot overwrite a live watch total. */
+    val source: String,
 )
+
+object DailyStepSource {
+    const val WATCH = "watch"
+    const val HEALTH_CONNECT = "health_connect"
+    const val LEGACY = "legacy"
+}
 
 /** One manually started exercise period where stress predictions were intentionally paused. */
 @Entity(

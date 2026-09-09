@@ -433,16 +433,17 @@ steps range        : 0 – 458       <- trained minimum is 1000
 heart rate range   : 76 – 100      <- well inside 43–109
 ```
 
-`StepHistory.kt` now supplies `max(steps so far today, stored corrected total today, most recent
+`StepHistory.kt` now supplies `max(steps so far today, stored source-owned total today, most recent
 complete day)`, backed by one row per day in `daily_step_totals`. In range once a single day has
 elapsed, still rises on a genuinely active day, and honest on day one — with no history it returns
 the partial count and the prediction stays flagged.
 
 `StepReconciliationWorker` runs every 60 minutes on the phone and reads today's Health Connect step
-aggregate. If Samsung Health/Health Connect is **more than 500 steps higher** than StressGuard's
-stored daily total, StressGuard raises the local total to the Health Connect value. It never lowers
-the count, and it does not change prediction storage or sync semantics: `daily_step_totals` remains
-local input state, not a Supabase-backed stress record.
+aggregate. That value is fallback-only: it can fill a missing day or refresh an existing Health
+Connect fallback, but it cannot replace a watch-owned count. The first watch reading replaces the
+fallback instead of taking a maximum, preventing phone/Samsung activity from appearing to be added
+to the watch total. This does not change prediction storage or sync semantics:
+`daily_step_totals` remains local input state, not a Supabase-backed stress record.
 
 **Both defects are the same mistake in different clothes: the right number for the wrong quantity.**
 
@@ -521,7 +522,7 @@ schemas live in `app/schemas/`.
 | `stress_predictions` | label, class index, confidence, full probability vector, model version, heart rate, raw daily steps, resolved activity level, sleep hours, extrapolation flag |
 | `latency_metrics` | per-stage durations, total, cold-start flag |
 | `alert_events` | fired-at, reason, window counts, model version, dismissed |
-| `daily_step_totals` | one row per day, highest count seen |
+| `daily_step_totals` | one source-owned row per day; watch data takes priority over Health Connect fallback |
 | `workout_sessions` | manual workout start/end/pause state plus HR and step summary stats |
 | `health_checklists` | the user's answers |
 | `stress_feedback` | completed human labels plus immutable alert-time model, sensor and profile snapshots |

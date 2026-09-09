@@ -22,8 +22,9 @@ data class StepReconciliationResult(
  * Reconciles StressGuard's live watch step count with Samsung Health/Health Connect.
  *
  * The live watch stream remains the primary source. Once in a while, the phone reads Health
- * Connect and only raises the local daily total when Health Connect is meaningfully ahead. It
- * never lowers StressGuard's count.
+ * Connect and uses its total only while StressGuard has no watch-owned count for the day. A
+ * Health Connect aggregate may include phone and Samsung wearable data, so it must never replace
+ * the live watch source that the dashboard promises to show.
  */
 object StepReconciliationRepository {
 
@@ -50,14 +51,16 @@ object StepReconciliationRepository {
             ?: return StepReconciliationResult(null, null, corrected = false, reason = "no data")
         val dateKey = StepHistory.dateKey(now.toEpochMilli())
         val dao = StressGuardDatabase.get(context).dailyStepTotals()
-        val stressGuardSteps = dao.totalFor(dateKey)
+        val stressGuardEntry = dao.entryFor(dateKey)
+        val stressGuardSteps = stressGuardEntry?.steps
 
         val shouldCorrect = StepReconciliationPolicy.shouldCorrect(
             healthConnectSteps = healthConnectSteps,
             stressGuardSteps = stressGuardSteps,
+            stressGuardSource = stressGuardEntry?.source,
         )
         if (shouldCorrect) {
-            dao.upsertMax(dateKey, healthConnectSteps, now.toEpochMilli())
+            dao.upsertHealthConnectFallback(dateKey, healthConnectSteps, now.toEpochMilli())
             Log.i(
                 TAG,
                 "corrected today's steps from ${stressGuardSteps ?: 0} to $healthConnectSteps"

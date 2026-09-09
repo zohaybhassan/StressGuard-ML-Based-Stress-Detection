@@ -125,17 +125,40 @@ interface DailyStepTotalDao {
      */
     @Query(
         """
-        INSERT INTO daily_step_totals (date, steps, updatedAtEpochMs)
-        VALUES (:date, :steps, :updatedAtEpochMs)
+        INSERT INTO daily_step_totals (date, steps, updatedAtEpochMs, source)
+        VALUES (:date, :steps, :updatedAtEpochMs, 'watch')
+        ON CONFLICT(date) DO UPDATE SET
+            steps = CASE
+                WHEN daily_step_totals.source = 'watch' THEN MAX(steps, excluded.steps)
+                ELSE excluded.steps
+            END,
+            updatedAtEpochMs = excluded.updatedAtEpochMs,
+            source = 'watch'
+        """
+    )
+    suspend fun upsertWatchMax(date: String, steps: Int, updatedAtEpochMs: Long)
+
+    /**
+     * Stores Health Connect only as a fallback. Once the watch owns a day, a phone/Samsung
+     * aggregate must not replace it because that aggregate can include steps from other devices.
+     */
+    @Query(
+        """
+        INSERT INTO daily_step_totals (date, steps, updatedAtEpochMs, source)
+        VALUES (:date, :steps, :updatedAtEpochMs, 'health_connect')
         ON CONFLICT(date) DO UPDATE SET
             steps = MAX(steps, excluded.steps),
             updatedAtEpochMs = excluded.updatedAtEpochMs
+        WHERE daily_step_totals.source = 'health_connect'
         """
     )
-    suspend fun upsertMax(date: String, steps: Int, updatedAtEpochMs: Long)
+    suspend fun upsertHealthConnectFallback(date: String, steps: Int, updatedAtEpochMs: Long)
 
     @Query("SELECT steps FROM daily_step_totals WHERE date = :date")
     suspend fun totalFor(date: String): Int?
+
+    @Query("SELECT * FROM daily_step_totals WHERE date = :date")
+    suspend fun entryFor(date: String): DailyStepTotalEntity?
 
     /**
      * The most recent day before [beforeDate] that has a total, newest first.

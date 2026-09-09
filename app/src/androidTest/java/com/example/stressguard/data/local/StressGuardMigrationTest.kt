@@ -287,7 +287,9 @@ class StressGuardMigrationTest {
 
         val database = openThroughRoom()
         try {
-            assertEquals(9000, database.dailyStepTotals().totalFor("2026-07-25"))
+            val stored = database.dailyStepTotals().entryFor("2026-07-25")!!
+            assertEquals(9000, stored.steps)
+            assertEquals(DailyStepSource.LEGACY, stored.source)
         } finally {
             database.close()
         }

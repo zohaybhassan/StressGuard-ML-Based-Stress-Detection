@@ -12,7 +12,6 @@ import com.example.stressguard.data.PipelineResult
 import com.example.stressguard.data.Recommendation
 import com.example.stressguard.data.RecommendationRepository
 import com.example.stressguard.data.SensorReading
-import com.example.stressguard.data.StepHistory
 import com.example.stressguard.data.StressPipeline
 import com.example.stressguard.data.SupabaseConfig
 import com.example.stressguard.data.sync.StepReconciliationScheduler
@@ -236,7 +235,7 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
 
                 _state.value = current.copy(
                     heartRate = reading.heartRate,
-                    steps = if (result.simulated) reading.dailySteps else displaySteps(reading),
+                    steps = reading.dailySteps,
                     sleepHours = result.sleepHours,
                     sleepAssumed = result.sleepAssumed,
                     source = if (result.simulated) ReadingSource.SIMULATED else ReadingSource.WATCH,
@@ -266,7 +265,7 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
 
                 _state.value = _state.value.copy(
                     heartRate = reading.heartRate,
-                    steps = displaySteps(reading),
+                    steps = reading.dailySteps,
                     source = ReadingSource.WATCH,
                     sourceDetail = "Workout mode active",
                     watchLink = WatchLink.STREAMING,
@@ -312,12 +311,6 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
             lastAlertAtEpochMs = pipeline.lastAlertAtEpochMs(),
             sync = readSyncStatus(),
         )
-    }
-
-    private suspend fun displaySteps(reading: SensorReading): Int {
-        val key = StepHistory.dateKey(reading.measuredAtEpochMs)
-        val storedToday = database.dailyStepTotals().totalFor(key) ?: reading.dailySteps
-        return maxOf(reading.dailySteps, storedToday)
     }
 
     /**

@@ -20,17 +20,17 @@ import java.util.TimeZone
  * as extrapolation, on step counts of 0 to 458. It is the same class of defect as the z-scored
  * training data fixed earlier: the right number for the wrong quantity.
  *
- * The rule is `max(today so far, stored corrected total today, most recent complete day)`. It is in
- * range once a single day has elapsed, still rises when someone is genuinely more active today than
- * yesterday, and can be reconciled from Health Connect when Samsung Health has a higher count than
- * the live watch stream.
+ * The rule is `max(today so far, stored source-owned total today, most recent complete day)`. It is
+ * in range once a single day has elapsed and still rises when someone is genuinely more active
+ * today than yesterday. Health Connect may fill a missing day, but a watch reading takes ownership
+ * as soon as it arrives so different devices are never presented as one watch count.
  */
 class StepHistory(private val dao: DailyStepTotalDao) {
 
     /** Notes the step count for the day [atEpochMs] falls in, keeping the highest seen. */
     suspend fun record(dailySteps: Int, atEpochMs: Long) {
         if (dailySteps < 0) return
-        dao.upsertMax(dateKey(atEpochMs), dailySteps, atEpochMs)
+        dao.upsertWatchMax(dateKey(atEpochMs), dailySteps, atEpochMs)
     }
 
     /**
