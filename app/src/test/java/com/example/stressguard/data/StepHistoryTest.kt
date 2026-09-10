@@ -148,6 +148,13 @@ class StepHistoryTest {
     }
 
     @Test
+    fun `a negative live count never reaches the model`() = runTest {
+        val history = StepHistory(FakeDao())
+
+        assertEquals(0, history.activityLevel(todaySteps = -1, nowEpochMs = morningToday))
+    }
+
+    @Test
     fun `the day key uses local time so rollover happens at the user's midnight`() {
         val karachi = TimeZone.getTimeZone("Asia/Karachi")
         // 2026-07-26 20:00 UTC is already the 27th in Karachi (UTC+5).
