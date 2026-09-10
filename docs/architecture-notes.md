@@ -108,10 +108,17 @@ heart rate range   : 76 – 100      <- well inside 43–109
 This is the same class of defect as the z-scored training data fixed earlier: the right number for
 the wrong quantity, producing confident and meaningless output rather than an error.
 
-`StepHistory` supplies `max(steps so far today, most recent complete day)`, backed by one row per
-day in `daily_step_totals`. In range once a single day has elapsed, still rises on a genuinely
-active day, and honest on day one — with no history it returns the partial count and the prediction
-stays flagged as an extrapolation, because the user's activity level genuinely is not known yet.
+`StepHistory` supplies `max(steps so far today, stored source-owned total today, most recent complete
+day)`, backed by one row per day in `daily_step_totals`. In range once a single day has elapsed and
+still rises on a genuinely active day.
+
+Every 60 minutes, `StepReconciliationWorker` reads today's Health Connect step aggregate on the
+phone. It can fill a missing daily total and refresh a Health Connect-owned fallback, but it cannot
+replace a watch-owned total. This matters because Health Connect can represent phone and Samsung
+wearable activity together; treating that aggregate as the watch's own reading made the dashboard
+appear to add the two sources. The next watch sample also replaces any pre-migration `legacy` value.
+This is local phone work, not Supabase backend work: Samsung Health/Health Connect data is not
+readable from the server.
 
 The day total keeps the **highest** count seen, not the latest, because a reading landing just after
 the watch's midnight reset would otherwise wipe the day.
@@ -229,8 +236,10 @@ Every table carries a `synced` flag with an `unsynced()` query, which `SupabaseS
 Retention deletes rows older than 30 days **only if already synced**, so a long spell offline
 cannot silently discard readings that never reached the backend.
 
-`daily_step_totals` is the one table that is not synced. It is an input to inference rather than a
-record of one, and it is derivable from the prediction history already being uploaded.
+`daily_step_totals` is not synced. It is an input to inference rather than a record of one.
+Completed `workout_sessions` sync to Supabase, but they are deliberately separate from
+`stress_predictions`: exercise summaries can survive reinstall/account restore without workout
+heart rate polluting stress counts.
 
 Alert cooldown state is read from the database rather than memory, so it survives a restart and
 cannot be bypassed by killing the app.
@@ -466,8 +475,9 @@ the numbers off a third party's servers. The assistant screen's disclaimer says 
 - Alert feedback is implemented: real sustained-stress alerts create pending `stress_feedback`
   rows, and completed responses sync to Supabase for later evaluation.
 - Manual Workout Mode is implemented separately from alert mute. Alert mute suppresses haptics and
-  notifications only; Workout Mode skips stress inference and prediction storage so exercise heart
-  rate does not enter Trends or the recommendation.
+  notifications only; Workout Mode has its own dashboard screen, pause/resume controls, HR/step
+  summaries and local history. While active, it skips stress inference and prediction storage so
+  exercise heart rate does not enter Trends or the recommendation.
 
 ## Known Structural Gaps
 

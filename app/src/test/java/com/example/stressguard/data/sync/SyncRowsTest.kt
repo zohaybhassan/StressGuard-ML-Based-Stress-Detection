@@ -5,6 +5,8 @@ import com.example.stressguard.data.local.HealthChecklistEntity
 import com.example.stressguard.data.local.LatencyMetricEntity
 import com.example.stressguard.data.local.StressPredictionEntity
 import com.example.stressguard.data.local.StressFeedbackEntity
+import com.example.stressguard.data.local.WorkoutSessionEntity
+import com.example.stressguard.data.local.WorkoutSessionStatus
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
@@ -247,5 +249,40 @@ class SyncRowsTest {
         assertEquals(6400, row.activityLevel)
         assertTrue(row.confirmedStressed)
         assertEquals(8, row.severity)
+    }
+
+    @Test
+    fun `a completed workout maps to the backend workout table`() {
+        val entity = WorkoutSessionEntity(
+            id = 11,
+            startedAtEpochMs = recordedAt,
+            plannedEndAtEpochMs = recordedAt + 60 * 60_000L,
+            endedAtEpochMs = recordedAt + 45 * 60_000L,
+            status = WorkoutSessionStatus.COMPLETED,
+            totalPausedMs = 5 * 60_000L,
+            firstSteps = 4000,
+            lastSteps = 5200,
+            minHeartRate = 92,
+            maxHeartRate = 151,
+            heartRateSum = 1_200,
+            heartRateSamples = 10,
+            updatedAtEpochMs = recordedAt + 45 * 60_000L,
+            synced = false,
+        )
+
+        val row = WorkoutSessionRow.from(entity, userId)
+
+        assertEquals(userId, row.userId)
+        assertEquals("2026-07-26T09:00:00Z", row.startedAt)
+        assertEquals("2026-07-26T10:00:00Z", row.plannedEndAt)
+        assertEquals("2026-07-26T09:45:00Z", row.endedAt)
+        assertEquals("completed", row.status)
+        assertEquals(300_000L, row.totalPausedMs)
+        assertEquals(4000, row.firstSteps)
+        assertEquals(5200, row.lastSteps)
+        assertEquals(92, row.minHeartRate)
+        assertEquals(151, row.maxHeartRate)
+        assertEquals(1_200L, row.heartRateSum)
+        assertEquals(10, row.heartRateSamples)
     }
 }

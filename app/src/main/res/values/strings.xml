@@ -79,7 +79,7 @@
     <string name="support_title">Feeling overwhelmed?</string>
     <string name="support_subtitle">Talk it through with the assistant</string>
     <string name="workout_mode_title">Workout mode</string>
-    <string name="workout_mode_dashboard_subtitle">Pause stress predictions during exercise</string>
+    <string name="workout_mode_dashboard_subtitle">Track exercise while stress predictions pause</string>
 
     <!-- Dashboard menu -->
     <string name="action_health_checklist">Health checklist</string>
@@ -126,16 +126,36 @@
     <string name="alerts_muted_until">Alerts muted until %1$s</string>
     <string name="alerts_resumed">Stress alerts resumed</string>
     <string name="open_notification_settings">Android notification settings</string>
-    <string name="workout_mode_heading">Workout mode</string>
-    <string name="workout_mode_inactive">Workout mode is off. Use this before running, gym sessions or other exercise so elevated heart rate does not count as stress.</string>
-    <string name="workout_mode_active_until">Workout mode is active until %1$s. Stress predictions are paused; heart rate and steps still update.</string>
-    <string name="workout_30_minutes">30 minutes</string>
-    <string name="workout_1_hour">1 hour</string>
-    <string name="workout_90_minutes">90 minutes</string>
-    <string name="workout_2_hours">2 hours</string>
-    <string name="workout_mode_end">End workout mode</string>
     <string name="workout_mode_started_until">Workout mode active until %1$s</string>
-    <string name="workout_mode_ended">Workout mode ended</string>
+    <string name="workout_mode_ended">Workout saved</string>
+
+    <!-- Workout mode -->
+    <string name="workout_heading">Workout</string>
+    <string name="workout_inactive_status">Ready when you are</string>
+    <string name="workout_active_status">Stress predictions paused</string>
+    <string name="workout_paused_status">Workout paused</string>
+    <string name="workout_saved_status">Last workout saved</string>
+    <string name="workout_timer_placeholder">00:00</string>
+    <string name="workout_timer_remaining">%1$s remaining</string>
+    <string name="workout_timer_elapsed">%1$s elapsed</string>
+    <string name="workout_start_30">Start 30 min</string>
+    <string name="workout_start_60">Start 1 hour</string>
+    <string name="workout_start_90">Start 90 min</string>
+    <string name="workout_start_120">Start 2 hours</string>
+    <string name="workout_pause">Pause</string>
+    <string name="workout_resume">Resume</string>
+    <string name="workout_end">End workout</string>
+    <string name="workout_stat_avg_hr">Avg HR</string>
+    <string name="workout_stat_range_hr">Min / max</string>
+    <string name="workout_stat_steps">Steps</string>
+    <string name="workout_no_hr">-- bpm</string>
+    <string name="workout_no_steps">--</string>
+    <string name="workout_history">Previous workouts</string>
+    <string name="workout_history_empty">No workouts yet</string>
+    <string name="workout_history_row">%1$s • %2$s • %3$s steps • avg %4$s</string>
+    <string name="workout_started">Workout started</string>
+    <string name="workout_paused">Workout paused</string>
+    <string name="workout_resumed">Workout resumed</string>
 
     <!-- Trends -->
     <string name="trends_title">Trends</string>

@@ -2,6 +2,7 @@ package com.example.stressguard.data
 
 import com.example.stressguard.data.local.DailyStepTotalDao
 import com.example.stressguard.data.local.DailyStepTotalEntity
+import com.example.stressguard.data.local.DailyStepSource
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Test
@@ -21,12 +22,39 @@ class StepHistoryTest {
     private class FakeDao : DailyStepTotalDao {
         val rows = LinkedHashMap<String, DailyStepTotalEntity>()
 
-        override suspend fun upsertMax(date: String, steps: Int, updatedAtEpochMs: Long) {
-            val existing = rows[date]?.steps ?: Int.MIN_VALUE
-            rows[date] = DailyStepTotalEntity(date, maxOf(existing, steps), updatedAtEpochMs)
+        override suspend fun upsertWatchMax(date: String, steps: Int, updatedAtEpochMs: Long) {
+            val existing = rows[date]
+            val resolved = if (existing?.source == DailyStepSource.WATCH) {
+                maxOf(existing.steps, steps)
+            } else {
+                steps
+            }
+            rows[date] = DailyStepTotalEntity(
+                date,
+                resolved,
+                updatedAtEpochMs,
+                DailyStepSource.WATCH,
+            )
+        }
+
+        override suspend fun upsertHealthConnectFallback(
+            date: String,
+            steps: Int,
+            updatedAtEpochMs: Long,
+        ) {
+            val existing = rows[date]
+            if (existing != null && existing.source != DailyStepSource.HEALTH_CONNECT) return
+            rows[date] = DailyStepTotalEntity(
+                date,
+                maxOf(existing?.steps ?: Int.MIN_VALUE, steps),
+                updatedAtEpochMs,
+                DailyStepSource.HEALTH_CONNECT,
+            )
         }
 
         override suspend fun totalFor(date: String): Int? = rows[date]?.steps
+
+        override suspend fun entryFor(date: String): DailyStepTotalEntity? = rows[date]
 
         override suspend fun mostRecentBefore(beforeDate: String): DailyStepTotalEntity? =
             rows.values.filter { it.date < beforeDate }.maxByOrNull { it.date }
@@ -100,14 +128,14 @@ class StepHistoryTest {
     }
 
     @Test
-    fun `today's own total never counts as history for today`() = runTest {
+    fun `today's corrected total can raise the model input`() = runTest {
         val dao = FakeDao()
         val history = StepHistory(dao)
         history.record(dailySteps = 5000, atEpochMs = morningToday)
 
-        // Reading back today's stored maximum would make the figure ratchet up and never fall,
-        // so a single active morning would pin the input for the rest of the day.
-        assertEquals(300, history.activityLevel(todaySteps = 300, nowEpochMs = morningToday))
+        // Health Connect/Samsung Health reconciliation writes into today's stored maximum. A
+        // later watch reading can be lower, but the model should receive the corrected daily total.
+        assertEquals(5000, history.activityLevel(todaySteps = 300, nowEpochMs = morningToday))
     }
 
     @Test

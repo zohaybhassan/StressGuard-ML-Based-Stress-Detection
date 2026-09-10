@@ -43,6 +43,7 @@ Two Android modules and a backend.
 | Phone app | `app/` | vivo V27e, Android 15 / API 35 |
 | Edge Function | `supabase/functions/chat/` | Supabase (Deno) |
 | Database | `supabase/migrations/` | Supabase Postgres |
+| Local database | `app/schemas/` | On-device Room / SQLite |
 
 `compileSdk 36` on both modules; `minSdk 26` on the phone, `minSdk 30` on the watch.
 
@@ -432,10 +433,17 @@ steps range        : 0 – 458       <- trained minimum is 1000
 heart rate range   : 76 – 100      <- well inside 43–109
 ```
 
-`StepHistory.kt` now supplies `max(steps so far today, most recent complete day)`, backed by one row
-per day in `daily_step_totals`. In range once a single day has elapsed, still rises on a genuinely
-active day, and honest on day one — with no history it returns the partial count and the prediction
-stays flagged.
+`StepHistory.kt` now supplies `max(steps so far today, stored source-owned total today, most recent
+complete day)`, backed by one row per day in `daily_step_totals`. In range once a single day has
+elapsed, still rises on a genuinely active day, and honest on day one — with no history it returns
+the partial count and the prediction stays flagged.
+
+`StepReconciliationWorker` runs every 60 minutes on the phone and reads today's Health Connect step
+aggregate. That value is fallback-only: it can fill a missing day or refresh an existing Health
+Connect fallback, but it cannot replace a watch-owned count. The first watch reading replaces the
+fallback instead of taking a maximum, preventing phone/Samsung activity from appearing to be added
+to the watch total. This does not change prediction storage or sync semantics:
+`daily_step_totals` remains local input state, not a Supabase-backed stress record.
 
 **Both defects are the same mistake in different clothes: the right number for the wrong quantity.**
 
@@ -506,14 +514,16 @@ architectural, not empirical.
 ## 10. Local storage
 
 Room, `StressGuardDatabase.kt`. Every write happens without a network — that is the point of the
-architecture, and Supabase syncs *from* here rather than being written to directly.
+architecture, and Supabase syncs *from* here rather than being written to directly. Exported Room
+schemas live in `app/schemas/`.
 
 | Table | Holds |
 |---|---|
 | `stress_predictions` | label, class index, confidence, full probability vector, model version, heart rate, raw daily steps, resolved activity level, sleep hours, extrapolation flag |
 | `latency_metrics` | per-stage durations, total, cold-start flag |
 | `alert_events` | fired-at, reason, window counts, model version, dismissed |
-| `daily_step_totals` | one row per day, highest count seen |
+| `daily_step_totals` | one source-owned row per day; watch data takes priority over Health Connect fallback |
+| `workout_sessions` | manual workout start/end/pause state plus HR and step summary stats |
 | `health_checklists` | the user's answers |
 | `stress_feedback` | completed human labels plus immutable alert-time model, sensor and profile snapshots |
 
@@ -522,7 +532,8 @@ than **30 days only if already synced**, so a long spell offline cannot silently
 that never reached the backend.
 
 `daily_step_totals` is deliberately not synced: it is an input to inference rather than a record of
-one, and it is derivable from the prediction history already being uploaded.
+one. Completed `workout_sessions` do sync to Supabase, but they stay separate from
+`stress_predictions` so exercise heart rate never enters daily stress counts.
 
 Both `dailySteps` and `activityLevel` are stored on every prediction — what the watch measured and
 what the model was told. A history recording only one could not explain its own predictions
@@ -541,10 +552,12 @@ afterwards.
 - **User pause:** the notification offers 10 minutes, 30 minutes, 1 hour and 4 hours. The expiry is
   stored in `SessionManager`, survives process restarts, and is checked after smoothing but before
   vibration or notification. Predictions and local storage continue while paused.
-- **Workout Mode:** manual, separate from alert pause. When active, real watch readings update the
-  dashboard and daily step totals but **skip inference and prediction storage**, so exercise heart
-  rate does not count as stress in Trends or the checkup recommendation. Simulated/debug readings
-  still run normally.
+- **Workout Mode:** manual, separate from alert pause. The dashboard opens a dedicated workout
+  screen with duration choices, pause/resume, a live timer, HR/step summary and recent workout
+  history. When active, real watch readings update the dashboard, daily step totals and the active
+  workout summary but **skip inference and prediction storage**, so exercise heart rate does not
+  count as stress in Trends or the checkup recommendation. Simulated/debug readings still run
+  normally.
 - **Dispatch:** vibration waveform `[0, 400, 200, 400]` plus a notification.
 - The high-stress class index comes from `modelInfo.classCount - 1`, never a hardcoded 3, so
   swapping in the 3-class bundle does not silently break the rule.
@@ -604,6 +617,7 @@ Two details that cost time: the nonce is **hashed for Google and raw for Supabas
 | `20260727010000_add_password_set_to_profiles.sql` | password-set flag |
 | `20260727120000_create_chat_tables.sql` | `chat_sessions`, `chat_messages` |
 | `20260801000000_create_stress_feedback.sql` | `stress_feedback` retraining labels |
+| `20260804000000_create_workout_sessions.sql` | `workout_sessions` exercise summaries |
 
 ### Row Level Security
 
@@ -879,10 +893,10 @@ was killed. Never on the real-time path.
 | Cross-user access | RLS on every user-owned table, keyed on `auth.uid()` |
 | Watch payloads | AES encrypted |
 | Chat transcripts | RLS, and deletable by the user |
-| Health Connect | Read-only sleep and oxygen saturation; oxygen is requested on the sleep screen |
+| Health Connect | Read-only sleep, oxygen saturation and step aggregates; oxygen is requested on the sleep screen |
 
 **What leaves the device:** predictions, latency metrics, alert events, completed stress feedback,
-the checklist and chat transcripts go to Supabase. Heart rate, step count and sleep hours additionally travel to **Hugging
+completed workout summaries, the checklist and chat transcripts go to Supabase. Heart rate, step count and sleep hours additionally travel to **Hugging
 Face** inside the chat prompt — chosen over describing them only in relative terms, which would have
 kept the numbers off a third party's servers. The assistant screen's disclaimer says so.
 
@@ -898,11 +912,12 @@ kept the numbers off a third party's servers. The assistant screen's disclaimer 
 
 ## 18. Testing
 
-- **179 JVM unit tests** (`app/src/test/` and `wear/src/test/`) — pure logic: feature building,
+- **190 JVM unit tests** (`app/src/test/` and `wear/src/test/`) — pure logic: feature building,
   alert smoothing and cooldown, sensor validation, sample-age parsing, staleness, step history,
   attribution, sync row mapping, recommendation scoring, crisis detection, Workout Mode timing,
-  the `service_role` guard and watch-side passive store behaviour.
-- **29 instrumented tests** (`app/src/androidTest/`, 5 classes) — Room DAO behaviour, the trends screen,
+  workout summary math, Health Connect step reconciliation thresholding, the `service_role` guard
+  and watch-side passive store behaviour.
+- **30 instrumented tests** (`app/src/androidTest/`, 5 classes) — Room DAO behaviour, the trends screen,
   local user data, and `StressInferenceParityTest`.
 - **12 Edge Function tests** (`supabase/functions/chat/safety_test.ts`) — crisis detection including
   false positives, and the extrapolation caveat. Written but **not yet executed**: Deno is not

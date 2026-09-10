@@ -83,7 +83,7 @@ class LocalUserDataTest {
         database.healthChecklists().save(
             HealthChecklistEntity(smoking = true, heartCondition = true, updatedAtEpochMs = now)
         )
-        database.dailyStepTotals().upsertMax("2026-07-27", 9000, now)
+        database.dailyStepTotals().upsertWatchMax("2026-07-27", 9000, now)
     }
 
     /**

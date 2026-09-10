@@ -1,0 +1,233 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/workoutRoot"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/canvas">
+
+    <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/workoutToolbar"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:navigationIcon="@drawable/ic_arrow_back"
+        app:title="@string/workout_mode_title" />
+
+    <ScrollView
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:clipToPadding="false"
+        android:scrollbars="none"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/workoutToolbar">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="@dimen/screen_padding">
+
+            <TextView
+                android:id="@+id/tvWorkoutHeading"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/workout_heading"
+                android:textAppearance="@style/TextAppearance.StressGuard.Headline" />
+
+            <TextView
+                android:id="@+id/tvWorkoutStatus"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_sm"
+                android:text="@string/workout_inactive_status"
+                android:textAppearance="@style/TextAppearance.StressGuard.Body" />
+
+            <com.google.android.material.card.MaterialCardView
+                style="@style/Widget.StressGuard.Card"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_lg">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="@dimen/space_lg">
+
+                    <TextView
+                        android:id="@+id/tvWorkoutTimer"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:text="@string/workout_timer_placeholder"
+                        android:textAppearance="@style/TextAppearance.StressGuard.Display" />
+
+                    <TextView
+                        android:id="@+id/tvWorkoutTimerDetail"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:text="@string/workout_timer_elapsed"
+                        android:textAppearance="@style/TextAppearance.StressGuard.Caption" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/space_lg"
+                        android:baselineAligned="false"
+                        android:orientation="horizontal">
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:gravity="center"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:id="@+id/tvWorkoutAvgHr"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:gravity="center"
+                                android:text="@string/workout_no_hr"
+                                android:textAppearance="@style/TextAppearance.StressGuard.Metric" />
+
+                            <TextView
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:gravity="center"
+                                android:text="@string/workout_stat_avg_hr"
+                                android:textAppearance="@style/TextAppearance.StressGuard.Caption" />
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:gravity="center"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:id="@+id/tvWorkoutHrRange"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:gravity="center"
+                                android:text="@string/workout_no_hr"
+                                android:textAppearance="@style/TextAppearance.StressGuard.Metric" />
+
+                            <TextView
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:gravity="center"
+                                android:text="@string/workout_stat_range_hr"
+                                android:textAppearance="@style/TextAppearance.StressGuard.Caption" />
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:gravity="center"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:id="@+id/tvWorkoutSteps"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:gravity="center"
+                                android:text="@string/workout_no_steps"
+                                android:textAppearance="@style/TextAppearance.StressGuard.Metric" />
+
+                            <TextView
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:gravity="center"
+                                android:text="@string/workout_stat_steps"
+                                android:textAppearance="@style/TextAppearance.StressGuard.Caption" />
+                        </LinearLayout>
+                    </LinearLayout>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <LinearLayout
+                android:id="@+id/workoutStartActions"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_lg"
+                android:orientation="vertical">
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnWorkoutStart30"
+                    style="@style/Widget.StressGuard.Button.Outlined"
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/button_height"
+                    android:text="@string/workout_start_30" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnWorkoutStart60"
+                    style="@style/Widget.StressGuard.Button.Outlined"
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/button_height"
+                    android:layout_marginTop="@dimen/space_sm"
+                    android:text="@string/workout_start_60" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnWorkoutStart90"
+                    style="@style/Widget.StressGuard.Button.Outlined"
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/button_height"
+                    android:layout_marginTop="@dimen/space_sm"
+                    android:text="@string/workout_start_90" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnWorkoutStart120"
+                    style="@style/Widget.StressGuard.Button.Outlined"
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/button_height"
+                    android:layout_marginTop="@dimen/space_sm"
+                    android:text="@string/workout_start_120" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/workoutActiveActions"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_lg"
+                android:orientation="vertical"
+                android:visibility="gone">
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnWorkoutPauseResume"
+                    style="@style/Widget.StressGuard.Button.Outlined"
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/button_height"
+                    android:text="@string/workout_pause" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnWorkoutEnd"
+                    style="@style/Widget.StressGuard.Button"
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/button_height"
+                    android:layout_marginTop="@dimen/space_sm"
+                    android:text="@string/workout_end" />
+            </LinearLayout>
+
+            <TextView
+                style="@style/Widget.StressGuard.SectionLabel"
+                android:layout_marginTop="@dimen/space_2xl"
+                android:text="@string/workout_history" />
+
+            <LinearLayout
+                android:id="@+id/workoutHistoryList"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_sm"
+                android:orientation="vertical" />
+        </LinearLayout>
+    </ScrollView>
+</androidx.constraintlayout.widget.ConstraintLayout>

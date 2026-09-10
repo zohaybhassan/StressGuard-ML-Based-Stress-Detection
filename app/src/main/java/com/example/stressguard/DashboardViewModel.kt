@@ -14,6 +14,7 @@ import com.example.stressguard.data.RecommendationRepository
 import com.example.stressguard.data.SensorReading
 import com.example.stressguard.data.StressPipeline
 import com.example.stressguard.data.SupabaseConfig
+import com.example.stressguard.data.sync.StepReconciliationScheduler
 import com.example.stressguard.data.sync.SyncScheduler
 import com.example.stressguard.data.sync.SyncState
 import com.example.stressguard.data.sync.SyncStatus
@@ -139,11 +140,16 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
         // from StressPipeline: plan §4 and §25 both require sync to stay off the real-time path,
         // and enqueuing work per prediction would put it right beside one.
         SyncScheduler.ensureScheduled(application)
+        StepReconciliationScheduler.ensureScheduled(application)
     }
 
     /** Asks for a sync now, for the moments where waiting half an hour would be wrong. */
     fun syncNow() {
         SyncScheduler.syncNow(getApplication())
+    }
+
+    fun reconcileStepsNow() {
+        StepReconciliationScheduler.reconcileNow(getApplication())
     }
 
     /**

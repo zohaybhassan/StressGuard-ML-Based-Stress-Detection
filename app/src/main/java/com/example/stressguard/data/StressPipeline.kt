@@ -132,6 +132,7 @@ class StressPipeline private constructor(private val context: Context) {
             stepHistory.record(reading.dailySteps, reading.measuredAtEpochMs)
             val workoutModeUntil = SessionManager.getWorkoutModeUntil(context)
             if (SessionManager.isWorkoutModeActive(workoutModeUntil, reading.receivedAtEpochMs)) {
+                WorkoutSessionRepository.recordWorkoutReading(context, reading)
                 return PipelineResult.PausedForWorkout(
                     reading = reading,
                     workoutModeUntilEpochMs = workoutModeUntil,

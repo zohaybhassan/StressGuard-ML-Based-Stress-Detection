@@ -20,17 +20,17 @@ import java.util.TimeZone
  * as extrapolation, on step counts of 0 to 458. It is the same class of defect as the z-scored
  * training data fixed earlier: the right number for the wrong quantity.
  *
- * The rule is `max(today so far, most recent complete day)`. It is in range once a single day has
- * elapsed, still rises when someone is genuinely more active today than yesterday, and is
- * defensible in a sentence: the model wants this user's daily activity level, so supply the best
- * estimate available rather than one that is structurally too low every morning.
+ * The rule is `max(today so far, stored source-owned total today, most recent complete day)`. It is
+ * in range once a single day has elapsed and still rises when someone is genuinely more active
+ * today than yesterday. Health Connect may fill a missing day, but a watch reading takes ownership
+ * as soon as it arrives so different devices are never presented as one watch count.
  */
 class StepHistory(private val dao: DailyStepTotalDao) {
 
     /** Notes the step count for the day [atEpochMs] falls in, keeping the highest seen. */
     suspend fun record(dailySteps: Int, atEpochMs: Long) {
         if (dailySteps < 0) return
-        dao.upsertMax(dateKey(atEpochMs), dailySteps, atEpochMs)
+        dao.upsertWatchMax(dateKey(atEpochMs), dailySteps, atEpochMs)
     }
 
     /**
@@ -41,8 +41,10 @@ class StepHistory(private val dao: DailyStepTotalDao) {
      * prediction is correctly flagged as an extrapolation until a full day exists.
      */
     suspend fun activityLevel(todaySteps: Int, nowEpochMs: Long): Int {
-        val previous = dao.mostRecentBefore(dateKey(nowEpochMs))?.steps ?: return todaySteps
-        return maxOf(todaySteps, previous)
+        val todayKey = dateKey(nowEpochMs)
+        val storedToday = dao.totalFor(todayKey) ?: todaySteps
+        val previous = dao.mostRecentBefore(todayKey)?.steps ?: todaySteps
+        return maxOf(todaySteps, storedToday, previous)
     }
 
     companion object {

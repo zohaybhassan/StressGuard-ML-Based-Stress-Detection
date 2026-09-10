@@ -99,6 +99,37 @@ data class DailyStepTotalEntity(
     /** Highest count seen for the day. The watch's counter only climbs until it resets. */
     val steps: Int,
     val updatedAtEpochMs: Long,
+    /** Which source owns [steps], so Health Connect cannot overwrite a live watch total. */
+    val source: String,
+)
+
+object DailyStepSource {
+    const val WATCH = "watch"
+    const val HEALTH_CONNECT = "health_connect"
+    const val LEGACY = "legacy"
+}
+
+/** One manually started exercise period where stress predictions were intentionally paused. */
+@Entity(
+    tableName = "workout_sessions",
+    indices = [Index("startedAtEpochMs"), Index("status")],
+)
+data class WorkoutSessionEntity(
+    @PrimaryKey(autoGenerate = true) val id: Long = 0,
+    val startedAtEpochMs: Long,
+    val plannedEndAtEpochMs: Long,
+    val endedAtEpochMs: Long? = null,
+    val status: String,
+    val pausedAtEpochMs: Long? = null,
+    val totalPausedMs: Long = 0L,
+    val firstSteps: Int? = null,
+    val lastSteps: Int? = null,
+    val minHeartRate: Int? = null,
+    val maxHeartRate: Int? = null,
+    val heartRateSum: Long = 0L,
+    val heartRateSamples: Int = 0,
+    val updatedAtEpochMs: Long,
+    val synced: Boolean = false,
 )
 
 /** A fired alert, retained so cooldown survives a restart and so history can be shown. */

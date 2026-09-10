@@ -5,6 +5,7 @@ import com.example.stressguard.data.local.HealthChecklistEntity
 import com.example.stressguard.data.local.LatencyMetricEntity
 import com.example.stressguard.data.local.StressPredictionEntity
 import com.example.stressguard.data.local.StressFeedbackEntity
+import com.example.stressguard.data.local.WorkoutSessionEntity
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import java.time.Instant
@@ -224,8 +225,42 @@ data class StressFeedbackRow(
                 profileBmi = entity.profileBmi,
                 confirmedStressed = confirmed,
                 severity = entity.severity,
+            )
+        }
+    }
+}
+
+@Serializable
+data class WorkoutSessionRow(
+    @SerialName("user_id") val userId: String,
+    @SerialName("started_at") val startedAt: String,
+    @SerialName("planned_end_at") val plannedEndAt: String,
+    @SerialName("ended_at") val endedAt: String?,
+    val status: String,
+    @SerialName("total_paused_ms") val totalPausedMs: Long,
+    @SerialName("first_steps") val firstSteps: Int?,
+    @SerialName("last_steps") val lastSteps: Int?,
+    @SerialName("min_heart_rate") val minHeartRate: Int?,
+    @SerialName("max_heart_rate") val maxHeartRate: Int?,
+    @SerialName("heart_rate_sum") val heartRateSum: Long,
+    @SerialName("heart_rate_samples") val heartRateSamples: Int,
+    @SerialName("updated_at") val updatedAt: String,
+) {
+    companion object {
+        fun from(entity: WorkoutSessionEntity, userId: String) = WorkoutSessionRow(
+            userId = userId,
+            startedAt = entity.startedAtEpochMs.toIso(),
+            plannedEndAt = entity.plannedEndAtEpochMs.toIso(),
+            endedAt = entity.endedAtEpochMs?.toIso(),
+            status = entity.status,
+            totalPausedMs = entity.totalPausedMs,
+            firstSteps = entity.firstSteps,
+            lastSteps = entity.lastSteps,
+            minHeartRate = entity.minHeartRate,
+            maxHeartRate = entity.maxHeartRate,
+            heartRateSum = entity.heartRateSum,
+            heartRateSamples = entity.heartRateSamples,
+            updatedAt = entity.updatedAtEpochMs.toIso(),
         )
     }
-
-}
 }

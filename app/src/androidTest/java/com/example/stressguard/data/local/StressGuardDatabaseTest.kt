@@ -193,11 +193,11 @@ class StressGuardDatabaseTest {
     fun aDayKeepsItsHighestStepCountRatherThanItsLatest() = runTest {
         val dao = database.dailyStepTotals()
 
-        dao.upsertMax("2026-07-25", 9000, now)
+        dao.upsertWatchMax("2026-07-25", 9000, now)
         // A reading landing just after the watch's midnight reset. Taking the latest here would
         // wipe the day's total and reintroduce the below-training-range input this table exists
         // to prevent.
-        dao.upsertMax("2026-07-25", 12, now + 1000)
+        dao.upsertWatchMax("2026-07-25", 12, now + 1000)
 
         assertEquals(9000, dao.totalFor("2026-07-25"))
         assertEquals("upsert must not create a second row for the day", 1, dao.count())
@@ -206,8 +206,8 @@ class StressGuardDatabaseTest {
     @Test
     fun theMostRecentEarlierDayIsFoundAcrossAGapInWear() = runTest {
         val dao = database.dailyStepTotals()
-        dao.upsertMax("2026-07-20", 7400, now)
-        dao.upsertMax("2026-07-22", 8100, now)
+        dao.upsertWatchMax("2026-07-20", 7400, now)
+        dao.upsertWatchMax("2026-07-22", 8100, now)
 
         // The watch is not worn every day, so "yesterday" often does not exist.
         assertEquals(8100, dao.mostRecentBefore("2026-07-26")?.steps)
@@ -217,11 +217,33 @@ class StressGuardDatabaseTest {
     @Test
     fun todaysOwnTotalIsNeverTreatedAsHistory() = runTest {
         val dao = database.dailyStepTotals()
-        dao.upsertMax("2026-07-26", 5000, now)
+        dao.upsertWatchMax("2026-07-26", 5000, now)
 
         // Otherwise the figure would ratchet up and never fall: one active morning would pin the
         // model's input for the rest of the day.
         assertNull(dao.mostRecentBefore("2026-07-26"))
+    }
+
+    @Test
+    fun healthConnectCannotReplaceAWatchOwnedCount() = runTest {
+        val dao = database.dailyStepTotals()
+        dao.upsertWatchMax("2026-07-26", 5000, now)
+        dao.upsertHealthConnectFallback("2026-07-26", 10_000, now + 1000)
+
+        val stored = dao.entryFor("2026-07-26")!!
+        assertEquals(5000, stored.steps)
+        assertEquals(DailyStepSource.WATCH, stored.source)
+    }
+
+    @Test
+    fun watchReplacesAHealthConnectFallbackInsteadOfAddingIt() = runTest {
+        val dao = database.dailyStepTotals()
+        dao.upsertHealthConnectFallback("2026-07-26", 10_000, now)
+        dao.upsertWatchMax("2026-07-26", 5000, now + 1000)
+
+        val stored = dao.entryFor("2026-07-26")!!
+        assertEquals(5000, stored.steps)
+        assertEquals(DailyStepSource.WATCH, stored.source)
     }
 
     // --- alerts ------------------------------------------------------------------
