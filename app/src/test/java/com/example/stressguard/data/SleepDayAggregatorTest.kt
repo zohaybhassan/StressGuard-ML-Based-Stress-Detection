@@ -53,6 +53,25 @@ class SleepDayAggregatorTest {
         assertEquals(Duration.ofHours(7), day.totalDuration)
     }
 
+    @Test
+    fun `sleep stages are clipped to their parent sleep record`() {
+        val interval = SleepInterval(
+            start = Instant.parse("2026-07-30T22:00:00Z"),
+            end = Instant.parse("2026-07-31T03:00:00Z"),
+            stages = listOf(
+                SleepStageInterval(
+                    start = Instant.parse("2026-07-30T21:00:00Z"),
+                    end = Instant.parse("2026-07-30T23:00:00Z"),
+                    type = SleepStageType.DEEP,
+                )
+            ),
+        )
+
+        val day = SleepDayAggregator.latest(listOf(interval), zone)!!
+
+        assertEquals(Duration.ofHours(1), day.stages.deep)
+    }
+
     private fun interval(start: String, end: String) = SleepInterval(
         start = Instant.parse(start),
         end = Instant.parse(end),

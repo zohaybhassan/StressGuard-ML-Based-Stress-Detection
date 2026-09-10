@@ -159,6 +159,15 @@ class SensorReadingTest {
     }
 
     @Test
+    fun sampleAgeCannotPlaceAMeasurementBeforeTheUnixEpoch() {
+        val result = SensorReading.parse("88|4200|${Long.MAX_VALUE}", elapsed, epoch)
+
+        assertNotNull(result)
+        assertEquals(epoch, result!!.sampleAgeMs)
+        assertEquals(0L, result.measuredAtEpochMs)
+    }
+
+    @Test
     fun aFreshSampleIsNotConsideredStale() {
         val fresh = SensorReading.parse("88|4200|1000", elapsed, epoch)!!
         assertEquals(true, fresh.sampleAgeMs < SensorReading.STALE_SAMPLE_MS)

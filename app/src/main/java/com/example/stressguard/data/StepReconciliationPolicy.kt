@@ -10,8 +10,11 @@ object StepReconciliationPolicy {
         stressGuardSteps: Int?,
         stressGuardSource: String?,
         threshold: Int = CORRECTION_THRESHOLD_STEPS,
-    ): Boolean =
-        stressGuardSource != DailyStepSource.WATCH &&
+    ): Boolean {
+        val safeThreshold = threshold.coerceAtLeast(0)
+        return healthConnectSteps >= 0 &&
+            stressGuardSource != DailyStepSource.WATCH &&
             stressGuardSource != DailyStepSource.LEGACY &&
-            healthConnectSteps.toLong() > (stressGuardSteps ?: 0).toLong() + threshold
+            healthConnectSteps.toLong() > (stressGuardSteps ?: 0).toLong() + safeThreshold
+    }
 }

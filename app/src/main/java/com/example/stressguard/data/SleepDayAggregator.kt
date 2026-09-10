@@ -68,7 +68,7 @@ object SleepDayAggregator {
             mainSleep = mainSleep,
             naps = naps,
             totalDuration = unionDuration(dayIntervals.map { it.start to it.end }),
-            stages = stageTotals(dayIntervals.flatMap { it.stages }),
+            stages = stageTotals(dayIntervals.flatMap(::stagesWithinSleep)),
             intervals = dayIntervals,
         )
     }
@@ -125,6 +125,13 @@ object SleepDayAggregator {
         end = intervals.maxOf { it.end },
         duration = unionDuration(intervals.map { it.start to it.end }),
     )
+
+    private fun stagesWithinSleep(interval: SleepInterval): List<SleepStageInterval> =
+        interval.stages.mapNotNull { stage ->
+            val start = maxOf(stage.start, interval.start)
+            val end = minOf(stage.end, interval.end)
+            if (end.isAfter(start)) stage.copy(start = start, end = end) else null
+        }
 
     private fun stageTotals(stages: List<SleepStageInterval>): SleepStageTotals {
         fun total(type: SleepStageType) = unionDuration(

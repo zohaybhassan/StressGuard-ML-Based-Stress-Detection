@@ -19,12 +19,21 @@ object WorkoutSessionMath {
         } else {
             0L
         }
-        return (effectiveEnd - startedAtEpochMs - totalPausedMs - currentPauseMs).coerceAtLeast(0L)
+        val completedPauseMs = totalPausedMs.coerceAtLeast(0L)
+        return (effectiveEnd - startedAtEpochMs - completedPauseMs - currentPauseMs)
+            .coerceAtLeast(0L)
     }
 
-    fun averageHeartRate(sum: Long, samples: Int): Int? =
-        if (samples > 0) (sum / samples).toInt() else null
+    fun averageHeartRate(sum: Long, samples: Int): Int? {
+        if (samples <= 0 || sum < 0L) return null
+        val average = sum / samples
+        return average.takeIf { it <= Int.MAX_VALUE }?.toInt()
+    }
 
-    fun stepDelta(firstSteps: Int?, lastSteps: Int?): Int =
-        (((lastSteps ?: firstSteps) ?: 0) - (firstSteps ?: 0)).coerceAtLeast(0)
+    fun stepDelta(firstSteps: Int?, lastSteps: Int?): Int {
+        if (firstSteps == null || lastSteps == null) return 0
+        return (lastSteps.toLong() - firstSteps.toLong())
+            .coerceIn(0L, Int.MAX_VALUE.toLong())
+            .toInt()
+    }
 }

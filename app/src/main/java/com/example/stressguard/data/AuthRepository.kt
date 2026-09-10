@@ -59,7 +59,7 @@ object CredentialRules {
     }
 
     fun passwordProblem(password: String): String? = when {
-        password.isEmpty() -> "Enter a password"
+        password.isBlank() -> "Enter a password"
         password.length < MIN_PASSWORD_LENGTH ->
             "Use at least $MIN_PASSWORD_LENGTH characters"
         else -> null

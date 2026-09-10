@@ -42,9 +42,10 @@ class StepHistory(private val dao: DailyStepTotalDao) {
      */
     suspend fun activityLevel(todaySteps: Int, nowEpochMs: Long): Int {
         val todayKey = dateKey(nowEpochMs)
-        val storedToday = dao.totalFor(todayKey) ?: todaySteps
-        val previous = dao.mostRecentBefore(todayKey)?.steps ?: todaySteps
-        return maxOf(todaySteps, storedToday, previous)
+        val safeTodaySteps = todaySteps.coerceAtLeast(0)
+        val storedToday = dao.totalFor(todayKey) ?: safeTodaySteps
+        val previous = dao.mostRecentBefore(todayKey)?.steps ?: safeTodaySteps
+        return maxOf(safeTodaySteps, storedToday, previous)
     }
 
     companion object {

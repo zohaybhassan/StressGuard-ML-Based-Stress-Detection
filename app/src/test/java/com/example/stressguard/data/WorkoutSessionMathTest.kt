@@ -40,6 +40,22 @@ class WorkoutSessionMathTest {
     }
 
     @Test
+    fun `invalid negative pause totals cannot inflate active time`() {
+        assertEquals(
+            30 * 60_000L,
+            WorkoutSessionMath.elapsedActiveMs(
+                startedAtEpochMs = 0L,
+                plannedEndAtEpochMs = 60 * 60_000L,
+                endedAtEpochMs = null,
+                status = WorkoutSessionStatus.ACTIVE,
+                pausedAtEpochMs = null,
+                totalPausedMs = -10 * 60_000L,
+                nowEpochMs = 30 * 60_000L,
+            )
+        )
+    }
+
+    @Test
     fun `average heart rate is null without samples`() {
         assertNull(WorkoutSessionMath.averageHeartRate(sum = 0L, samples = 0))
     }
@@ -50,6 +66,12 @@ class WorkoutSessionMathTest {
     }
 
     @Test
+    fun `corrupt heart rate aggregates do not wrap into a valid bpm`() {
+        assertNull(WorkoutSessionMath.averageHeartRate(sum = -1L, samples = 1))
+        assertNull(WorkoutSessionMath.averageHeartRate(sum = Long.MAX_VALUE, samples = 1))
+    }
+
+    @Test
     fun `step delta never goes negative`() {
         assertEquals(0, WorkoutSessionMath.stepDelta(firstSteps = 4000, lastSteps = 200))
     }
@@ -57,5 +79,11 @@ class WorkoutSessionMathTest {
     @Test
     fun `step delta counts steps during the session`() {
         assertEquals(900, WorkoutSessionMath.stepDelta(firstSteps = 4000, lastSteps = 4900))
+    }
+
+    @Test
+    fun `step delta is unknown until both boundary samples exist`() {
+        assertEquals(0, WorkoutSessionMath.stepDelta(firstSteps = null, lastSteps = 4900))
+        assertEquals(0, WorkoutSessionMath.stepDelta(firstSteps = 4000, lastSteps = null))
     }
 }
