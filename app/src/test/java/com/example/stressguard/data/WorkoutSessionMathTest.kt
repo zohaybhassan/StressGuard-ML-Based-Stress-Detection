@@ -74,4 +74,10 @@ class WorkoutSessionMathTest {
     fun `step delta counts steps during the session`() {
         assertEquals(900, WorkoutSessionMath.stepDelta(firstSteps = 4000, lastSteps = 4900))
     }
+
+    @Test
+    fun `step delta is unknown until both boundary samples exist`() {
+        assertEquals(0, WorkoutSessionMath.stepDelta(firstSteps = null, lastSteps = 4900))
+        assertEquals(0, WorkoutSessionMath.stepDelta(firstSteps = 4000, lastSteps = null))
+    }
 }
