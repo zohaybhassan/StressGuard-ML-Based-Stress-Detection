@@ -41,6 +41,17 @@ class StepReconciliationPolicyTest {
     }
 
     @Test
+    fun `negative health connect totals are rejected`() {
+        assertFalse(
+            StepReconciliationPolicy.shouldCorrect(
+                healthConnectSteps = -1,
+                stressGuardSteps = -1000,
+                stressGuardSource = DailyStepSource.HEALTH_CONNECT,
+            )
+        )
+    }
+
+    @Test
     fun `an absent stressguard count can be corrected from health connect`() {
         assertTrue(
             StepReconciliationPolicy.shouldCorrect(
