@@ -83,7 +83,12 @@ data class SensorReading(
                 // A negative age would mean the watch's clock ran ahead of its own sample, which
                 // is a bug rather than a measurement; treated as fresh instead of propagating a
                 // duration that would make the reading appear to come from the future.
-                sampleAgeMs = sampleAgeMs.coerceAtLeast(0L),
+                // A corrupt age must not underflow the wall-clock subtraction and place a
+                // measurement near Long.MAX_VALUE. No sample can predate the Unix epoch.
+                sampleAgeMs = sampleAgeMs.coerceIn(
+                    minimumValue = 0L,
+                    maximumValue = receivedAtEpochMs.coerceAtLeast(0L),
+                ),
                 outOfTrainingRange = heartRate !in TRAINED_HEART_RATE ||
                     dailySteps !in TRAINED_STEPS,
             )
