@@ -49,6 +49,11 @@ class CredentialRulesTest {
     }
 
     @Test
+    fun whitespaceOnlyPasswordIsReportedAsBlank() {
+        assertEquals("Enter a password", CredentialRules.passwordProblem("      "))
+    }
+
+    @Test
     fun passwordAtTheMinimumLengthIsAccepted() {
         val exactly = "a".repeat(CredentialRules.MIN_PASSWORD_LENGTH)
 
