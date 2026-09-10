@@ -40,6 +40,22 @@ class WorkoutSessionMathTest {
     }
 
     @Test
+    fun `invalid negative pause totals cannot inflate active time`() {
+        assertEquals(
+            30 * 60_000L,
+            WorkoutSessionMath.elapsedActiveMs(
+                startedAtEpochMs = 0L,
+                plannedEndAtEpochMs = 60 * 60_000L,
+                endedAtEpochMs = null,
+                status = WorkoutSessionStatus.ACTIVE,
+                pausedAtEpochMs = null,
+                totalPausedMs = -10 * 60_000L,
+                nowEpochMs = 30 * 60_000L,
+            )
+        )
+    }
+
+    @Test
     fun `average heart rate is null without samples`() {
         assertNull(WorkoutSessionMath.averageHeartRate(sum = 0L, samples = 0))
     }

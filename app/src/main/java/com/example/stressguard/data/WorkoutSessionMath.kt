@@ -19,7 +19,9 @@ object WorkoutSessionMath {
         } else {
             0L
         }
-        return (effectiveEnd - startedAtEpochMs - totalPausedMs - currentPauseMs).coerceAtLeast(0L)
+        val completedPauseMs = totalPausedMs.coerceAtLeast(0L)
+        return (effectiveEnd - startedAtEpochMs - completedPauseMs - currentPauseMs)
+            .coerceAtLeast(0L)
     }
 
     fun averageHeartRate(sum: Long, samples: Int): Int? =
