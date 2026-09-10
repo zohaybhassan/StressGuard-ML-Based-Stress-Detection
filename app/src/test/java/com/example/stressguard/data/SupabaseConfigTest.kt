@@ -50,6 +50,17 @@ class SupabaseConfigTest {
         assertTrue(problems.any { it.contains("SECRET key") })
     }
 
+    @Test
+    fun secretKeyWithAccidentalWhitespaceIsStillRejected() {
+        val key = "  sb_secret_abcdefghijklmnopqrstuvwxyz  "
+
+        assertTrue(SupabaseConfig.isSecretKey(key))
+        assertTrue(
+            SupabaseConfig.validate(validUrl, key, validClientId)
+                .any { it.contains("SECRET key") }
+        )
+    }
+
     /** The case that actually happened: a service_role JWT pasted in place of the anon key. */
     @Test
     fun legacyServiceRoleJwtIsRejected() {

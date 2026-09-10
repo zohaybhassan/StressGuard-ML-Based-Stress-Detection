@@ -87,8 +87,9 @@ object SupabaseConfig {
      * substring search over the key text finds nothing and would wave it through.
      */
     fun isSecretKey(key: String): Boolean {
-        if (key.startsWith("sb_secret_")) return true
-        return jwtRole(key) == "service_role"
+        val candidate = key.trim()
+        if (candidate.startsWith("sb_secret_")) return true
+        return jwtRole(candidate) == "service_role"
     }
 
     private fun jwtRole(key: String): String? {
