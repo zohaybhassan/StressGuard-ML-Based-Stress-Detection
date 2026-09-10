@@ -66,6 +66,12 @@ class WorkoutSessionMathTest {
     }
 
     @Test
+    fun `corrupt heart rate aggregates do not wrap into a valid bpm`() {
+        assertNull(WorkoutSessionMath.averageHeartRate(sum = -1L, samples = 1))
+        assertNull(WorkoutSessionMath.averageHeartRate(sum = Long.MAX_VALUE, samples = 1))
+    }
+
+    @Test
     fun `step delta never goes negative`() {
         assertEquals(0, WorkoutSessionMath.stepDelta(firstSteps = 4000, lastSteps = 200))
     }

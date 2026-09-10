@@ -24,8 +24,11 @@ object WorkoutSessionMath {
             .coerceAtLeast(0L)
     }
 
-    fun averageHeartRate(sum: Long, samples: Int): Int? =
-        if (samples > 0) (sum / samples).toInt() else null
+    fun averageHeartRate(sum: Long, samples: Int): Int? {
+        if (samples <= 0 || sum < 0L) return null
+        val average = sum / samples
+        return average.takeIf { it <= Int.MAX_VALUE }?.toInt()
+    }
 
     fun stepDelta(firstSteps: Int?, lastSteps: Int?): Int {
         if (firstSteps == null || lastSteps == null) return 0
