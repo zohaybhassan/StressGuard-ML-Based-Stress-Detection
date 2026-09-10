@@ -41,6 +41,18 @@ class StepReconciliationPolicyTest {
     }
 
     @Test
+    fun `negative thresholds cannot force a correction`() {
+        assertFalse(
+            StepReconciliationPolicy.shouldCorrect(
+                healthConnectSteps = 5100,
+                stressGuardSteps = 5100,
+                stressGuardSource = DailyStepSource.HEALTH_CONNECT,
+                threshold = -1,
+            )
+        )
+    }
+
+    @Test
     fun `negative health connect totals are rejected`() {
         assertFalse(
             StepReconciliationPolicy.shouldCorrect(
