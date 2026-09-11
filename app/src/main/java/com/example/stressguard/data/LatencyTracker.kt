@@ -88,13 +88,16 @@ data class LatencySummary(
 ) {
     /** Plan §12: receive-to-prediction under 1 s, prediction-to-alert under 300 ms, total under 1.5 s. */
     val meetsReceiveToPredictionTarget: Boolean?
-        get() = averageReceiveToPredictionMs?.let { it < 1_000 }
+        get() = meetsTarget(averageReceiveToPredictionMs, 1_000)
 
     val meetsTotalTarget: Boolean?
-        get() = averageTotalMs?.let { it < 1_500 }
+        get() = meetsTarget(averageTotalMs, 1_500)
 
     val meetsAlertTarget: Boolean?
-        get() = averagePredictionToAlertMs?.let { it < 300 }
+        get() = meetsTarget(averagePredictionToAlertMs, 300)
+
+    private fun meetsTarget(value: Double?, thresholdMs: Long): Boolean? =
+        value?.takeIf { it.isFinite() }?.let { it < thresholdMs }
 
     companion object {
         val EMPTY = LatencySummary(0, null, null, null, null, null)

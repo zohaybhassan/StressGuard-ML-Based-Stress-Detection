@@ -195,4 +195,20 @@ class LatencySummaryTest {
         assertNull(LatencySummary.EMPTY.meetsAlertTarget)
         assertEquals(0, LatencySummary.EMPTY.steadyStateSamples)
     }
+
+    @Test
+    fun nonFiniteAveragesAreUnknownRatherThanFailed() {
+        val invalid = LatencySummary(
+            steadyStateSamples = 2,
+            latestReceiveToPredictionMs = null,
+            latestTotalMs = null,
+            averageReceiveToPredictionMs = Double.NaN,
+            averageTotalMs = Double.POSITIVE_INFINITY,
+            averagePredictionToAlertMs = Double.NEGATIVE_INFINITY,
+        )
+
+        assertNull(invalid.meetsReceiveToPredictionTarget)
+        assertNull(invalid.meetsTotalTarget)
+        assertNull(invalid.meetsAlertTarget)
+    }
 }
