@@ -30,6 +30,14 @@ class CredentialRulesTest {
         assertNotNull("spaces", CredentialRules.emailProblem("fah ad@example.com"))
     }
 
+    @Test
+    fun invalidEmailLabelBoundariesAreRejected() {
+        assertNotNull(CredentialRules.emailProblem(".fahad@example.com"))
+        assertNotNull(CredentialRules.emailProblem("fahad..hassan@example.com"))
+        assertNotNull(CredentialRules.emailProblem("fahad@-example.com"))
+        assertNotNull(CredentialRules.emailProblem("fahad@example-.com"))
+    }
+
     /** Typing an address with a stray space is common enough that it must not be an error. */
     @Test
     fun surroundingWhitespaceIsTolerated() {

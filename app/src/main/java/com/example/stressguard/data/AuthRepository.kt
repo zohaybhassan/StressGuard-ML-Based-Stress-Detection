@@ -54,7 +54,7 @@ object CredentialRules {
 
     fun emailProblem(email: String): String? = when {
         email.isBlank() -> "Enter your email address"
-        !EMAIL.matches(email.trim()) -> "That does not look like an email address"
+        !looksLikeEmail(email.trim()) -> "That does not look like an email address"
         else -> null
     }
 
@@ -70,6 +70,16 @@ object CredentialRules {
         if (password != confirmation) "Passwords do not match" else null
 
     private val EMAIL = Regex("^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$")
+
+    private fun looksLikeEmail(value: String): Boolean {
+        if (!EMAIL.matches(value)) return false
+        val local = value.substringBefore('@')
+        val domainLabels = value.substringAfter('@').split('.')
+        if (local.startsWith('.') || local.endsWith('.') || local.contains("..")) return false
+        return domainLabels.all { label ->
+            label.isNotEmpty() && !label.startsWith('-') && !label.endsWith('-')
+        }
+    }
 }
 
 /**
