@@ -192,4 +192,17 @@ class StressAlertPolicyTest {
             StressAlertPolicy.evaluate(listOf(-1, -1, -1), -1, now, null),
         )
     }
+
+    @Test
+    fun negativeCooldownFallsBackToTheSafeDefault() {
+        val decision = StressAlertPolicy.evaluate(
+            recentClassIndices = List(5) { high },
+            highStressClassIndex = high,
+            nowEpochMs = now,
+            lastAlertEpochMs = now - 5 * 60 * 1000L,
+            cooldownMs = -1L,
+        )
+
+        assertTrue(decision is AlertDecision.InCooldown)
+    }
 }

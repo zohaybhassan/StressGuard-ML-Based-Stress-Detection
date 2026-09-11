@@ -56,6 +56,7 @@ object StressAlertPolicy {
         cooldownMs: Long = COOLDOWN_MS,
     ): AlertDecision {
         if (highStressClassIndex < 0) return AlertDecision.NotSustained
+        val effectiveCooldownMs = cooldownMs.takeIf { it >= 0L } ?: COOLDOWN_MS
         val window = recentClassIndices.takeLast(WINDOW)
 
         // Fewer readings than the threshold cannot satisfy it, whatever they are.
@@ -72,8 +73,8 @@ object StressAlertPolicy {
             val elapsed = nowEpochMs - lastAlertEpochMs
             // A negative elapsed means the wall clock moved backwards. Treat it as expired
             // rather than suppressing alerts until the clock catches up.
-            if (elapsed in 0 until cooldownMs) {
-                return AlertDecision.InCooldown(remainingMs = cooldownMs - elapsed)
+            if (elapsed in 0 until effectiveCooldownMs) {
+                return AlertDecision.InCooldown(remainingMs = effectiveCooldownMs - elapsed)
             }
         }
 
