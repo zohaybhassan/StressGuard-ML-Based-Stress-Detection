@@ -134,6 +134,19 @@ class StressHistoryTest {
         assertEquals(5000, summary.averageActivityLevel)
     }
 
+    @Test
+    fun integerAveragesRoundToTheNearestValue() {
+        val summary = summarise(
+            listOf(
+                prediction(noonUtc, heartRate = 60, activityLevel = 4000),
+                prediction(noonUtc, heartRate = 61, activityLevel = 4001),
+            )
+        ).single()
+
+        assertEquals(61, summary.averageHeartRate)
+        assertEquals(4001, summary.averageActivityLevel)
+    }
+
     /**
      * A day with no readings is absent, not zero-filled.
      *

@@ -2,6 +2,7 @@ package com.example.stressguard.data
 
 import com.example.stressguard.data.local.StressPredictionEntity
 import java.util.TimeZone
+import kotlin.math.roundToInt
 
 /**
  * One day of stored predictions, rolled up.
@@ -69,9 +70,9 @@ object StressHistory {
                     date = date,
                     readings = rows.size,
                     highStressReadings = rows.count { it.classIndex == highStressClassIndex },
-                    averageHeartRate = rows.map { it.heartRate }.average().toInt(),
+                    averageHeartRate = rows.map { it.heartRate }.average().roundToInt(),
                     averageSleepHours = rows.map { it.sleepHours }.average().toFloat(),
-                    averageActivityLevel = rows.map { it.activityLevel }.average().toInt(),
+                    averageActivityLevel = rows.map { it.activityLevel }.average().roundToInt(),
                 )
             }
             .sortedByDescending { it.date }
