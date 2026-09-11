@@ -73,4 +73,9 @@ class SyncStatusTest {
 
         assertEquals("Synced recently", text)
     }
+
+    @Test
+    fun `a corrupt negative queue count is displayed as empty`() {
+        assertEquals("Nothing to sync", status(pending = -1).describe(now))
+    }
 }

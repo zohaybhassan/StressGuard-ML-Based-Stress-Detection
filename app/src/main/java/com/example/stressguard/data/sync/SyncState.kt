@@ -62,14 +62,17 @@ data class SyncStatus(
      * failure mode worth avoiding: 99 rows queued looks like a bug until you know no one is
      * signed in.
      */
-    fun describe(nowEpochMs: Long): String = when {
-        !backendConfigured -> "Backend not configured — $pending stored locally"
-        !signedIn -> "Sign in to sync — $pending waiting"
-        pending == 0 && lastSuccessEpochMs != null ->
-            "Synced ${ago(nowEpochMs - lastSuccessEpochMs)}"
-        pending == 0 -> "Nothing to sync"
-        lastSuccessEpochMs == null -> "$pending waiting to sync"
-        else -> "$pending waiting — last synced ${ago(nowEpochMs - lastSuccessEpochMs)}"
+    fun describe(nowEpochMs: Long): String {
+        val safePending = pending.coerceAtLeast(0)
+        return when {
+            !backendConfigured -> "Backend not configured - $safePending stored locally"
+            !signedIn -> "Sign in to sync - $safePending waiting"
+            safePending == 0 && lastSuccessEpochMs != null ->
+                "Synced ${ago(nowEpochMs - lastSuccessEpochMs)}"
+            safePending == 0 -> "Nothing to sync"
+            lastSuccessEpochMs == null -> "$safePending waiting to sync"
+            else -> "$safePending waiting - last synced ${ago(nowEpochMs - lastSuccessEpochMs)}"
+        }
     }
 
     private fun ago(elapsedMs: Long): String = when {
