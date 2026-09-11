@@ -72,6 +72,14 @@ class WorkoutSessionMathTest {
     }
 
     @Test
+    fun `average heart rate stays within plausible sensor bounds`() {
+        assertNull(WorkoutSessionMath.averageHeartRate(sum = 29L, samples = 1))
+        assertNull(WorkoutSessionMath.averageHeartRate(sum = 221L, samples = 1))
+        assertEquals(30, WorkoutSessionMath.averageHeartRate(sum = 30L, samples = 1))
+        assertEquals(220, WorkoutSessionMath.averageHeartRate(sum = 220L, samples = 1))
+    }
+
+    @Test
     fun `step delta never goes negative`() {
         assertEquals(0, WorkoutSessionMath.stepDelta(firstSteps = 4000, lastSteps = 200))
     }

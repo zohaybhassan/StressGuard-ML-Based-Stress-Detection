@@ -4,6 +4,8 @@ import com.example.stressguard.data.local.WorkoutSessionStatus
 
 object WorkoutSessionMath {
 
+    private val PLAUSIBLE_AVERAGE_HEART_RATE = 30L..220L
+
     fun elapsedActiveMs(
         startedAtEpochMs: Long,
         plannedEndAtEpochMs: Long,
@@ -27,7 +29,7 @@ object WorkoutSessionMath {
     fun averageHeartRate(sum: Long, samples: Int): Int? {
         if (samples <= 0 || sum < 0L) return null
         val average = sum / samples
-        return average.takeIf { it <= Int.MAX_VALUE }?.toInt()
+        return average.takeIf { it in PLAUSIBLE_AVERAGE_HEART_RATE }?.toInt()
     }
 
     fun stepDelta(firstSteps: Int?, lastSteps: Int?): Int {
