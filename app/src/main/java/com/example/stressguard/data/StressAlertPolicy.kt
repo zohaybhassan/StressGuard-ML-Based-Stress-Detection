@@ -55,6 +55,7 @@ object StressAlertPolicy {
         mutedUntilEpochMs: Long = 0L,
         cooldownMs: Long = COOLDOWN_MS,
     ): AlertDecision {
+        if (highStressClassIndex < 0) return AlertDecision.NotSustained
         val window = recentClassIndices.takeLast(WINDOW)
 
         // Fewer readings than the threshold cannot satisfy it, whatever they are.

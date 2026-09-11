@@ -184,4 +184,12 @@ class StressAlertPolicyTest {
             StressAlertPolicy.evaluate(listOf(1, 1, 1, 0, 0), 2, now, null),
         )
     }
+
+    @Test
+    fun invalidHighClassIndexCannotTriggerAnAlert() {
+        assertEquals(
+            AlertDecision.NotSustained,
+            StressAlertPolicy.evaluate(listOf(-1, -1, -1), -1, now, null),
+        )
+    }
 }
