@@ -104,6 +104,30 @@ class SupabaseConfigTest {
     }
 
     @Test
+    fun incompleteHttpsUrlIsRejected() {
+        val problems = SupabaseConfig.validate("https://", validKey, validClientId)
+
+        assertTrue(problems.any { it.contains("complete https:// URL") })
+    }
+
+    @Test
+    fun endpointUrlCannotContainCredentialsOrFragments() {
+        val credentials = SupabaseConfig.validate(
+            "https://user:pass@example.supabase.co",
+            validKey,
+            validClientId,
+        )
+        val fragment = SupabaseConfig.validate(
+            "https://example.supabase.co/#token",
+            validKey,
+            validClientId,
+        )
+
+        assertTrue(credentials.any { it.contains("complete https:// URL") })
+        assertTrue(fragment.any { it.contains("complete https:// URL") })
+    }
+
+    @Test
     fun clientIdThatIsNotAGoogleOAuthIdIsRejected() {
         val problems = SupabaseConfig.validate(validUrl, validKey, "355796161084")
         assertTrue(problems.any { it.contains("googleWebClientId") })

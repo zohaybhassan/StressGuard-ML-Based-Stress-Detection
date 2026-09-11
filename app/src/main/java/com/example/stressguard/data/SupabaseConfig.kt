@@ -1,6 +1,7 @@
 package com.example.stressguard.data
 
 import com.example.stressguard.BuildConfig
+import java.net.URI
 import java.util.Base64
 
 /**
@@ -37,7 +38,7 @@ object SupabaseConfig {
 
     /** Auth needs these two; the Google client ID is only required for Google sign-in. */
     val isBackendConfigured: Boolean
-        get() = url.startsWith("https://") && publishableKey.isNotBlank() && !isSecretKey(publishableKey)
+        get() = backendProblems().isEmpty()
 
     /** Whether Google sign-in can be offered. Email and password does not depend on this. */
     val isGoogleConfigured: Boolean get() = googleProblems().isEmpty()
@@ -56,8 +57,8 @@ object SupabaseConfig {
     ): List<String> = buildList {
         if (url.isBlank()) {
             add("supabase.url is not set in local.properties")
-        } else if (!url.startsWith("https://")) {
-            add("supabase.url must start with https://")
+        } else if (!isValidHttpsUrl(url)) {
+            add("supabase.url must be a complete https:// URL")
         }
 
         if (publishableKey.isBlank()) {
@@ -91,6 +92,12 @@ object SupabaseConfig {
         if (candidate.startsWith("sb_secret_")) return true
         return jwtRole(candidate) == "service_role"
     }
+
+    private fun isValidHttpsUrl(value: String): Boolean = runCatching {
+        val uri = URI(value)
+        uri.scheme.equals("https", ignoreCase = true) &&
+            !uri.host.isNullOrBlank() && uri.userInfo == null && uri.fragment == null
+    }.getOrDefault(false)
 
     private fun jwtRole(key: String): String? {
         val parts = key.split('.')
