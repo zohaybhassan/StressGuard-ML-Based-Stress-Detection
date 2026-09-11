@@ -133,6 +133,23 @@ class LatencySampleTest {
         assertEquals(40L, metric.preprocessingMs)
         assertEquals(110L, metric.inferenceMs)
     }
+
+    @Test
+    fun clockAnomaliesCannotProduceNegativeDurations() {
+        val sample = LatencySample(
+            receivedAtElapsedMs = receivedAtElapsed,
+            receivedAtEpochMs = receivedAtEpoch,
+            coldStart = false,
+            now = clockOf(9_990, 9_980, 9_970),
+        )
+
+        val metric = sample.markPreprocessed().markInferred().markUiUpdated().build()!!
+
+        assertEquals(0L, metric.preprocessingMs)
+        assertEquals(0L, metric.inferenceMs)
+        assertEquals(0L, metric.uiUpdateMs)
+        assertEquals(0L, metric.totalMs)
+    }
 }
 
 /** The plan's §12 targets, expressed as assertions so a regression is caught. */

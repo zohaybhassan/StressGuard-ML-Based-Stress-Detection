@@ -58,17 +58,19 @@ class LatencySample(
      * reason unrelated to speed.
      */
     fun build(): LatencyMetricEntity? {
-        val preprocessed = preprocessingDoneAt ?: return null
-        val inferred = inferenceDoneAt ?: return null
-        val lastStage = alertFiredAt ?: uiUpdatedAt ?: inferred
+        val preprocessed = maxOf(preprocessingDoneAt ?: return null, receivedAtElapsedMs)
+        val inferred = maxOf(inferenceDoneAt ?: return null, preprocessed)
+        val uiUpdated = maxOf(uiUpdatedAt ?: inferred, inferred)
+        val alertFired = alertFiredAt?.let { maxOf(it, inferred) }
+        val lastStage = alertFired ?: uiUpdated
 
         return LatencyMetricEntity(
             recordedAtEpochMs = receivedAtEpochMs,
             preprocessingMs = preprocessed - receivedAtElapsedMs,
             inferenceMs = inferred - preprocessed,
-            uiUpdateMs = (uiUpdatedAt ?: inferred) - inferred,
+            uiUpdateMs = uiUpdated - inferred,
             receiveToPredictionMs = inferred - receivedAtElapsedMs,
-            predictionToAlertMs = alertFiredAt?.let { it - inferred },
+            predictionToAlertMs = alertFired?.let { it - inferred },
             totalMs = lastStage - receivedAtElapsedMs,
             coldStart = coldStart,
         )
