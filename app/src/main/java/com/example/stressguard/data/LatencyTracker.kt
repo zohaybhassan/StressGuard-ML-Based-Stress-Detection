@@ -33,16 +33,24 @@ class LatencySample(
     private var alertFiredAt: Long? = null
 
     /** Feature vector ready. */
-    fun markPreprocessed() = apply { preprocessingDoneAt = now() }
+    fun markPreprocessed() = apply {
+        if (preprocessingDoneAt == null) preprocessingDoneAt = now()
+    }
 
     /** Probabilities available. */
-    fun markInferred() = apply { inferenceDoneAt = now() }
+    fun markInferred() = apply {
+        if (inferenceDoneAt == null) inferenceDoneAt = now()
+    }
 
     /** Dashboard reflects the new prediction. */
-    fun markUiUpdated() = apply { uiUpdatedAt = now() }
+    fun markUiUpdated() = apply {
+        if (uiUpdatedAt == null) uiUpdatedAt = now()
+    }
 
     /** Haptic actually fired. Left unset when the smoothing rule did not trigger. */
-    fun markAlertFired() = apply { alertFiredAt = now() }
+    fun markAlertFired() = apply {
+        if (alertFiredAt == null) alertFiredAt = now()
+    }
 
     /**
      * Null until inference has been marked — a sample that never reached a prediction has no

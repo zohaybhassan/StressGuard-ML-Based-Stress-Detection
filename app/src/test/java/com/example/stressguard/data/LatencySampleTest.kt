@@ -118,6 +118,21 @@ class LatencySampleTest {
 
         assertEquals(receivedAtEpoch, sample.markPreprocessed().markInferred().build()!!.recordedAtEpochMs)
     }
+
+    @Test
+    fun repeatedStageMarksKeepTheFirstCompletionTime() {
+        val sample = LatencySample(
+            receivedAtElapsedMs = receivedAtElapsed,
+            receivedAtEpochMs = receivedAtEpoch,
+            coldStart = false,
+            now = clockOf(10_040, 10_150),
+        )
+
+        val metric = sample.markPreprocessed().markPreprocessed().markInferred().build()!!
+
+        assertEquals(40L, metric.preprocessingMs)
+        assertEquals(110L, metric.inferenceMs)
+    }
 }
 
 /** The plan's §12 targets, expressed as assertions so a regression is caught. */
