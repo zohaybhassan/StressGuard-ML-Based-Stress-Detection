@@ -134,12 +134,15 @@ object StressAttribution {
         label: String,
         extrapolating: Boolean,
     ): StressExplanation {
-        val baseline = probability.of(profile, vitals)
+        fun evaluate(candidateProfile: StressProfile, candidateVitals: StressVitals): Float =
+            boundedProbability(probability.of(candidateProfile, candidateVitals))
+
+        val baseline = evaluate(profile, vitals)
 
         val drivers = listOf(
             StressDriver(
                 feature = LiveFeature.HEART_RATE,
-                impact = baseline - probability.of(
+                impact = baseline - evaluate(
                     profile, vitals.copy(heartRate = TYPICAL_HEART_RATE)
                 ),
                 observed = vitals.heartRate.toFloat(),
@@ -147,7 +150,7 @@ object StressAttribution {
             ),
             StressDriver(
                 feature = LiveFeature.DAILY_STEPS,
-                impact = baseline - probability.of(
+                impact = baseline - evaluate(
                     profile, vitals.copy(dailySteps = TYPICAL_DAILY_STEPS)
                 ),
                 observed = vitals.dailySteps.toFloat(),
@@ -155,7 +158,7 @@ object StressAttribution {
             ),
             StressDriver(
                 feature = LiveFeature.SLEEP,
-                impact = baseline - probability.of(
+                impact = baseline - evaluate(
                     profile, vitals.copy(sleepHours = TYPICAL_SLEEP_HOURS)
                 ),
                 observed = vitals.sleepHours,
@@ -167,8 +170,11 @@ object StressAttribution {
             label = label,
             highStressProbability = baseline,
             drivers = drivers,
-            profileImpact = baseline - probability.of(REFERENCE_PROFILE, vitals),
+            profileImpact = baseline - evaluate(REFERENCE_PROFILE, vitals),
             extrapolating = extrapolating,
         )
     }
+
+    private fun boundedProbability(value: Float): Float =
+        if (value.isFinite()) value.coerceIn(0f, 1f) else 0.5f
 }

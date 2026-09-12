@@ -147,4 +147,35 @@ class StressAttributionTest {
         assertTrue(StressAttribution.TYPICAL_DAILY_STEPS in SensorReading.TRAINED_STEPS)
         assertTrue(StressAttribution.TYPICAL_SLEEP_HOURS in SensorReading.TRAINED_SLEEP_HOURS)
     }
+
+    @Test
+    fun `non-finite probabilities produce a neutral explanation`() {
+        val invalid = StressAttribution.HighStressProbability { _, _ -> Float.NaN }
+
+        val result = explain(
+            invalid,
+            StressVitals(heartRate = 95, dailySteps = 3000, sleepHours = 6f),
+        )
+
+        assertEquals(0.5f, result.highStressProbability, 0f)
+        assertTrue(result.drivers.all { it.impact == 0f })
+        assertEquals(0f, result.profileImpact, 0f)
+        assertNull(result.leadingDriver)
+    }
+
+    @Test
+    fun `probabilities are bounded before impacts are calculated`() {
+        val outOfBounds = StressAttribution.HighStressProbability { _, candidate ->
+            if (candidate.heartRate == StressAttribution.TYPICAL_HEART_RATE) -1f else 2f
+        }
+
+        val result = explain(
+            outOfBounds,
+            StressVitals(heartRate = 95, dailySteps = 3000, sleepHours = 6f),
+        )
+
+        assertEquals(1f, result.highStressProbability, 0f)
+        assertEquals(1f, result.drivers.single { it.feature == LiveFeature.HEART_RATE }.impact, 0f)
+        assertTrue(result.drivers.all { it.impact in -1f..1f })
+    }
 }
