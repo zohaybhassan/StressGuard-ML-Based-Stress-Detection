@@ -20,12 +20,13 @@ data class StressTrends(
     val highStressReadingsToday: Int,
     val readingsToday: Int,
 ) {
-    val hasData: Boolean get() = days.isNotEmpty()
+    val hasData: Boolean get() = daysWithData > 0
 
     /** Days in the window that carried at least one reading. Not the same as the window length. */
-    val daysWithData: Int get() = days.size
+    val daysWithData: Int get() = days.count { it.readings > 0 }
 
-    val highStressDays: Int get() = StressHistory.highStressDayCount(days)
+    val highStressDays: Int
+        get() = StressHistory.highStressDayCount(days.filter { it.readings > 0 })
 
     /**
      * True when one day holds every reading.
@@ -34,7 +35,7 @@ data class StressTrends(
      * that implies a week of evidence. Distinct from [hasData]: there *is* data, just not enough of
      * it spread over time to mean anything.
      */
-    val isTooSparseToChart: Boolean get() = days.size < 2
+    val isTooSparseToChart: Boolean get() = daysWithData < 2
 
     companion object {
         val EMPTY = StressTrends(emptyList(), 0, 0)

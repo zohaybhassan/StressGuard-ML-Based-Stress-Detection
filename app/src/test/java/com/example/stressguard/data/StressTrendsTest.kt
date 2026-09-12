@@ -36,6 +36,18 @@ class StressTrendsTest {
         assertEquals(0, empty.highStressDays)
     }
 
+    @Test
+    fun emptySummaryRowsDoNotPretendToBeChartableData() {
+        val emptyRows = trends(
+            listOf(day(0, high = 0, readings = 0), day(1, high = 4, readings = 0))
+        )
+
+        assertFalse(emptyRows.hasData)
+        assertTrue(emptyRows.isTooSparseToChart)
+        assertEquals(0, emptyRows.daysWithData)
+        assertEquals(0, emptyRows.highStressDays)
+    }
+
     /**
      * One day is data, but not a trend.
      *
