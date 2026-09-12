@@ -27,6 +27,7 @@ class DailyStepCounter(context: Context) {
 
     /** @param sinceBootCount the raw cumulative value from TYPE_STEP_COUNTER. */
     fun today(sinceBootCount: Long): Int {
+        if (sinceBootCount < 0L) return 0
         val today = dayKey()
         val storedDay = prefs.getString(KEY_DAY, null)
         var baseline = prefs.getLong(KEY_BASELINE, -1L)
@@ -50,7 +51,7 @@ class DailyStepCounter(context: Context) {
             )
         }
 
-        return (sinceBootCount - baseline).coerceAtLeast(0L).toInt()
+        return stepDelta(sinceBootCount, baseline)
     }
 
     /** Local calendar day, so "today" follows the wearer's timezone rather than UTC. */
@@ -64,5 +65,12 @@ class DailyStepCounter(context: Context) {
         private const val PREFS = "StressGuardSteps"
         private const val KEY_BASELINE = "day_start_counter"
         private const val KEY_DAY = "day_key"
+
+        internal fun stepDelta(sinceBootCount: Long, baseline: Long): Int {
+            if (sinceBootCount <= baseline) return 0
+            return (sinceBootCount - baseline)
+                .coerceAtMost(Int.MAX_VALUE.toLong())
+                .toInt()
+        }
     }
 }
