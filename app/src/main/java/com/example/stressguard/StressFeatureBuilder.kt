@@ -52,6 +52,12 @@ object StressFeatureBuilder {
 
     /** Every feature this app can supply, keyed by its name in the model manifest. */
     fun featureMap(profile: StressProfile, vitals: StressVitals): Map<String, Float> {
+        require(profile.age >= 0) { "Age cannot be negative" }
+        require(vitals.heartRate >= 0) { "Heart rate cannot be negative" }
+        require(vitals.dailySteps >= 0) { "Daily steps cannot be negative" }
+        require(vitals.sleepHours.isFinite() && vitals.sleepHours >= 0f) {
+            "Sleep duration must be finite and non-negative"
+        }
         val occupation = normalizeOccupation(profile.occupation)
         val features = LinkedHashMap<String, Float>()
 

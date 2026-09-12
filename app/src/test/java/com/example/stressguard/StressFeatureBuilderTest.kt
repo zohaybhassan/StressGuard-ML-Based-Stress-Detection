@@ -186,6 +186,24 @@ class StressFeatureBuilderTest {
         assertTrue(error?.message?.contains("Age") == true)
     }
 
+    @Test
+    fun invalidNumericInputsAreRejectedBeforeInference() {
+        val invalidInputs = listOf(
+            profile.copy(age = -1) to vitals,
+            profile to vitals.copy(heartRate = -1),
+            profile to vitals.copy(dailySteps = -1),
+            profile to vitals.copy(sleepHours = Float.NaN),
+            profile to vitals.copy(sleepHours = Float.POSITIVE_INFINITY),
+        )
+
+        invalidInputs.forEach { (candidateProfile, candidateVitals) ->
+            val error = runCatching {
+                StressFeatureBuilder.featureMap(candidateProfile, candidateVitals)
+            }.exceptionOrNull()
+            assertTrue(error is IllegalArgumentException)
+        }
+    }
+
     /** Unselected categories must not silently shift the numeric columns. */
     @Test
     fun unrecognizedCategoryLeavesGroupAtBaselineWithoutShiftingOtherFeatures() {
