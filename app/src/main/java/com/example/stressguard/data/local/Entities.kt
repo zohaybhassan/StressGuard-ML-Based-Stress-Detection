@@ -230,10 +230,12 @@ data class HealthChecklistEntity(
 class Converters {
     @TypeConverter
     fun floatListToString(values: List<Float>?): String =
-        values?.joinToString(",").orEmpty()
+        values?.filter { it.isFinite() }?.joinToString(",").orEmpty()
 
     @TypeConverter
     fun stringToFloatList(value: String?): List<Float> =
         if (value.isNullOrBlank()) emptyList()
-        else value.split(',').mapNotNull { it.trim().toFloatOrNull() }
+        else value.split(',').mapNotNull { entry ->
+            entry.trim().toFloatOrNull()?.takeIf { it.isFinite() }
+        }
 }

@@ -56,4 +56,17 @@ class ConvertersTest {
     fun storedFormIsReadableInADatabaseInspector() {
         assertEquals("0.25,0.75", converters.floatListToString(listOf(0.25f, 0.75f)))
     }
+
+    @Test
+    fun nonFiniteProbabilitiesAreNotPersistedOrRestored() {
+        val stored = converters.floatListToString(
+            listOf(0.25f, Float.NaN, Float.POSITIVE_INFINITY, 0.75f)
+        )
+
+        assertEquals("0.25,0.75", stored)
+        assertEquals(
+            listOf(0.25f, 0.75f),
+            converters.stringToFloatList("0.25,NaN,Infinity,0.75"),
+        )
+    }
 }
