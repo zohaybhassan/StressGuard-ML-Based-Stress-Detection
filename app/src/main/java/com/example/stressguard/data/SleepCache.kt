@@ -2,6 +2,8 @@ package com.example.stressguard.data
 
 import android.content.Context
 
+internal fun isValidSleepHours(hours: Float): Boolean = hours.isFinite() && hours in 0f..24f
+
 /**
  * The last sleep figure read from Health Connect, so background inference has one to use.
  *
@@ -20,6 +22,7 @@ class SleepCache(context: Context) {
 
     /** Stores a figure just read from Health Connect. */
     fun put(hours: Float) {
+        if (!isValidSleepHours(hours)) return
         prefs.edit()
             .putFloat(KEY_HOURS, hours)
             .putLong(KEY_READ_AT, System.currentTimeMillis())
@@ -39,7 +42,7 @@ class SleepCache(context: Context) {
         // A backwards wall clock makes the age negative; treated as expired rather than trusted.
         val age = now - readAt
         if (age < 0 || age > MAX_AGE_MS) return null
-        return prefs.getFloat(KEY_HOURS, 0f)
+        return prefs.getFloat(KEY_HOURS, 0f).takeIf(::isValidSleepHours)
     }
 
     /** Drops the cached figure, on sign-out. It describes one person's night, not the device's. */
