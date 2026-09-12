@@ -57,7 +57,7 @@ class PassiveVitalsStore(context: Context) {
     /** Steps taken today, or 0 if nothing has been recorded for today yet. */
     fun stepsToday(atEpochMs: Long): Int =
         if (prefs.getString(KEY_STEPS_DATE, null) == dateKey(atEpochMs)) {
-            prefs.getInt(KEY_STEPS, 0)
+            prefs.getInt(KEY_STEPS, 0).coerceAtLeast(0)
         } else {
             0
         }
@@ -112,7 +112,11 @@ class PassiveVitalsStore(context: Context) {
             storedSteps: Int,
             incomingDate: String,
             incomingSteps: Int,
-        ): Int = if (storedDate == incomingDate) maxOf(storedSteps, incomingSteps) else incomingSteps
+        ): Int {
+            val safeStored = storedSteps.coerceAtLeast(0)
+            val safeIncoming = incomingSteps.coerceAtLeast(0)
+            return if (storedDate == incomingDate) maxOf(safeStored, safeIncoming) else safeIncoming
+        }
 
         /** Floor on transmissions; each one costs the phone an inference and a database write. */
         const val MIN_SEND_INTERVAL_MS = 5_000L

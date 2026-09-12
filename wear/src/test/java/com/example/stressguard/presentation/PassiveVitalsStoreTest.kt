@@ -80,4 +80,16 @@ class PassiveVitalsStoreTest {
 
         assertEquals(4010, kept)
     }
+
+    @Test
+    fun `invalid negative counts cannot enter the stored total`() {
+        assertEquals(
+            4010,
+            PassiveVitalsStore.resolveSteps(today, 4010, today, -1),
+        )
+        assertEquals(
+            0,
+            PassiveVitalsStore.resolveSteps(yesterday, 4010, today, -1),
+        )
+    }
 }
