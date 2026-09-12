@@ -176,6 +176,16 @@ class StressFeatureBuilderTest {
         )
     }
 
+    @Test
+    fun duplicateManifestFeaturesAreRejected() {
+        val error = runCatching {
+            StressFeatureBuilder.buildVector(profile, vitals, listOf("Age", "Age"))
+        }.exceptionOrNull()
+
+        assertTrue(error is IllegalArgumentException)
+        assertTrue(error?.message?.contains("Age") == true)
+    }
+
     /** Unselected categories must not silently shift the numeric columns. */
     @Test
     fun unrecognizedCategoryLeavesGroupAtBaselineWithoutShiftingOtherFeatures() {

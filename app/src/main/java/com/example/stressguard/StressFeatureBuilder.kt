@@ -79,6 +79,12 @@ object StressFeatureBuilder {
         featureNames: List<String>,
     ): FloatArray {
         val features = featureMap(profile, vitals)
+        val duplicates = featureNames.groupingBy { it }.eachCount()
+            .filterValues { it > 1 }
+            .keys
+        require(duplicates.isEmpty()) {
+            "Model manifest repeats feature names: $duplicates"
+        }
         val unsupported = featureNames.filterNot { features.containsKey(it) }
         require(unsupported.isEmpty()) {
             "Model expects features this app cannot supply: $unsupported. The exported bundle's " +
