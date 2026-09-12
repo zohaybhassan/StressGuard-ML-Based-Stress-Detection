@@ -69,7 +69,7 @@ object PredictionHistoryRepository {
             } while (page.size == PAGE_SIZE.toInt())
 
             val inserted = StressGuardDatabase.get(context).stressPredictions()
-                .mergeRestored(restored.map { it.toEntity() })
+                .mergeRestored(restored.mapNotNull { it.toEntity() })
             Log.i(TAG, "restored $inserted of ${restored.size} recent predictions for $userId")
             true
         } catch (error: Exception) {

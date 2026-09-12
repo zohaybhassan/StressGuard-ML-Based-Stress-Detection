@@ -57,20 +57,24 @@ data class StressPredictionRow(
         )
     }
     /** A server row restored after login. It must not be queued for upload again. */
-    fun toEntity(): StressPredictionEntity = StressPredictionEntity(
-        recordedAtEpochMs = Instant.parse(recordedAt).toEpochMilli(),
-        label = label,
-        classIndex = classIndex,
-        confidence = confidence,
-        probabilities = probabilities,
-        modelVersion = modelVersion,
-        heartRate = heartRate,
-        dailySteps = dailySteps,
-        activityLevel = activityLevel,
-        sleepHours = sleepHours,
-        outOfTrainingRange = outOfTrainingRange,
-        synced = true,
-    )
+    fun toEntity(): StressPredictionEntity? {
+        val recordedAtEpochMs = runCatching { Instant.parse(recordedAt).toEpochMilli() }
+            .getOrNull() ?: return null
+        return StressPredictionEntity(
+            recordedAtEpochMs = recordedAtEpochMs,
+            label = label,
+            classIndex = classIndex,
+            confidence = confidence,
+            probabilities = probabilities,
+            modelVersion = modelVersion,
+            heartRate = heartRate,
+            dailySteps = dailySteps,
+            activityLevel = activityLevel,
+            sleepHours = sleepHours,
+            outOfTrainingRange = outOfTrainingRange,
+            synced = true,
+        )
+    }
 }
 
 @Serializable

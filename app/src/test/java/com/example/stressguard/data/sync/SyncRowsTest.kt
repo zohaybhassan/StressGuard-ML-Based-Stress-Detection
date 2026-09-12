@@ -77,9 +77,30 @@ class SyncRowsTest {
             outOfTrainingRange = false,
         )
 
-        val restored = StressPredictionRow.from(original, userId).toEntity()
+        val restored = StressPredictionRow.from(original, userId).toEntity()!!
 
         assertEquals(original.copy(id = 0, synced = true), restored)
+    }
+
+    @Test
+    fun `prediction with an invalid server timestamp is skipped`() {
+        val original = StressPredictionEntity(
+            recordedAtEpochMs = recordedAt,
+            label = "stressed",
+            classIndex = 1,
+            confidence = 0.9f,
+            probabilities = listOf(0.1f, 0.9f),
+            modelVersion = "binary-2026-07-24",
+            heartRate = 84,
+            dailySteps = 458,
+            activityLevel = 8000,
+            sleepHours = 7.5f,
+            outOfTrainingRange = false,
+        )
+
+        val invalid = StressPredictionRow.from(original, userId).copy(recordedAt = "invalid")
+
+        assertNull(invalid.toEntity())
     }
 
     @Test
