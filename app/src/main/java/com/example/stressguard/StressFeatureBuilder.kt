@@ -59,9 +59,9 @@ object StressFeatureBuilder {
         features[HEART_RATE] = vitals.heartRate.toFloat()
         features[DAILY_STEPS] = vitals.dailySteps.toFloat()
         features[SLEEP_DURATION] = vitals.sleepHours
-        features[GENDER_MALE] = flag(profile.gender, "Male")
+        features[GENDER_MALE] = flag(profile.gender.trim(), "Male")
         OCCUPATIONS.forEach { features["Occupation_$it"] = flag(occupation, it) }
-        BMI_CATEGORIES.forEach { features["BMI Category_$it"] = flag(profile.bmi, it) }
+        BMI_CATEGORIES.forEach { features["BMI Category_$it"] = flag(profile.bmi.trim(), it) }
 
         return features
     }
@@ -107,10 +107,12 @@ object StressFeatureBuilder {
     private fun flag(actual: String, expected: String): Float =
         if (actual.equals(expected, ignoreCase = true)) 1f else 0f
 
-    private fun normalizeOccupation(value: String): String =
-        when {
-            value.equals("Sales Rep", ignoreCase = true) -> "Sales Representative"
-            value.equals("Sales Person", ignoreCase = true) -> "Salesperson"
-            else -> value
+    private fun normalizeOccupation(value: String): String {
+        val trimmed = value.trim()
+        return when {
+            trimmed.equals("Sales Rep", ignoreCase = true) -> "Sales Representative"
+            trimmed.equals("Sales Person", ignoreCase = true) -> "Salesperson"
+            else -> trimmed
         }
+    }
 }

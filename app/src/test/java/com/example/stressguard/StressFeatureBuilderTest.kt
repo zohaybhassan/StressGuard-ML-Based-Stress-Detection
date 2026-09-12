@@ -145,6 +145,18 @@ class StressFeatureBuilderTest {
         assertEquals(1f, map.getValue("BMI Category_Overweight"), 0f)
     }
 
+    @Test
+    fun categoryMatchingIgnoresSurroundingWhitespace() {
+        val map = StressFeatureBuilder.featureMap(
+            profile.copy(gender = " Male ", occupation = " Nurse ", bmi = " Overweight "),
+            vitals,
+        )
+
+        assertEquals(1f, map.getValue("Gender_Male"), 0f)
+        assertEquals(1f, map.getValue("Occupation_Nurse"), 0f)
+        assertEquals(1f, map.getValue("BMI Category_Overweight"), 0f)
+    }
+
     /** An unknown feature must fail loudly, not quietly become a zero. */
     @Test
     fun unknownFeatureIsRejected() {
