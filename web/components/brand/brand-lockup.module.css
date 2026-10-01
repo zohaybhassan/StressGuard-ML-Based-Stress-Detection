@@ -1,0 +1,20 @@
+.lockup {
+  display: inline-flex;
+  min-width: max-content;
+  align-items: center;
+  gap: 0.55rem;
+  border-radius: var(--radius-input);
+  color: var(--color-brand-strong);
+}
+
+.mark {
+  width: 2.625rem;
+  height: auto;
+  object-fit: contain;
+}
+
+.wordmark {
+  font-size: 1.28rem;
+  font-weight: 740;
+  letter-spacing: -0.035em;
+}

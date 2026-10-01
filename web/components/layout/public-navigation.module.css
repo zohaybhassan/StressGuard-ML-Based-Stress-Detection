@@ -1,0 +1,121 @@
+.header {
+  position: sticky;
+  z-index: 20;
+  top: 0;
+  border-bottom: 1px solid color-mix(in srgb, var(--color-border) 78%, transparent);
+  background: color-mix(in srgb, var(--color-canvas-warm) 90%, transparent);
+  backdrop-filter: blur(18px);
+}
+
+.inner {
+  display: flex;
+  min-height: 4.6rem;
+  align-items: center;
+  justify-content: space-between;
+  gap: 2rem;
+}
+
+.desktopNav,
+.desktopActions {
+  display: flex;
+  align-items: center;
+}
+
+.desktopNav {
+  gap: clamp(1.25rem, 3vw, 2.4rem);
+  color: var(--color-text-secondary);
+  font-size: 0.9rem;
+  font-weight: 590;
+}
+
+.desktopNav a,
+.mobilePanel a {
+  border-radius: 0.4rem;
+  transition: color var(--transition-ui);
+}
+
+.desktopNav a:hover {
+  color: var(--color-brand-strong);
+}
+
+.desktopActions {
+  gap: 0.35rem;
+}
+
+.mobileMenu {
+  display: none;
+  position: relative;
+}
+
+.mobileMenu summary {
+  display: grid;
+  width: 2.7rem;
+  height: 2.7rem;
+  cursor: pointer;
+  list-style: none;
+  place-items: center;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-input);
+  background: var(--color-surface);
+}
+
+.mobileMenu summary::-webkit-details-marker {
+  display: none;
+}
+
+.closeIcon {
+  display: none;
+}
+
+.mobileMenu[open] .openIcon {
+  display: none;
+}
+
+.mobileMenu[open] .closeIcon {
+  display: block;
+}
+
+.mobilePanel {
+  position: absolute;
+  top: calc(100% + 0.75rem);
+  right: 0;
+  display: grid;
+  width: min(19rem, calc(100vw - 2rem));
+  gap: 0.25rem;
+  padding: 0.75rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-panel);
+}
+
+.mobilePanel a {
+  padding: 0.8rem 0.85rem;
+  color: var(--color-text-secondary);
+  font-weight: 620;
+}
+
+.mobilePanel a:hover {
+  background: var(--color-surface-muted);
+  color: var(--color-text);
+}
+
+.mobilePanel .mobileCta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 0.35rem;
+  background: var(--color-brand-strong);
+  color: #f7fffc;
+}
+
+@media (max-width: 800px) {
+  .desktopNav,
+  .desktopActions {
+    display: none;
+  }
+
+  .mobileMenu {
+    display: block;
+  }
+}

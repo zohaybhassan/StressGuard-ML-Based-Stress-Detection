@@ -58,6 +58,15 @@ lint-results*.xml
 test-results/
 connected_android_test_additional_output/
 
+# Web / Next.js outputs
+node_modules/
+.next/
+out/
+coverage/
+playwright-report/
+blob-report/
+*.tsbuildinfo
+
 # OS files
 .DS_Store
 Thumbs.db
@@ -76,3 +85,5 @@ __pycache__/
 !app/src/main/assets/stress_model/*.onnx
 !app/src/main/assets/stress_model/*.json
 
+StressGuard-Landing-Mockup.png
+web/IMPLEMENTATION_PLAN.md

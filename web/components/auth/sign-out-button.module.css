@@ -1,0 +1,26 @@
+.button {
+  display: grid;
+  width: 2.5rem;
+  height: 2.5rem;
+  place-items: center;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-input);
+  background: var(--color-surface);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition:
+    color var(--transition-ui),
+    border-color var(--transition-ui),
+    background-color var(--transition-ui);
+}
+
+.button:hover:not(:disabled) {
+  border-color: var(--color-border-strong);
+  background: var(--color-surface-muted);
+  color: var(--color-danger);
+}
+
+.button:disabled {
+  cursor: wait;
+  opacity: 0.55;
+}
