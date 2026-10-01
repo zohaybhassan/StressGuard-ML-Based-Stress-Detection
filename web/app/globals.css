@@ -1,0 +1,274 @@
+@import "tailwindcss";
+@import "@radix-ui/themes/styles.css";
+
+:root {
+  color-scheme: light;
+
+  --color-brand: #0d8f7c;
+  --color-brand-strong: #076b5f;
+  --color-brand-deep: #073e38;
+  --color-brand-soft: #dff5ef;
+  --color-brand-softer: #effaf7;
+
+  --color-canvas: #f7faf8;
+  --color-canvas-warm: #fbfcfa;
+  --color-surface: #ffffff;
+  --color-surface-muted: #eef4f1;
+  --color-surface-raised: #ffffff;
+  --color-border: #dfeae5;
+  --color-border-strong: #cbdcd5;
+
+  --color-text: #10201d;
+  --color-text-secondary: #536963;
+  --color-text-tertiary: #7b918a;
+  --color-text-inverse: #f5fbf9;
+
+  --color-success: #2bb874;
+  --color-success-soft: #e3f7ed;
+  --color-warning: #e6a333;
+  --color-warning-soft: #fff4df;
+  --color-danger: #dc4c55;
+  --color-danger-soft: #fdebed;
+  --color-heart: #ef5b70;
+  --color-heart-soft: #fde9ed;
+  --color-steps: #397fe7;
+  --color-steps-soft: #e8f0fd;
+  --color-sleep: #765cdf;
+  --color-sleep-soft: #eeeafd;
+  --color-assistant: #8a63d2;
+  --color-assistant-soft: #f0eafd;
+
+  --chart-stress: #18b990;
+  --chart-heart: #ed6074;
+  --chart-steps: #3f84ee;
+  --chart-sleep: #7862df;
+  --chart-grid: #dfeae5;
+  --chart-axis: #718780;
+
+  --radius-input: 0.65rem;
+  --radius-card: 1rem;
+  --radius-panel: 1.25rem;
+  --radius-pill: 999px;
+
+  --shadow-soft: 0 16px 40px rgb(25 82 68 / 0.08);
+  --shadow-panel: 0 24px 70px rgb(25 82 68 / 0.12);
+  --shadow-button: 0 10px 24px rgb(7 107 95 / 0.2);
+
+  --space-page: clamp(1rem, 3vw, 2.5rem);
+  --content-width: 78rem;
+  --transition-ui: 180ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+    --color-brand: #42c9ad;
+    --color-brand-strong: #62d8bf;
+    --color-brand-deep: #d9fff5;
+    --color-brand-soft: #133f38;
+    --color-brand-softer: #102f2a;
+    --color-canvas: #0d1715;
+    --color-canvas-warm: #111b19;
+    --color-surface: #15221f;
+    --color-surface-muted: #1a2b27;
+    --color-surface-raised: #1a2926;
+    --color-border: #29403a;
+    --color-border-strong: #36534c;
+    --color-text: #ecf7f3;
+    --color-text-secondary: #b1c7c0;
+    --color-text-tertiary: #829b94;
+    --color-text-inverse: #0c1d19;
+    --color-success-soft: #14382a;
+    --color-warning-soft: #392d18;
+    --color-danger-soft: #3b2023;
+    --color-heart-soft: #3a2127;
+    --color-steps-soft: #172d4c;
+    --color-sleep-soft: #2a2447;
+    --color-assistant-soft: #302446;
+    --chart-grid: #2a423b;
+    --chart-axis: #9ab0aa;
+    --shadow-soft: 0 16px 40px rgb(0 0 0 / 0.16);
+    --shadow-panel: 0 24px 70px rgb(0 0 0 / 0.22);
+    --shadow-button: 0 10px 24px rgb(0 0 0 / 0.22);
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  background: var(--color-canvas);
+}
+
+body {
+  min-height: 100dvh;
+  margin: 0;
+  background: var(--color-canvas);
+  color: var(--color-text);
+  font-family: var(--font-geist-sans), "Segoe UI", sans-serif;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+button,
+a {
+  -webkit-tap-highlight-color: transparent;
+}
+
+:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--color-brand) 58%, transparent);
+  outline-offset: 3px;
+}
+
+::selection {
+  background: var(--color-brand-soft);
+  color: var(--color-brand-deep);
+}
+
+.page-container {
+  width: min(100% - (2 * var(--space-page)), var(--content-width));
+  margin-inline: auto;
+}
+
+.section-space {
+  padding-block: clamp(4.5rem, 8vw, 7.5rem);
+}
+
+.eyebrow {
+  margin: 0 0 0.75rem;
+  color: var(--color-brand-strong);
+  font-size: 0.76rem;
+  font-weight: 750;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.display-title {
+  max-width: 13ch;
+  margin: 0;
+  font-size: clamp(2.75rem, 6vw, 5.25rem);
+  font-weight: 730;
+  letter-spacing: -0.055em;
+  line-height: 0.98;
+}
+
+.section-title {
+  max-width: 18ch;
+  margin: 0;
+  font-size: clamp(2rem, 4vw, 3.4rem);
+  font-weight: 700;
+  letter-spacing: -0.045em;
+  line-height: 1.05;
+}
+
+.body-copy {
+  max-width: 62ch;
+  color: var(--color-text-secondary);
+  font-size: clamp(1rem, 1.5vw, 1.12rem);
+  line-height: 1.7;
+}
+
+.button-primary,
+.button-secondary,
+.button-quiet {
+  display: inline-flex;
+  min-height: 2.85rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.55rem;
+  border-radius: var(--radius-input);
+  padding: 0.75rem 1.1rem;
+  font-size: 0.94rem;
+  font-weight: 680;
+  line-height: 1;
+  white-space: nowrap;
+  transition:
+    transform var(--transition-ui),
+    background-color var(--transition-ui),
+    border-color var(--transition-ui),
+    color var(--transition-ui),
+    box-shadow var(--transition-ui);
+}
+
+.button-primary {
+  border: 1px solid var(--color-brand-strong);
+  background: var(--color-brand-strong);
+  box-shadow: var(--shadow-button);
+  color: #f7fffc;
+}
+
+.button-secondary {
+  border: 1px solid var(--color-border-strong);
+  background: color-mix(in srgb, var(--color-surface) 84%, transparent);
+  color: var(--color-brand-deep);
+}
+
+.button-quiet {
+  border: 1px solid transparent;
+  color: var(--color-text-secondary);
+}
+
+.button-primary:hover {
+  background: var(--color-brand);
+  border-color: var(--color-brand);
+}
+
+.button-secondary:hover,
+.button-quiet:hover {
+  border-color: var(--color-border-strong);
+  background: var(--color-surface-muted);
+  color: var(--color-text);
+}
+
+.button-primary:active,
+.button-secondary:active,
+.button-quiet:active {
+  transform: translateY(1px);
+}
+
+.surface-card {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+  background: var(--color-surface);
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}
