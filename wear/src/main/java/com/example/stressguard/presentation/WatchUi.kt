@@ -191,34 +191,48 @@ private fun DashboardScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(start = 12.dp, end = 12.dp, top = 23.dp, bottom = 22.dp),
+                .padding(start = 12.dp, end = 12.dp, top = 30.dp, bottom = 18.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.SpaceBetween,
         ) {
-            StressGauge(
-                score = state.score,
-                label = displayLabel(state),
-                severity = severityColor(state.severity),
-                outOfRange = state.outOfTrainingRange,
-                size = 68.dp,
-                onClick = onStatus,
-            )
             Row(
-                modifier = Modifier.width(132.dp),
-                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                modifier = Modifier
+                    .width(154.dp)
+                    .height(80.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically,
             ) {
-                MetricPill(
-                    modifier = Modifier.weight(1f),
-                    title = "HR",
-                    value = if (sensor.heartRate > 0) "${sensor.heartRate} bpm" else "--",
-                    color = Heart,
+                StressGauge(
+                    score = state.score,
+                    label = displayLabel(state),
+                    severity = severityColor(state.severity),
+                    outOfRange = state.outOfTrainingRange,
+                    size = 80.dp,
+                    onClick = onStatus,
                 )
-                MetricPill(
-                    modifier = Modifier.weight(1f),
-                    title = "STEPS",
-                    value = sensor.steps.toString(),
-                    color = Steps,
-                )
+                Column(
+                    modifier = Modifier
+                        .width(66.dp)
+                        .height(76.dp),
+                    verticalArrangement = Arrangement.spacedBy(4.dp),
+                ) {
+                    MetricPill(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .weight(1f),
+                        title = "HR",
+                        value = if (sensor.heartRate > 0) "${sensor.heartRate} bpm" else "--",
+                        color = Heart,
+                    )
+                    MetricPill(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .weight(1f),
+                        title = "STEPS",
+                        value = sensor.steps.toString(),
+                        color = Steps,
+                    )
+                }
             }
             Text(
                 text = dashboardStatus(sensor, state, now),
@@ -230,8 +244,8 @@ private fun DashboardScreen(
                 modifier = Modifier.fillMaxWidth(),
             )
             Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                modifier = Modifier.width(150.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 PillAction(
                     text = "Breathe",
@@ -284,8 +298,8 @@ private fun StressGauge(
         contentAlignment = Alignment.Center,
     ) {
         Canvas(Modifier.fillMaxSize()) {
-            val inset = 6.dp.toPx()
-            val stroke = Stroke(width = 7.dp.toPx(), cap = StrokeCap.Round)
+            val inset = 7.dp.toPx()
+            val stroke = Stroke(width = 8.dp.toPx(), cap = StrokeCap.Round)
             val arcSize = Size(this.size.width - inset * 2, this.size.height - inset * 2)
             drawArc(
                 color = SurfaceVariant,
@@ -312,13 +326,13 @@ private fun StressGauge(
             Text(
                 text = score?.let { "$it%" } ?: "--",
                 color = TextPrimary,
-                fontSize = 27.sp,
+                fontSize = 30.sp,
                 fontWeight = FontWeight.SemiBold,
             )
             Text(
                 text = label + if (outOfRange) "*" else "",
                 color = severity,
-                fontSize = 9.sp,
+                fontSize = 10.sp,
                 fontWeight = FontWeight.SemiBold,
                 maxLines = 1,
             )
@@ -335,18 +349,20 @@ private fun MetricPill(
 ) {
     Column(
         modifier = modifier
-            .height(24.dp)
-            .background(Surface, RoundedCornerShape(12.dp))
-            .border(1.dp, Outline, RoundedCornerShape(12.dp))
-            .padding(horizontal = 6.dp),
+            .background(Surface, RoundedCornerShape(14.dp))
+            .border(1.dp, Outline, RoundedCornerShape(14.dp))
+            .padding(horizontal = 5.dp, vertical = 2.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
     ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Text(title, color = color, fontSize = 8.sp, fontWeight = FontWeight.SemiBold)
-            Spacer(Modifier.width(3.dp))
-            Text(value, color = TextPrimary, fontSize = 10.sp, maxLines = 1)
-        }
+        Text(title, color = color, fontSize = 8.sp, fontWeight = FontWeight.SemiBold)
+        Text(
+            text = value,
+            color = TextPrimary,
+            fontSize = 12.sp,
+            fontWeight = FontWeight.Medium,
+            maxLines = 1,
+        )
     }
 }
 
@@ -699,9 +715,7 @@ private fun PillAction(
     val shape = RoundedCornerShape(50)
     Box(
         modifier = modifier
-                .height(48.dp)
-            .background(if (primary) Brand else Surface, shape)
-            .border(1.dp, if (primary) Brand else Outline, shape)
+            .height(48.dp)
             .clickable(
                 interactionSource = remember { MutableInteractionSource() },
                 indication = LocalIndication.current,
@@ -711,15 +725,24 @@ private fun PillAction(
             .semantics { role = Role.Button },
         contentAlignment = Alignment.Center,
     ) {
-        Text(
-            text = text,
-            color = if (primary) OnBrand else TextPrimary,
-            fontSize = if (compact) 11.sp else 12.sp,
-            fontWeight = FontWeight.SemiBold,
-            textAlign = TextAlign.Center,
-            maxLines = 2,
-            modifier = Modifier.padding(horizontal = 8.dp),
-        )
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(if (compact) 36.dp else 48.dp)
+                .background(if (primary) Brand else Surface, shape)
+                .border(1.dp, if (primary) Brand else Outline, shape),
+            contentAlignment = Alignment.Center,
+        ) {
+            Text(
+                text = text,
+                color = if (primary) OnBrand else TextPrimary,
+                fontSize = if (compact) 11.sp else 12.sp,
+                fontWeight = FontWeight.SemiBold,
+                textAlign = TextAlign.Center,
+                maxLines = 2,
+                modifier = Modifier.padding(horizontal = 8.dp),
+            )
+        }
     }
 }
 
