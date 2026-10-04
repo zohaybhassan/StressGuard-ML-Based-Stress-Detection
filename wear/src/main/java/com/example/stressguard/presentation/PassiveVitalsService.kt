@@ -64,6 +64,7 @@ class PassiveVitalsService : PassiveListenerService() {
         // on the watch means the same thing on the phone.
         val ageMs = (SystemClock.elapsedRealtime() - newest.timeDurationFromBoot.toMillis())
             .coerceAtLeast(0L)
+        store.recordHeartRate(heartRate, System.currentTimeMillis() - ageMs)
 
         Log.d(
             TAG,
