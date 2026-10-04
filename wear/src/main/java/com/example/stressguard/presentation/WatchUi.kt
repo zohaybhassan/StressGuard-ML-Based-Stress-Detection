@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -191,14 +192,14 @@ private fun DashboardScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(start = 12.dp, end = 12.dp, top = 30.dp, bottom = 18.dp),
+                .padding(start = 12.dp, end = 12.dp, top = 30.dp, bottom = 16.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.SpaceBetween,
         ) {
             Row(
                 modifier = Modifier
-                    .width(154.dp)
-                    .height(80.dp),
+                    .width(160.dp)
+                    .height(86.dp),
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
@@ -207,7 +208,7 @@ private fun DashboardScreen(
                     label = displayLabel(state),
                     severity = severityColor(state.severity),
                     outOfRange = state.outOfTrainingRange,
-                    size = 80.dp,
+                    size = 86.dp,
                     onClick = onStatus,
                 )
                 Column(
@@ -322,17 +323,22 @@ private fun StressGauge(
                 )
             }
         }
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Column(
+            modifier = Modifier.offset(y = (-3).dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
             Text(
                 text = score?.let { "$it%" } ?: "--",
                 color = TextPrimary,
-                fontSize = 30.sp,
+                fontSize = 27.sp,
+                lineHeight = 29.sp,
                 fontWeight = FontWeight.SemiBold,
             )
             Text(
                 text = label + if (outOfRange) "*" else "",
                 color = severity,
-                fontSize = 10.sp,
+                fontSize = 9.sp,
+                lineHeight = 10.sp,
                 fontWeight = FontWeight.SemiBold,
                 maxLines = 1,
             )
