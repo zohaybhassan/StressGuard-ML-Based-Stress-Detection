@@ -1,5 +1,9 @@
 <resources>
     <string name="app_name">StressGuard</string>
+    <string name="stress_tile_label">Current stress</string>
+    <string name="stress_tile_description">Your latest phone-computed StressGuard result</string>
+    <string name="stress_complication_label">Stress percentage</string>
+    <string name="stress_complication_description">Latest StressGuard percentage from your phone</string>
     <!--
     This string is used for square devices and overridden by hello_world in
     values-round/strings.xml for round devices.

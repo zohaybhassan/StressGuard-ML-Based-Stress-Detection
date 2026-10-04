@@ -1,0 +1,80 @@
+package com.example.stressguard.presentation
+
+/** Wear-side mirror of the versioned phone/watch wire format. */
+object WatchProtocol {
+    const val STATE_PATH = "/stress_state"
+    const val COMMAND_PATH = "/stress_command"
+    private const val VERSION = 1
+
+    enum class Status { WAITING, READY, WORKOUT, PROFILE_NEEDED, MODEL_ERROR }
+    enum class Severity { UNKNOWN, LOW, MODERATE, HIGH }
+    enum class WorkoutStatus { NONE, ACTIVE, PAUSED }
+
+    data class State(
+        val status: Status = Status.WAITING,
+        val score: Int? = null,
+        val label: String = "WAITING",
+        val severity: Severity = Severity.UNKNOWN,
+        val measuredAtEpochMs: Long = 0L,
+        val outOfTrainingRange: Boolean = false,
+        val alertsMutedUntilEpochMs: Long = 0L,
+        val workoutUntilEpochMs: Long = 0L,
+        val workoutStatus: WorkoutStatus = WorkoutStatus.NONE,
+        val feedbackId: Long = 0L,
+        val alertActive: Boolean = false,
+    ) {
+        companion object {
+            fun decode(payload: String): State? {
+                val parts = payload.split('|')
+                if (parts.size != 12 || parts[0].toIntOrNull() != VERSION) return null
+                return runCatching {
+                    State(
+                        status = Status.valueOf(parts[1]),
+                        score = parts[2].toInt().takeIf { it >= 0 }?.coerceIn(0, 100),
+                        label = parts[3].ifBlank { "WAITING" },
+                        severity = Severity.valueOf(parts[4]),
+                        measuredAtEpochMs = parts[5].toLong().coerceAtLeast(0L),
+                        outOfTrainingRange = parts[6] == "1",
+                        alertsMutedUntilEpochMs = parts[7].toLong().coerceAtLeast(0L),
+                        workoutUntilEpochMs = parts[8].toLong().coerceAtLeast(0L),
+                        workoutStatus = WorkoutStatus.valueOf(parts[9]),
+                        feedbackId = parts[10].toLong().coerceAtLeast(0L),
+                        alertActive = parts[11] == "1",
+                    )
+                }.getOrNull()
+            }
+        }
+    }
+
+    sealed interface Command {
+        data object RequestState : Command
+        data class MuteAlerts(val durationMs: Long) : Command
+        data object ResumeAlerts : Command
+        data class StartWorkout(val durationMs: Long) : Command
+        data object PauseWorkout : Command
+        data object ResumeWorkout : Command
+        data object EndWorkout : Command
+        data class SaveFeedback(
+            val feedbackId: Long,
+            val confirmedStressed: Boolean,
+            val severity: Int?,
+        ) : Command
+
+        fun encode(): String = when (this) {
+            RequestState -> "$VERSION|REQUEST_STATE"
+            is MuteAlerts -> "$VERSION|MUTE_ALERTS|$durationMs"
+            ResumeAlerts -> "$VERSION|RESUME_ALERTS"
+            is StartWorkout -> "$VERSION|START_WORKOUT|$durationMs"
+            PauseWorkout -> "$VERSION|PAUSE_WORKOUT"
+            ResumeWorkout -> "$VERSION|RESUME_WORKOUT"
+            EndWorkout -> "$VERSION|END_WORKOUT"
+            is SaveFeedback -> listOf(
+                VERSION,
+                "SAVE_FEEDBACK",
+                feedbackId,
+                if (confirmedStressed) 1 else 0,
+                severity ?: 0,
+            ).joinToString("|")
+        }
+    }
+}
