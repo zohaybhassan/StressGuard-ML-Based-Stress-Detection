@@ -1,10 +1,14 @@
 package com.example.stressguard
 
+import android.app.NotificationManager
 import android.os.SystemClock
 import android.util.Log
 import com.example.stressguard.data.PipelineResult
 import com.example.stressguard.data.SensorReading
 import com.example.stressguard.data.StressPipeline
+import com.example.stressguard.data.WorkoutSessionRepository
+import com.example.stressguard.data.local.StressGuardDatabase
+import com.example.stressguard.data.sync.SyncScheduler
 import com.google.android.gms.wearable.MessageEvent
 import com.google.android.gms.wearable.WearableListenerService
 import kotlinx.coroutines.runBlocking
@@ -24,7 +28,13 @@ class VitalReceiverService : WearableListenerService() {
 
     override fun onMessageReceived(messageEvent: MessageEvent) {
         super.onMessageReceived(messageEvent)
-        if (messageEvent.path != VITALS_PATH) return
+        when (messageEvent.path) {
+            VITALS_PATH -> receiveVitals(messageEvent)
+            WatchProtocol.COMMAND_PATH -> receiveCommand(messageEvent)
+        }
+    }
+
+    private fun receiveVitals(messageEvent: MessageEvent) {
 
         // First thing, before any processing: this is t=0 for the whole latency chain.
         val receivedAtElapsedMs = SystemClock.elapsedRealtime()
@@ -78,10 +88,83 @@ class VitalReceiverService : WearableListenerService() {
             // a background failure is visible at all.
             is PipelineResult.Failed -> Log.w(TAG, "could not predict: ${result.message}")
         }
+
+        runBlocking {
+            val feedbackId = StressGuardDatabase.get(applicationContext).stressFeedback()
+                .latestPending()?.id ?: 0L
+            WatchStatePublisher.publish(
+                context = applicationContext,
+                nodeId = messageEvent.sourceNodeId,
+                result = result,
+                feedbackId = feedbackId,
+            )
+        }
+    }
+
+    private fun receiveCommand(messageEvent: MessageEvent) {
+        val payload = runCatching { EncryptionUtil.decrypt(messageEvent.data) }
+            .onFailure { Log.w(TAG, "could not decrypt a watch command", it) }
+            .getOrNull() ?: return
+        val command = WatchProtocol.Command.decode(payload) ?: run {
+            Log.w(TAG, "discarded a malformed watch command")
+            return
+        }
+
+        runBlocking {
+            when (command) {
+                WatchProtocol.Command.RequestState -> Unit
+                is WatchProtocol.Command.MuteAlerts -> {
+                    val duration = command.durationMs.coerceIn(MIN_MUTE_MS, MAX_MUTE_MS)
+                    SessionManager.muteAlertsUntil(applicationContext, System.currentTimeMillis() + duration)
+                }
+                WatchProtocol.Command.ResumeAlerts -> SessionManager.clearAlertMute(applicationContext)
+                is WatchProtocol.Command.StartWorkout -> WorkoutSessionRepository.start(
+                    applicationContext,
+                    command.durationMs.coerceIn(MIN_WORKOUT_MS, MAX_WORKOUT_MS),
+                )
+                WatchProtocol.Command.PauseWorkout ->
+                    WorkoutSessionRepository.pause(applicationContext)
+                WatchProtocol.Command.ResumeWorkout ->
+                    WorkoutSessionRepository.resume(applicationContext)
+                WatchProtocol.Command.EndWorkout ->
+                    WorkoutSessionRepository.end(applicationContext)
+                is WatchProtocol.Command.SaveFeedback -> saveFeedback(command)
+            }
+
+            val pendingFeedbackId = StressGuardDatabase.get(applicationContext).stressFeedback()
+                .latestPending()?.id ?: 0L
+            WatchStatePublisher.publish(
+                context = applicationContext,
+                nodeId = messageEvent.sourceNodeId,
+                result = StressPipeline.get(applicationContext).latest.value,
+                feedbackId = pendingFeedbackId,
+            )
+        }
+    }
+
+    private suspend fun saveFeedback(command: WatchProtocol.Command.SaveFeedback) {
+        if (command.feedbackId <= 0L) return
+        val database = StressGuardDatabase.get(applicationContext)
+        val feedback = database.stressFeedback().byId(command.feedbackId) ?: return
+        if (feedback.respondedAtEpochMs != null) return
+        database.stressFeedback().recordResponse(
+            id = command.feedbackId,
+            confirmedStressed = command.confirmedStressed,
+            severity = if (command.confirmedStressed) command.severity else null,
+            respondedAtEpochMs = System.currentTimeMillis(),
+        )
+        database.alertEvents().markDismissed(feedback.alertEventId)
+        getSystemService(NotificationManager::class.java)?.cancel(ALERT_NOTIFICATION_ID)
+        SyncScheduler.syncNow(applicationContext)
     }
 
     companion object {
         private const val TAG = "VITALS"
         private const val VITALS_PATH = "/stress_vitals"
+        private const val ALERT_NOTIFICATION_ID = 1001
+        private const val MIN_MUTE_MS = 10 * 60_000L
+        private const val MAX_MUTE_MS = 4 * 60 * 60_000L
+        private const val MIN_WORKOUT_MS = 5 * 60_000L
+        private const val MAX_WORKOUT_MS = 4 * 60 * 60_000L
     }
 }

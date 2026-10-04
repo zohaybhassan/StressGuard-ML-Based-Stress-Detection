@@ -2,6 +2,7 @@ package com.example.stressguard.presentation
 
 import android.Manifest
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.hardware.Sensor
 import android.hardware.SensorEvent
@@ -10,22 +11,16 @@ import android.hardware.SensorManager
 import android.os.Build
 import android.os.Bundle
 import android.os.SystemClock
+import android.provider.Settings
 import android.util.Log
+import android.net.Uri
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.core.content.ContextCompat
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.health.services.client.HealthServices
@@ -46,17 +41,14 @@ import androidx.health.services.client.data.Availability
 import androidx.health.services.client.data.DataPointContainer
 import androidx.health.services.client.data.DataType
 import androidx.health.services.client.data.DeltaDataType
-import androidx.wear.compose.material.MaterialTheme
-import androidx.wear.compose.material.Text
-import androidx.wear.compose.material.TimeText
-import androidx.wear.tooling.preview.devices.WearDevices
-import com.example.stressguard.presentation.theme.StressGuardTheme
 import com.google.android.gms.wearable.Wearable
 
 class MainActivity : ComponentActivity(), SensorEventListener {
 
     // UI State for Jetpack Compose
     private var displayState by mutableStateOf("Waiting for permissions...")
+    private var sensorUiState by mutableStateOf(WatchSensorUiState())
+    private var phoneConnected by mutableStateOf(false)
 
     /**
      * A condition that overrides the normal readout: a missing permission, a watch that cannot
@@ -163,7 +155,16 @@ class MainActivity : ComponentActivity(), SensorEventListener {
             )
         }
 
-        setContent { WearApp(displayState) }
+        WatchStateStore.state(this)
+        setContent {
+            val phoneState by WatchStateStore.state(this).collectAsState()
+            StressGuardWearApp(
+                sensor = sensorUiState,
+                received = phoneState,
+                onCommand = ::sendCommand,
+                onOpenSettings = ::openAppSettings,
+            )
+        }
     }
 
     /**
@@ -180,6 +181,7 @@ class MainActivity : ComponentActivity(), SensorEventListener {
             Log.i(TAG, "permissions now granted; starting sensors")
             startSensors()
         }
+        sendCommand(WatchProtocol.Command.RequestState)
         startStalenessTicker()
     }
 
@@ -250,6 +252,10 @@ class MainActivity : ComponentActivity(), SensorEventListener {
                     }
                     currentHr = realHeartRate.toInt()
                     lastHrAtElapsedMs = now
+                    PassiveVitalsStore(this@MainActivity).recordHeartRate(
+                        currentHr,
+                        System.currentTimeMillis(),
+                    )
                     // Health Services stamps each sample with when it was taken, so the age is
                     // measured rather than assumed to be zero.
                     val sampleAgeMs =
@@ -357,6 +363,8 @@ class MainActivity : ComponentActivity(), SensorEventListener {
     private fun reportPhoneConnectivity() {
         Wearable.getNodeClient(this).connectedNodes
             .addOnSuccessListener { nodes ->
+                phoneConnected = nodes.isNotEmpty()
+                refreshDisplay()
                 if (nodes.isEmpty()) {
                     Log.w(TAG, "no companion phone reachable from this watch")
                 } else {
@@ -366,7 +374,11 @@ class MainActivity : ComponentActivity(), SensorEventListener {
                     )
                 }
             }
-            .addOnFailureListener { Log.w(TAG, "could not query connected nodes", it) }
+            .addOnFailureListener {
+                phoneConnected = false
+                refreshDisplay()
+                Log.w(TAG, "could not query connected nodes", it)
+            }
     }
 
     // --------------------------------------------------------
@@ -407,15 +419,13 @@ class MainActivity : ComponentActivity(), SensorEventListener {
      * measures while this app is in the foreground, so a screen timeout ends measurement too.
      */
     private fun refreshDisplay() {
-        statusNote?.let { displayState = it; return }
-
         // The store, not this Activity's own field: the passive service updates it from
         // STEPS_DAILY while nothing here is running, and showing the weaker figure meant the
         // watch face read "Steps: 0" on a day the platform had already counted four thousand.
         val steps = PassiveVitalsStore(this).stepsToday(System.currentTimeMillis())
 
         val ageMs = heartRateAgeMs()
-        displayState = when {
+        displayState = statusNote ?: when {
             // Steps may be arriving while heart rate is not. Say which, rather than
             // "Calibrating", which gave no clue whether the sensor, the permission or the
             // wrist was the issue.
@@ -432,6 +442,16 @@ class MainActivity : ComponentActivity(), SensorEventListener {
             // through Health Connect on the phone; see docs/architecture-notes.md.
             else -> "HR: $currentHr BPM\nSteps: $steps"
         }
+        sensorUiState = WatchSensorUiState(
+            heartRate = currentHr,
+            steps = steps,
+            heartRateAgeMs = ageMs.takeUnless { it == Long.MAX_VALUE },
+            statusMessage = statusNote,
+            foregroundPermissionGranted = hasSensorPermissionsQuietly(),
+            backgroundPermissionGranted = hasBackgroundSensorPermission(),
+            phoneConnected = phoneConnected,
+            pendingFeedback = WatchCommandClient.hasPendingFeedback(this),
+        )
     }
 
     /**
@@ -473,10 +493,12 @@ class MainActivity : ComponentActivity(), SensorEventListener {
             context = this,
             payload = "$currentHr|$steps|$sampleAgeMs",
             onNoPhone = {
+                phoneConnected = false
                 statusNote = "Phone not connected\nHR: $currentHr BPM"
                 refreshDisplay()
             },
             onSent = {
+                phoneConnected = true
                 // A send proving the link works clears any earlier complaint that it did not.
                 if (statusNote != null) {
                     statusNote = null
@@ -484,6 +506,36 @@ class MainActivity : ComponentActivity(), SensorEventListener {
                 }
             },
         )
+    }
+
+    private fun sendCommand(command: WatchProtocol.Command) {
+        lifecycleScope.launch {
+            val sent = WatchCommandClient.send(applicationContext, command)
+            phoneConnected = sent
+            if (!sent) {
+                statusNote = "Phone not connected"
+            } else if (statusNote?.startsWith("Phone not connected") == true) {
+                statusNote = null
+            }
+            refreshDisplay()
+        }
+    }
+
+    private fun openAppSettings() {
+        startActivity(
+            Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
+                .setData(Uri.parse("package:$packageName"))
+        )
+    }
+
+    private fun hasSensorPermissionsQuietly(): Boolean =
+        ContextCompat.checkSelfPermission(this, heartRatePermission) == PackageManager.PERMISSION_GRANTED &&
+            ContextCompat.checkSelfPermission(this, Manifest.permission.ACTIVITY_RECOGNITION) ==
+            PackageManager.PERMISSION_GRANTED
+
+    private fun hasBackgroundSensorPermission(): Boolean {
+        val permission = backgroundHeartRatePermission ?: return true
+        return ContextCompat.checkSelfPermission(this, permission) == PackageManager.PERMISSION_GRANTED
     }
 
     /**
@@ -575,38 +627,4 @@ class MainActivity : ComponentActivity(), SensorEventListener {
         /** How often the age on screen is recomputed. */
         private const val STALENESS_TICK_MS = 5_000L
     }
-}
-
-// --------------------------------------------------------
-// Jetpack Compose UI Elements
-// --------------------------------------------------------
-@Composable
-fun WearApp(sensorText: String) {
-    StressGuardTheme {
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(MaterialTheme.colors.background),
-            contentAlignment = Alignment.Center
-        ) {
-            TimeText()
-            Greeting(sensorText = sensorText)
-        }
-    }
-}
-
-@Composable
-fun Greeting(sensorText: String) {
-    Text(
-        modifier = Modifier.fillMaxWidth(),
-        textAlign = TextAlign.Center,
-        color = MaterialTheme.colors.primary,
-        text = sensorText // This dynamically updates whenever displayState changes
-    )
-}
-
-@Preview(device = WearDevices.SMALL_ROUND, showSystemUi = true)
-@Composable
-fun DefaultPreview() {
-    WearApp("HR: 85 BPM\nSteps: 3450")
 }

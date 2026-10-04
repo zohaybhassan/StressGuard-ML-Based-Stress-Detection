@@ -36,12 +36,14 @@ android {
     useLibrary("wear-sdk")
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 }
 
 dependencies {
 
     implementation(libs.play.services.wearable)
+    implementation(libs.androidx.fragment.ktx)
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.ui)
     implementation(libs.androidx.ui.graphics)
@@ -51,12 +53,15 @@ dependencies {
     implementation(libs.androidx.wear.tooling.preview)
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.core.splashscreen)
-    implementation("com.google.android.gms:play-services-wearable:18.1.0")
     implementation("androidx.health:health-services-client:1.0.0-beta03")
+    implementation("androidx.wear.tiles:tiles:1.6.2")
+    implementation("androidx.wear.protolayout:protolayout:1.4.2")
+    implementation("androidx.wear.protolayout:protolayout-material3:1.4.2")
+    implementation("androidx.wear.watchface:watchface-complications-data-source-ktx:1.2.1")
     // The suspend wrappers around Health Services' ListenableFuture-returning *Async methods
     // live in the main artifact but need a coroutine scope to call from. Using them avoids
     // putting Guava on this module's compile classpath just to discard a Future.
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.9.0")
+    implementation(libs.kotlinx.coroutines.android)
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.ui.test.junit4)
     // Only the pure decision logic is unit tested here; anything touching SharedPreferences or a

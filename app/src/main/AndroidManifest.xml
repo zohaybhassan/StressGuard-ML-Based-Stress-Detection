@@ -107,6 +107,10 @@
                     android:host="*"
                     android:pathPrefix="/stress_vitals"
                     android:scheme="wear" />
+                <data
+                    android:host="*"
+                    android:pathPrefix="/stress_command"
+                    android:scheme="wear" />
             </intent-filter>
         </service>
     </application>
