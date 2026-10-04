@@ -466,7 +466,7 @@ class HomeDashboardActivity : AppCompatActivity() {
             tvStressStatus.setTextColor(neutral)
             return
         }
-        val score = gaugeScore(prediction.probabilities)
+        val score = StressDisplay.score(prediction.probabilities)
         stressGauge.setProgress(score)
         tvStressPercentage.text = "$score%"
 
@@ -486,7 +486,7 @@ class HomeDashboardActivity : AppCompatActivity() {
      * trained range should not look identical to one made inside it.
      */
     private fun buildStatusText(state: DashboardUiState, prediction: StressPrediction): String {
-        val name = displayName(prediction.label)
+        val name = StressDisplay.label(prediction.label)
         return if (state.outOfTrainingRange) "$name*" else name
     }
 
@@ -529,27 +529,11 @@ class HomeDashboardActivity : AppCompatActivity() {
      * high, weighted by its probability. Derived from the class count, so a binary or a
      * three-level bundle both work unchanged.
      */
-    private fun gaugeScore(probabilities: FloatArray): Int {
-        if (probabilities.size < 2) return 0
-        val step = (GAUGE_MAX - GAUGE_MIN) / (probabilities.size - 1)
-        return probabilities.withIndex()
-            .sumOf { (index, p) -> (p * (GAUGE_MIN + step * index)).toDouble() }
-            .roundToInt()
-            .coerceIn(0, 100)
-    }
-
     @ColorRes
     private fun severityColor(classIndex: Int, classCount: Int): Int = when {
         classIndex >= classCount - 1 -> R.color.stress_high
         classIndex == 0 -> R.color.stress_low
         else -> R.color.stress_moderate
-    }
-
-    private fun displayName(label: String): String = when (label.lowercase()) {
-        "relaxed_low_stress" -> "RELAXED"
-        "normal", "not_stressed" -> "NORMAL"
-        "stressed_high", "stressed" -> "HIGH STRESS"
-        else -> label.replace('_', ' ').uppercase()
     }
 
     /** Resolves a palette entry. Every colour on this screen comes through here, so the dark
@@ -655,8 +639,6 @@ class HomeDashboardActivity : AppCompatActivity() {
         private const val STALE_SLEEP_HOURS = 36L
 
         // Gauge anchors, inset from 0 and 100 so the extremes still read as a filled arc.
-        private const val GAUGE_MIN = 10f
-        private const val GAUGE_MAX = 90f
 
         /** Roughly 12% opacity: enough for the risk badge to read as a shape, not as a block. */
         private const val PILL_TINT_ALPHA = 30
