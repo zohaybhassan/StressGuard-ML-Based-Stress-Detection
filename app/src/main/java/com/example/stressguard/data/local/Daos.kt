@@ -322,6 +322,9 @@ interface StressFeedbackDao {
     @Query("SELECT * FROM stress_feedback WHERE id = :id")
     suspend fun byId(id: Long): StressFeedbackEntity?
 
+    @Query("SELECT * FROM stress_feedback WHERE respondedAtEpochMs IS NULL ORDER BY alertFiredAtEpochMs DESC LIMIT 1")
+    suspend fun latestPending(): StressFeedbackEntity?
+
     @Query(
         """
         UPDATE stress_feedback SET
