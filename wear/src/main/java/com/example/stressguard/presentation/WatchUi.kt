@@ -113,6 +113,8 @@ fun StressGuardWearApp(
     LaunchedEffect(received.state.alertActive, received.state.feedbackId) {
         if (received.state.alertActive && received.state.feedbackId > 0L) {
             screenName = Screen.ALERT.name
+        } else if (screenName == Screen.ALERT.name) {
+            screenName = Screen.DASHBOARD.name
         }
     }
     BackHandler(enabled = screen != Screen.DASHBOARD) {

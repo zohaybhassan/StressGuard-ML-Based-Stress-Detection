@@ -36,27 +36,38 @@ object WatchStatePublisher {
         feedbackId: Long = 0L,
     ): WatchProtocol.State {
         val database = StressGuardDatabase.get(context)
+        val alertSnapshot = feedbackId.takeIf { it > 0L }?.let { id ->
+            runCatching { database.stressFeedback().byId(id) }.getOrNull()
+        }
         val stored = when (result) {
             is PipelineResult.Predicted -> null
             else -> runCatching { database.stressPredictions().latest(1).firstOrNull() }.getOrNull()
         }
         val workout = runCatching { WorkoutSessionRepository.current(context) }.getOrNull()
 
-        val probabilities = (result as? PipelineResult.Predicted)?.prediction?.probabilities
+        // Keep an active alert tied to the exact prediction that caused it. Live readings may
+        // continue arriving while the check-in is waiting; they must not turn a HIGH alert into
+        // a NORMAL gauge before the user has responded.
+        val probabilities = alertSnapshot?.probabilities?.toFloatArray()
+            ?: (result as? PipelineResult.Predicted)?.prediction?.probabilities
             ?: stored?.probabilities?.toFloatArray()
-        val rawLabel = (result as? PipelineResult.Predicted)?.prediction?.label ?: stored?.label
-        val classIndex = (result as? PipelineResult.Predicted)?.prediction?.classIndex
+        val rawLabel = alertSnapshot?.predictedLabel
+            ?: (result as? PipelineResult.Predicted)?.prediction?.label
+            ?: stored?.label
+        val classIndex = alertSnapshot?.predictedClassIndex
+            ?: (result as? PipelineResult.Predicted)?.prediction?.classIndex
             ?: stored?.classIndex
-        val measuredAt = when (result) {
+        val measuredAt = alertSnapshot?.predictionRecordedAtEpochMs ?: when (result) {
             is PipelineResult.Predicted -> result.reading.measuredAtEpochMs
             is PipelineResult.PausedForWorkout -> result.reading.measuredAtEpochMs
             else -> stored?.recordedAtEpochMs ?: 0L
         }
-        val outOfRange = (result as? PipelineResult.Predicted)?.extrapolating
+        val outOfRange = alertSnapshot?.outOfTrainingRange
+            ?: (result as? PipelineResult.Predicted)?.extrapolating
             ?: stored?.outOfTrainingRange
             ?: false
 
-        val status = when (result) {
+        val status = if (alertSnapshot != null) WatchProtocol.Status.READY else when (result) {
             is PipelineResult.PausedForWorkout -> WatchProtocol.Status.WORKOUT
             is PipelineResult.Failed -> when (result.message) {
                 "PROFILE NEEDED" -> WatchProtocol.Status.PROFILE_NEEDED
