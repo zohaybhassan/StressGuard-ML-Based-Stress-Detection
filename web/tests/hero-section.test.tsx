@@ -8,12 +8,19 @@ describe("HeroSection", () => {
     render(<HeroSection />);
 
     expect(
-      screen.getByRole("heading", { name: "Stress less. Understand more." }),
+      screen.getByRole("heading", { name: "Stress Less. Understand More." }),
     ).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /get started/i })).toHaveAttribute(
       "href",
       "/auth?mode=register",
     );
+    expect(screen.getByRole("link", { name: /get it on google play/i })).toHaveAttribute(
+      "href",
+      "https://play.google.com/store/search?q=StressGuard&c=apps",
+    );
+    expect(screen.queryByRole("link", { name: /view demo/i })).not.toBeInTheDocument();
+    expect(screen.getByText("Ethan Carter")).toBeInTheDocument();
+    expect(screen.queryByText("Fahad Saleem")).not.toBeInTheDocument();
     expect(screen.queryByText(/diagnose/i)).not.toBeInTheDocument();
   });
 });

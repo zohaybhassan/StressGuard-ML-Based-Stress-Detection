@@ -12,6 +12,9 @@ export const metadata: Metadata = {
   description:
     "A companion portal for reviewing stress, heart rate, sleep, and activity insights synchronized from the StressGuard Android app.",
   applicationName: "StressGuard",
+  icons: {
+    icon: "/brand/stressguard-mark.png",
+  },
   robots: {
     index: true,
     follow: true,

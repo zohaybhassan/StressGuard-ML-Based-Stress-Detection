@@ -4,9 +4,11 @@ import {
   ArrowLeft,
   ArrowRight,
   CheckCircle,
+  EnvelopeSimple,
   Eye,
   EyeSlash,
   GoogleLogo,
+  LockKey,
   WarningCircle,
 } from "@phosphor-icons/react";
 import Link from "next/link";
@@ -24,7 +26,7 @@ import {
   startGoogleOAuthAction,
 } from "./actions";
 import { initialAuthState, type AuthActionState } from "./auth-state";
-import styles from "./auth.module.css";
+import styles from "./auth-reference.module.css";
 
 type AuthFormProps = {
   configured: boolean;
@@ -37,7 +39,7 @@ type AuthFormProps = {
 const copy: Record<AuthMode, { title: string; description: string; submit: string; pending: string }> = {
   "sign-in": {
     title: "Welcome back",
-    description: "Sign in to review insights synchronized from your StressGuard apps.",
+    description: "Sign in to continue to your StressGuard dashboard.",
     submit: "Sign in",
     pending: "Signing in...",
   },
@@ -105,6 +107,7 @@ function PasswordField({
     <div className={styles.fieldGroup}>
       <label htmlFor={inputId}>{label}</label>
       <div className={styles.passwordWrap}>
+        <LockKey className={styles.fieldIcon} size={19} aria-hidden />
         <input
           aria-describedby={error?.length ? errorId : undefined}
           aria-invalid={Boolean(error?.length)}
@@ -200,35 +203,24 @@ export function AuthForm({ configured, mode, notice, sessionAvailable, userEmail
         </div>
       ) : (
         <>
-          {(mode === "sign-in" || mode === "register") && (
-            <>
-              <form action={startGoogleOAuthAction}>
-                <button className={styles.googleButton} disabled={!configured} type="submit">
-                  <GoogleLogo size={20} weight="bold" aria-hidden />
-                  Continue with Google
-                </button>
-              </form>
-              <div className={styles.divider}>
-                <span>or use email</span>
-              </div>
-            </>
-          )}
-
           <form action={formAction} className={styles.form} noValidate>
             {(mode === "sign-in" || mode === "register" || mode === "forgot") && (
               <div className={styles.fieldGroup}>
                 <label htmlFor="auth-email">Email address</label>
-                <input
-                  aria-describedby={state.fieldErrors?.email ? emailErrorId : undefined}
-                  aria-invalid={Boolean(state.fieldErrors?.email)}
-                  autoComplete="email"
-                  id="auth-email"
-                  inputMode="email"
-                  name="email"
-                  placeholder="you@example.com"
-                  required
-                  type="email"
-                />
+                <div className={styles.inputWrap}>
+                  <EnvelopeSimple className={styles.fieldIcon} size={19} aria-hidden />
+                  <input
+                    aria-describedby={state.fieldErrors?.email ? emailErrorId : undefined}
+                    aria-invalid={Boolean(state.fieldErrors?.email)}
+                    autoComplete="email"
+                    id="auth-email"
+                    inputMode="email"
+                    name="email"
+                    placeholder="you@example.com"
+                    required
+                    type="email"
+                  />
+                </div>
                 <FieldError errors={state.fieldErrors?.email} id={emailErrorId} />
               </div>
             )}
@@ -252,14 +244,34 @@ export function AuthForm({ configured, mode, notice, sessionAvailable, userEmail
             )}
 
             {mode === "sign-in" && (
-              <Link className={styles.forgotLink} href="/auth?mode=forgot">
-                Forgot password?
-              </Link>
+              <div className={styles.formOptions}>
+                <label className={styles.rememberOption}>
+                  <input name="remember" type="checkbox" />
+                  <span>Remember me</span>
+                </label>
+                <Link className={styles.forgotLink} href="/auth?mode=forgot">
+                  Forgot password?
+                </Link>
+              </div>
             )}
 
             <StatusMessage state={state} />
             <PendingButton idle={details.submit} pending={details.pending} />
           </form>
+
+          {(mode === "sign-in" || mode === "register") && (
+            <>
+              <div className={styles.divider}>
+                <span>or continue with</span>
+              </div>
+              <form action={startGoogleOAuthAction}>
+                <button className={styles.googleButton} disabled={!configured} type="submit">
+                  <GoogleLogo size={20} weight="bold" aria-hidden />
+                  Continue with Google
+                </button>
+              </form>
+            </>
+          )}
         </>
       )}
 

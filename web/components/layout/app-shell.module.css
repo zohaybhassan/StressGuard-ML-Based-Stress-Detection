@@ -1,11 +1,29 @@
 .shell {
+  --color-canvas: var(--protected-page-bg);
+  --color-surface: var(--protected-surface);
+  --color-surface-muted: var(--protected-surface-muted);
+  --color-surface-raised: var(--protected-surface-raised);
+  --color-border: var(--protected-border);
+  --color-border-strong: var(--protected-border-strong);
+  --color-text: var(--protected-text);
+  --color-text-secondary: var(--protected-text-secondary);
+  --color-text-tertiary: var(--protected-text-tertiary);
+  --color-text-inverse: var(--protected-card-primary-fg);
+  --color-brand: var(--protected-accent);
+  --color-brand-strong: var(--protected-accent-strong);
+  --color-brand-deep: var(--protected-accent-deep);
+  --color-brand-soft: var(--protected-accent-soft);
+  --color-brand-softer: var(--protected-accent-softer);
+  --shadow-soft: var(--protected-shadow-card);
+  --shadow-panel: var(--protected-shadow-panel);
   min-height: 100dvh;
-  background:
-    radial-gradient(circle at 82% 5%, color-mix(in srgb, var(--color-brand-soft) 42%, transparent), transparent 28rem),
-    var(--color-canvas);
+  color: var(--protected-text);
+  background: var(--protected-page-bg);
 }
 
 .sidebar {
+  --color-text: var(--protected-sidebar-fg);
+  --color-brand-strong: #85e5d1;
   position: fixed;
   z-index: 10;
   inset: 0 auto 0 0;
@@ -13,8 +31,9 @@
   width: 17rem;
   flex-direction: column;
   padding: 1.5rem 1.15rem;
-  border-right: 1px solid var(--color-border);
-  background: color-mix(in srgb, var(--color-surface) 94%, transparent);
+  border-right: 1px solid var(--protected-sidebar-border);
+  background: linear-gradient(165deg, var(--protected-sidebar-bg) 0%, var(--protected-sidebar-bg-deep) 100%);
+  box-shadow: 12px 0 32px rgb(8 72 64 / 0.1);
 }
 
 .sideNav {
@@ -31,7 +50,7 @@
   gap: 0.8rem;
   padding: 0.72rem 0.85rem;
   border-radius: var(--radius-input);
-  color: var(--color-text-secondary);
+  color: var(--protected-sidebar-muted-fg);
   font-size: 0.94rem;
   font-weight: 630;
   transition:
@@ -40,13 +59,14 @@
 }
 
 .sideLink:hover {
-  background: var(--color-surface-muted);
-  color: var(--color-text);
+  background: var(--protected-sidebar-hover-bg);
+  color: var(--protected-sidebar-fg);
 }
 
 .activeLink {
-  background: var(--color-brand-soft);
-  color: var(--color-brand-strong);
+  background: var(--protected-sidebar-active-bg);
+  color: var(--protected-sidebar-active-fg);
+  box-shadow: 0 8px 24px rgb(4 47 42 / 0.18);
 }
 
 .syncNote {
@@ -54,17 +74,18 @@
   gap: 0.35rem;
   margin-top: auto;
   padding: 1rem;
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--protected-sidebar-card-border);
   border-radius: var(--radius-card);
-  background: var(--color-brand-softer);
+  background: var(--protected-sidebar-card-bg);
 }
 
 .syncNote strong {
+  color: var(--protected-sidebar-fg);
   font-size: 0.82rem;
 }
 
 .syncNote span {
-  color: var(--color-text-secondary);
+  color: var(--protected-sidebar-muted-fg);
   font-size: 0.75rem;
   line-height: 1.5;
 }
@@ -81,8 +102,8 @@
   justify-content: flex-end;
   gap: 1rem;
   padding: 0.8rem var(--space-page);
-  border-bottom: 1px solid var(--color-border);
-  background: color-mix(in srgb, var(--color-canvas) 84%, transparent);
+  border-bottom: 1px solid var(--protected-border);
+  background: color-mix(in srgb, var(--protected-surface) 92%, transparent);
   backdrop-filter: blur(14px);
 }
 
@@ -120,8 +141,8 @@
   height: 2.5rem;
   place-items: center;
   border-radius: 50%;
-  background: var(--color-brand-strong);
-  color: #f7fffc;
+  background: var(--protected-accent-strong);
+  color: var(--protected-card-primary-fg);
   font-size: 0.86rem;
   font-weight: 750;
 }
@@ -168,8 +189,8 @@
     grid-template-columns: repeat(4, minmax(0, 1fr));
     padding: 0.45rem max(0.5rem, env(safe-area-inset-right)) max(0.45rem, env(safe-area-inset-bottom))
       max(0.5rem, env(safe-area-inset-left));
-    border-top: 1px solid var(--color-border);
-    background: color-mix(in srgb, var(--color-surface) 94%, transparent);
+    border-top: 1px solid var(--protected-sidebar-border);
+    background: color-mix(in srgb, var(--protected-sidebar-bg-deep) 96%, transparent);
     backdrop-filter: blur(18px);
   }
 
@@ -179,14 +200,14 @@
     place-items: center;
     gap: 0.15rem;
     border-radius: var(--radius-input);
-    color: var(--color-text-tertiary);
+    color: var(--protected-sidebar-muted-fg);
     font-size: 0.65rem;
     font-weight: 650;
   }
 
   .mobileNav .mobileActive {
-    background: var(--color-brand-soft);
-    color: var(--color-brand-strong);
+    background: var(--protected-sidebar-active-bg);
+    color: var(--protected-sidebar-active-fg);
   }
 }
 
