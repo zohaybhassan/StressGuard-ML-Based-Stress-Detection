@@ -73,6 +73,10 @@ Thumbs.db
 
 # Temporary project inspection files
 tmp_model_inspect/
+.tools/
+.tmp/
+.npm-cache/
+.playwright-browsers/
 
 # ML training scratch output. CatBoost and MLflow write these into the working directory,
 # so they appear at the repo root when a training script is run from here.
