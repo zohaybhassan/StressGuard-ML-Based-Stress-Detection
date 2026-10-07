@@ -2,8 +2,6 @@
 
 <img src="web/public/brand/stressguard-logo.png" alt="StressGuard logo" width="240" />
 
-# StressGuard
-
 ### Everyday stress awareness across your phone, watch, and web
 
 StressGuard brings activity, sleep, heart-rate, and stress insights into one clear experience—helping users understand patterns, reflect on their well-being, and make more informed everyday choices.
