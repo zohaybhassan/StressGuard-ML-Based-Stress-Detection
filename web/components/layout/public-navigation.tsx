@@ -7,8 +7,9 @@ import styles from "./public-navigation.module.css";
 
 const navigation = [
   { href: "/#features", label: "Features" },
-  { href: "/#how-it-works", label: "How it works" },
-  { href: "/#health-preview", label: "Insights" },
+  { href: "/#how-it-works", label: "How It Works" },
+  { href: "/#health-preview", label: "Trends" },
+  { href: "/#assistant", label: "Assistant" },
   { href: "/#about", label: "About" },
 ];
 
@@ -16,7 +17,7 @@ export function PublicNavigation() {
   return (
     <header className={styles.header}>
       <div className={"page-container " + styles.inner}>
-        <BrandLockup />
+        <BrandLockup prominent splitTone />
         <nav className={styles.desktopNav} aria-label="Main navigation">
           {navigation.map((item) => (
             <Link key={item.href} href={item.href}>
@@ -29,7 +30,7 @@ export function PublicNavigation() {
             Sign in
           </Link>
           <Link className="button-primary" href="/auth?mode=register">
-            Get started
+            Get Started
             <ArrowRight size={16} weight="bold" aria-hidden />
           </Link>
         </div>
@@ -46,7 +47,7 @@ export function PublicNavigation() {
             ))}
             <Link href="/auth">Sign in</Link>
             <Link className={styles.mobileCta} href="/auth?mode=register">
-              Get started
+              Get Started
               <ArrowRight size={16} weight="bold" aria-hidden />
             </Link>
           </nav>

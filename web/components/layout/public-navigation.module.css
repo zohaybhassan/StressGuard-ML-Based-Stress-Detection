@@ -3,16 +3,16 @@
   z-index: 20;
   top: 0;
   border-bottom: 1px solid color-mix(in srgb, var(--color-border) 78%, transparent);
-  background: color-mix(in srgb, var(--color-canvas-warm) 90%, transparent);
-  backdrop-filter: blur(18px);
+  background: rgb(255 255 255 / 0.96);
+  backdrop-filter: blur(14px);
 }
 
 .inner {
   display: flex;
-  min-height: 4.6rem;
+  min-height: 3.7rem;
   align-items: center;
   justify-content: space-between;
-  gap: 2rem;
+  gap: 1.5rem;
 }
 
 .desktopNav,
@@ -22,10 +22,10 @@
 }
 
 .desktopNav {
-  gap: clamp(1.25rem, 3vw, 2.4rem);
-  color: var(--color-text-secondary);
-  font-size: 0.9rem;
-  font-weight: 590;
+  gap: clamp(1rem, 2.2vw, 2rem);
+  color: #1b3430;
+  font-size: 0.78rem;
+  font-weight: 560;
 }
 
 .desktopNav a,

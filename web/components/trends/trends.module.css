@@ -1,7 +1,7 @@
 .trends {
   display: grid;
   gap: 1.25rem;
-  color: var(--color-text);
+  color: var(--protected-text);
 }
 
 .header {
@@ -130,10 +130,26 @@
   display: grid;
   min-width: 0;
   padding: 1rem;
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--protected-card-secondary-border);
   border-radius: var(--radius-card);
-  background: var(--color-surface);
-  box-shadow: var(--shadow-soft);
+  background: var(--protected-card-secondary-bg);
+  box-shadow: var(--protected-shadow-card);
+}
+
+.summaryCard:first-child {
+  color: var(--protected-card-primary-fg);
+  border-color: var(--protected-card-primary-border);
+  background: linear-gradient(145deg, #0b7165, var(--protected-card-primary-bg));
+}
+
+.summaryCard:first-child p,
+.summaryCard:first-child small {
+  color: var(--protected-card-primary-muted-fg);
+}
+
+.summaryCard:first-child .summaryIcon {
+  color: var(--protected-card-primary-fg);
+  background: rgb(255 255 255 / 0.12);
 }
 
 .summaryIcon {
@@ -199,10 +215,10 @@
 .qualityCard,
 .emptyState {
   min-width: 0;
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--protected-card-border);
   border-radius: var(--radius-card);
-  background: var(--color-surface);
-  box-shadow: var(--shadow-soft);
+  background: var(--protected-card-bg);
+  box-shadow: var(--protected-shadow-card);
 }
 
 .chartCard {
@@ -210,6 +226,7 @@
   flex-direction: column;
   min-height: 31rem;
   padding: 1.2rem;
+  border-top: 3px solid var(--protected-accent);
 }
 
 .chartHeader {
@@ -403,6 +420,8 @@
 
 .qualityCard {
   padding: 1.2rem;
+  border-color: var(--protected-card-secondary-border);
+  background: var(--protected-card-secondary-bg);
 }
 
 .qualityHeader {

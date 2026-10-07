@@ -1,26 +1,25 @@
 .dashboard {
-  --dash-ink: var(--color-text);
-  --dash-muted: var(--color-text-secondary);
-  --dash-brand: var(--color-brand);
-  --dash-brand-deep: var(--color-brand-strong);
-  --dash-border: var(--color-border);
-  --dash-surface: var(--color-surface);
-  --dash-canvas: var(--color-canvas);
-  --dash-mint: var(--color-brand-softer);
-  --dash-mint-strong: var(--color-brand-soft);
-  --dash-coral: var(--color-heart-soft);
-  --dash-coral-ink: var(--color-heart);
-  --dash-blue: var(--color-steps-soft);
-  --dash-blue-ink: var(--color-steps);
-  --dash-lavender: var(--color-sleep-soft);
-  --dash-lavender-ink: var(--color-sleep);
-  --dash-warning: var(--color-warning-soft);
-  --dash-warning-ink: var(--color-warning);
-  --dash-danger: var(--color-danger-soft);
-  --dash-danger-ink: var(--color-danger);
+  --dash-shell-ink: var(--protected-text);
+  --dash-shell-muted: var(--protected-text-secondary);
+  --dash-shell-border: var(--protected-border);
+  --dash-card: var(--protected-card-bg);
+  --dash-card-muted: var(--protected-surface-muted);
+  --dash-card-ink: var(--protected-card-fg);
+  --dash-card-secondary: var(--protected-card-muted-fg);
+  --dash-card-border: var(--protected-card-border);
+  --dash-brand: var(--protected-accent-strong);
+  --dash-brand-on-light: var(--protected-accent-strong);
+  --dash-mint: var(--protected-accent-softer);
+  --dash-mint-border: var(--protected-card-secondary-border);
+  --dash-warning: var(--surface-warning-light);
+  --dash-warning-ink: var(--surface-warning-light-foreground);
+  --dash-warning-dark: var(--surface-warning-dark);
+  --dash-warning-dark-ink: var(--surface-warning-dark-foreground);
+  --dash-danger: var(--surface-danger-light);
+  --dash-danger-ink: var(--surface-danger-light-foreground);
   display: grid;
   gap: 1.25rem;
-  color: var(--dash-ink);
+  color: var(--dash-shell-ink);
 }
 .header {
   position: relative;
@@ -34,7 +33,6 @@
 .eyebrow,
 .cardEyebrow {
   margin: 0 0 0.38rem;
-  color: var(--dash-brand-deep);
   font-size: 0.72rem;
   font-weight: 700;
   letter-spacing: 0.09em;
@@ -42,9 +40,17 @@
   text-transform: uppercase;
 }
 
+.eyebrow {
+  color: var(--dash-brand);
+}
+
+.cardEyebrow {
+  color: var(--dash-brand-on-light);
+}
+
 .pageTitle {
   margin: 0;
-  color: var(--dash-ink);
+  color: var(--dash-shell-ink);
   font-size: clamp(1.7rem, 3vw, 2.45rem);
   font-weight: 660;
   letter-spacing: -0.04em;
@@ -54,7 +60,7 @@
 .pageIntro {
   max-width: 42rem;
   margin: 0.55rem 0 0;
-  color: var(--dash-muted);
+  color: var(--dash-shell-muted);
   font-size: 0.94rem;
   line-height: 1.55;
 }
@@ -87,27 +93,27 @@
 }
 
 .freshness_fresh {
-  color: var(--dash-brand-deep);
-  background: var(--dash-mint);
-  border-color: var(--dash-mint-strong);
+  color: var(--surface-success-dark-foreground);
+  background: var(--surface-success-dark);
+  border-color: var(--surface-success-dark-border);
 }
 
 .freshness_delayed {
-  color: var(--dash-warning-ink);
-  background: var(--dash-warning);
-  border-color: color-mix(in srgb, var(--dash-warning-ink) 18%, transparent);
+  color: var(--dash-warning-dark-ink);
+  background: var(--dash-warning-dark);
+  border-color: var(--surface-warning-dark-border);
 }
 
 .freshness_unavailable {
-  color: var(--dash-muted);
-  background: color-mix(in srgb, var(--dash-border) 25%, var(--dash-surface));
-  border-color: var(--dash-border);
+  color: var(--surface-neutral-dark-foreground);
+  background: var(--surface-neutral-dark);
+  border-color: var(--dash-shell-border);
 }
 
 .syncLine {
   grid-column: 1 / -1;
   margin: -0.15rem 0 0;
-  color: var(--dash-muted);
+  color: var(--dash-shell-muted);
   font-size: 0.72rem;
   text-align: right;
 }
@@ -129,21 +135,27 @@
 .summaryCard,
 .panel {
   min-width: 0;
-  border: 1px solid var(--dash-border);
+  border: 1px solid var(--dash-card-border);
   border-radius: var(--radius-card);
-  background: var(--dash-surface);
+  background: var(--dash-card);
   box-shadow: var(--shadow-soft);
+  color: var(--dash-card-ink);
 }
 
 .stressCard {
+  --dash-card-ink: var(--protected-card-primary-fg);
+  --dash-card-secondary: var(--protected-card-primary-muted-fg);
+  --dash-card-border: var(--protected-card-primary-border);
+  --dash-brand-on-light: #8fe4d2;
+  --dash-mint: rgb(255 255 255 / 0.1);
+  --dash-mint-border: rgb(224 247 241 / 0.32);
   display: flex;
   flex-direction: column;
   min-height: 21.5rem;
   padding: 1.35rem;
   overflow: hidden;
-  background:
-    radial-gradient(circle at 96% 4%, rgba(188, 233, 218, 0.46), transparent 29%),
-    var(--dash-surface);
+  background: linear-gradient(145deg, #0b7064 0%, var(--protected-card-primary-bg) 55%, #07564f 100%);
+  box-shadow: 0 18px 42px rgb(7 86 76 / 0.18);
 }
 
 .cardHeadingRow,
@@ -156,7 +168,7 @@
 
 .cardTitle {
   margin: 0;
-  color: var(--dash-ink);
+  color: var(--dash-card-ink);
   font-size: 1.05rem;
   font-weight: 660;
   letter-spacing: -0.018em;
@@ -171,7 +183,7 @@
   width: 2.55rem;
   height: 2.55rem;
   place-items: center;
-  color: var(--dash-brand-deep);
+  color: var(--dash-brand-on-light);
   border-radius: 0.78rem;
   background: var(--dash-mint);
 }
@@ -192,13 +204,13 @@
 
 .resultLabel,
 .confidenceBlock span {
-  color: var(--dash-muted);
+  color: var(--dash-card-secondary);
   font-size: 0.75rem;
   font-weight: 600;
 }
 
 .stressResult > div:first-child strong {
-  color: var(--dash-brand-deep);
+  color: var(--protected-card-primary-fg);
   font-size: clamp(2rem, 4vw, 3.35rem);
   font-weight: 670;
   letter-spacing: -0.06em;
@@ -210,13 +222,13 @@
   gap: 0.2rem;
   padding: 0.72rem 0.85rem;
   text-align: right;
-  border: 1px solid var(--dash-mint-strong);
+  border: 1px solid var(--dash-mint-border);
   border-radius: 0.8rem;
-  background: rgba(255, 255, 255, 0.72);
+  background: rgb(255 255 255 / 0.1);
 }
 
 .confidenceBlock strong {
-  color: var(--dash-brand-deep);
+  color: #9aead9;
   font-size: 1.18rem;
 }
 
@@ -226,7 +238,7 @@
   gap: 0.8rem;
   margin: 0;
   padding-top: 1rem;
-  border-top: 1px solid var(--dash-border);
+  border-top: 1px solid var(--dash-card-border);
 }
 
 .metaGrid div {
@@ -234,7 +246,7 @@
 }
 
 .metaGrid dt {
-  color: var(--dash-muted);
+  color: var(--dash-card-secondary);
   font-size: 0.7rem;
   font-weight: 650;
   text-transform: uppercase;
@@ -244,7 +256,7 @@
 .metaGrid dd {
   margin: 0.28rem 0 0;
   overflow: hidden;
-  color: var(--dash-ink);
+  color: var(--dash-card-ink);
   font-size: 0.82rem;
   font-weight: 600;
   text-overflow: ellipsis;
@@ -275,13 +287,20 @@
 }
 
 .vitalCard {
+  --vital-surface: var(--surface-dark-raised);
+  --vital-foreground: var(--surface-dark-foreground);
+  --vital-accent: var(--dash-brand);
+  --vital-muted: var(--surface-dark-muted);
+  --vital-border: var(--surface-dark-border);
   display: flex;
   align-items: center;
   gap: 0.78rem;
   min-width: 0;
   padding: 1rem;
-  border: 1px solid transparent;
+  border: 1px solid var(--vital-border);
   border-radius: 0.95rem;
+  background: var(--vital-surface);
+  color: var(--vital-foreground);
 }
 
 .vitalCard > div {
@@ -296,6 +315,7 @@
 }
 
 .vitalCard p {
+  color: var(--vital-accent);
   font-size: 0.71rem;
   font-weight: 650;
 }
@@ -303,14 +323,15 @@
 .vitalCard strong {
   margin-top: 0.1rem;
   overflow-wrap: anywhere;
+  color: var(--vital-foreground);
   font-size: 1rem;
   letter-spacing: -0.02em;
 }
 
 .vitalCard small {
+  color: var(--vital-muted);
   font-size: 0.67rem;
   line-height: 1.35;
-  opacity: 0.74;
 }
 
 .vitalIcon {
@@ -320,36 +341,46 @@
   height: 2.3rem;
   place-items: center;
   border-radius: 0.7rem;
-  background: rgba(255, 255, 255, 0.68);
+  border: 1px solid color-mix(in srgb, var(--vital-accent) 42%, transparent);
+  background: rgb(255 255 255 / 0.1);
+  color: var(--vital-accent);
 }
 
 .vital_heart {
-  color: var(--dash-coral-ink);
-  border-color: color-mix(in srgb, var(--dash-coral-ink) 12%, transparent);
-  background: var(--dash-coral);
+  --vital-surface: var(--metric-heart);
+  --vital-foreground: var(--metric-heart-foreground);
+  --vital-accent: var(--metric-heart-accent);
+  --vital-muted: var(--metric-heart-muted);
+  --vital-border: var(--metric-heart-border);
 }
 
 .vital_steps {
-  color: var(--dash-blue-ink);
-  border-color: color-mix(in srgb, var(--dash-blue-ink) 12%, transparent);
-  background: var(--dash-blue);
+  --vital-surface: var(--metric-steps);
+  --vital-foreground: var(--metric-steps-foreground);
+  --vital-accent: var(--metric-steps-accent);
+  --vital-muted: var(--metric-steps-muted);
+  --vital-border: var(--metric-steps-border);
 }
 
 .vital_sleep {
-  color: var(--dash-lavender-ink);
-  border-color: color-mix(in srgb, var(--dash-lavender-ink) 12%, transparent);
-  background: var(--dash-lavender);
+  --vital-surface: var(--metric-sleep);
+  --vital-foreground: var(--metric-sleep-foreground);
+  --vital-accent: var(--metric-sleep-accent);
+  --vital-muted: var(--metric-sleep-muted);
+  --vital-border: var(--metric-sleep-border);
 }
 
 .summaryCard {
   display: flex;
   flex-direction: column;
   padding: 1.35rem;
+  border-color: var(--protected-card-secondary-border);
+  background: var(--protected-card-secondary-bg);
 }
 
 .summaryIcon {
-  color: var(--dash-blue-ink);
-  background: var(--dash-blue);
+  color: var(--color-status-info);
+  background: var(--color-status-info-soft);
 }
 
 .summaryNumbers {
@@ -364,7 +395,7 @@
   justify-content: space-between;
   gap: 1rem;
   padding: 0.72rem 0;
-  border-bottom: 1px solid var(--dash-border);
+  border-bottom: 1px solid var(--dash-card-border);
 }
 
 .summaryNumbers div:last-child {
@@ -372,13 +403,13 @@
 }
 
 .summaryNumbers strong {
-  color: var(--dash-brand-deep);
+  color: var(--color-status-calm);
   font-size: 1.4rem;
   letter-spacing: -0.035em;
 }
 
 .summaryNumbers span {
-  color: var(--dash-muted);
+  color: var(--dash-card-secondary);
   font-size: 0.74rem;
   text-align: right;
 }
@@ -389,15 +420,14 @@
   gap: 0.4rem;
   margin-top: auto;
   padding-top: 1rem;
-  color: var(--dash-muted);
+  color: var(--dash-card-secondary);
   font-size: 0.72rem;
 }
 
 .timeZoneNote {
   margin: 0.45rem 0 0;
-  color: var(--dash-muted);
+  color: var(--surface-light-tertiary);
   font-size: 0.65rem;
-  opacity: 0.76;
 }
 
 .inlineError,
@@ -433,13 +463,18 @@
 }
 
 .emptyCompact {
-  color: var(--dash-muted);
-  border: 1px dashed var(--dash-border);
-  background: color-mix(in srgb, var(--dash-border) 18%, transparent);
+  color: var(--dash-card-secondary);
+  border: 1px dashed var(--surface-light-border-strong);
+  background: var(--dash-card-muted);
 }
 
 .emptyCompact strong {
-  color: var(--dash-ink);
+  color: var(--dash-card-ink);
+}
+
+.stressCard .emptyCompact {
+  border-color: rgb(224 247 241 / 0.32);
+  background: rgb(255 255 255 / 0.08);
 }
 
 .boundaryNotice {
@@ -448,8 +483,8 @@
   align-items: center;
   gap: 0.85rem;
   padding: 0.9rem 1rem;
-  color: var(--dash-brand-deep);
-  border: 1px solid var(--dash-mint-strong);
+  color: var(--color-status-calm);
+  border: 1px solid var(--dash-mint-border);
   border-radius: 0.9rem;
   background: var(--dash-mint);
 }
@@ -469,13 +504,13 @@
 
 .boundaryNotice p {
   margin: 0.17rem 0 0;
-  color: var(--dash-muted);
+  color: var(--dash-card-secondary);
   font-size: 0.72rem;
   line-height: 1.45;
 }
 
 .noticeShield {
-  opacity: 0.76;
+  color: var(--color-status-calm-support);
 }
 
 .activityGrid {
@@ -493,12 +528,12 @@
 
 .panelHeader {
   padding-bottom: 1rem;
-  border-bottom: 1px solid var(--dash-border);
+  border-bottom: 1px solid var(--dash-card-border);
 }
 
 .workoutIcon {
-  color: var(--dash-coral-ink);
-  background: var(--dash-coral);
+  color: var(--color-status-heart);
+  background: var(--color-status-heart-soft);
 }
 
 .alertList {
@@ -515,15 +550,15 @@
   align-items: center;
   gap: 0.7rem;
   padding: 0.85rem 0;
-  border-bottom: 1px solid var(--dash-border);
+  border-bottom: 1px solid var(--dash-card-border);
 }
 
 .alertDot {
   width: 0.48rem;
   height: 0.48rem;
   border-radius: 50%;
-  background: var(--dash-coral-ink);
-  box-shadow: 0 0 0 0.28rem var(--dash-coral);
+  background: var(--color-status-heart);
+  box-shadow: 0 0 0 0.28rem var(--color-status-heart-soft);
 }
 
 .alertList strong {
@@ -534,20 +569,20 @@
 
 .alertList p {
   margin: 0.18rem 0 0;
-  color: var(--dash-muted);
+  color: var(--dash-card-secondary);
   font-size: 0.69rem;
 }
 
 .alertStatus,
 .workoutStatus {
   padding: 0.28rem 0.45rem;
-  color: var(--dash-muted);
+  color: var(--dash-card-secondary);
   font-size: 0.62rem;
   font-weight: 700;
   text-transform: capitalize;
-  border: 1px solid var(--dash-border);
+  border: 1px solid var(--dash-card-border);
   border-radius: 999px;
-  background: var(--dash-canvas);
+  background: var(--dash-card-muted);
 }
 
 .panelLink {
@@ -557,7 +592,7 @@
   width: fit-content;
   margin-top: auto;
   padding-top: 1rem;
-  color: var(--dash-brand-deep);
+  color: var(--dash-brand-on-light);
   font-size: 0.75rem;
   font-weight: 700;
   text-decoration: none;
@@ -588,19 +623,19 @@
 }
 
 .workoutTopline strong {
-  color: var(--dash-brand-deep);
+  color: var(--color-status-calm);
   font-size: 1.75rem;
   letter-spacing: -0.045em;
 }
 
 .workoutTopline span:not(.workoutStatus) {
-  color: var(--dash-muted);
+  color: var(--dash-card-secondary);
   font-size: 0.7rem;
 }
 
 .workoutStatus {
-  color: var(--dash-brand-deep);
-  border-color: var(--dash-mint-strong);
+  color: var(--color-status-calm);
+  border-color: var(--dash-mint-border);
   background: var(--dash-mint);
 }
 
@@ -617,16 +652,16 @@
   min-width: 0;
   padding: 0.72rem;
   border-radius: 0.75rem;
-  background: color-mix(in srgb, var(--dash-border) 18%, transparent);
+  background: var(--dash-card-muted);
 }
 
 .workoutMetrics svg {
   margin-bottom: 0.15rem;
-  color: var(--dash-brand-deep);
+  color: var(--dash-brand-on-light);
 }
 
 .workoutMetrics dt {
-  color: var(--dash-muted);
+  color: var(--dash-card-secondary);
   font-size: 0.65rem;
 }
 
@@ -650,16 +685,16 @@
   gap: 0.72rem;
   min-width: 0;
   padding: 0.85rem;
-  color: var(--dash-ink);
+  color: var(--dash-card-ink);
   text-decoration: none;
-  border: 1px solid var(--dash-border);
+  border: 1px solid var(--dash-card-border);
   border-radius: 0.85rem;
-  background: var(--dash-surface);
+  background: var(--dash-card);
   transition: border-color 150ms ease, transform 150ms ease;
 }
 
 .quickLinks a:hover {
-  border-color: color-mix(in srgb, var(--dash-brand) 34%, var(--dash-border));
+  border-color: color-mix(in srgb, var(--dash-brand-on-light) 40%, var(--dash-card-border));
   transform: translateY(-1px);
 }
 
@@ -675,7 +710,7 @@
 
 .quickLinks small {
   overflow: hidden;
-  color: var(--dash-muted);
+  color: var(--dash-card-secondary);
   font-size: 0.67rem;
   line-height: 1.35;
   text-overflow: ellipsis;
@@ -687,13 +722,13 @@
   width: 2.25rem;
   height: 2.25rem;
   place-items: center;
-  color: var(--dash-brand-deep);
+  color: var(--dash-brand-on-light);
   border-radius: 0.68rem;
   background: var(--dash-mint);
 }
 
 .quickArrow {
-  color: var(--dash-muted);
+  color: var(--dash-card-secondary);
 }
 
 .loading {
@@ -706,11 +741,11 @@
 .loadingNotice,
 .loadingPanel {
   overflow: hidden;
-  border: 1px solid var(--dash-border);
+  border: 1px solid var(--dash-card-border);
   border-radius: 1rem;
   background:
     linear-gradient(100deg, transparent 20%, rgba(255, 255, 255, 0.62) 42%, transparent 64%),
-    color-mix(in srgb, var(--dash-border) 30%, var(--dash-surface));
+    color-mix(in srgb, var(--dash-card-border) 30%, var(--dash-card));
   background-size: 230% 100%;
   animation: dashboardShimmer 1.6s ease-in-out infinite;
 }
@@ -751,9 +786,10 @@
   margin: 5rem auto;
   padding: 1.5rem;
   text-align: center;
-  border: 1px solid var(--dash-border);
+  border: 1px solid var(--dash-card-border);
   border-radius: 1rem;
-  background: var(--dash-surface);
+  background: var(--dash-card);
+  color: var(--dash-card-ink);
 }
 
 .configurationError h1,
@@ -766,7 +802,7 @@
 }
 
 .configurationError p {
-  color: var(--dash-muted);
+  color: var(--dash-card-secondary);
   font-size: 0.82rem;
   line-height: 1.55;
 }
@@ -775,13 +811,13 @@
   width: fit-content;
   margin: 0.65rem auto 0;
   padding: 0.68rem 1rem;
-  color: var(--color-text-inverse);
+  color: var(--surface-sidebar-card-foreground);
   font: inherit;
   font-size: 0.78rem;
   font-weight: 700;
   border: 0;
   border-radius: 0.72rem;
-  background: var(--dash-brand-deep);
+  background: var(--dash-brand-on-light);
   cursor: pointer;
 }
 
@@ -817,7 +853,7 @@
     display: grid;
     justify-content: initial;
     border-bottom: 0;
-    border-right: 1px solid var(--dash-border);
+    border-right: 1px solid var(--dash-card-border);
   }
 
   .summaryNumbers div:last-child {
@@ -903,7 +939,7 @@
   .summaryNumbers div {
     display: flex;
     border-right: 0;
-    border-bottom: 1px solid var(--dash-border);
+    border-bottom: 1px solid var(--dash-card-border);
   }
 
   .summaryNumbers div:last-child {

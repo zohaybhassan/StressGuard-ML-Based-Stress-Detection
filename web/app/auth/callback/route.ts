@@ -1,7 +1,7 @@
 import type { EmailOtpType } from "@supabase/supabase-js";
 import { NextResponse, type NextRequest } from "next/server";
 
-import { safeNextPath } from "@/lib/auth/redirects";
+import { getSiteUrl, safeNextPath } from "@/lib/auth/redirects";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 const emailOtpTypes = new Set<EmailOtpType>([
@@ -13,17 +13,21 @@ const emailOtpTypes = new Set<EmailOtpType>([
   "signup",
 ]);
 
-function authRedirect(request: NextRequest, query: string) {
-  return NextResponse.redirect(new URL(`/auth?${query}`, request.url));
+function appRedirect(path: string) {
+  return NextResponse.redirect(new URL(path, getSiteUrl()));
+}
+
+function authRedirect(query: string) {
+  return appRedirect(`/auth?${query}`);
 }
 
 export async function GET(request: NextRequest) {
   if (request.nextUrl.searchParams.has("error")) {
-    return authRedirect(request, "error=oauth");
+    return authRedirect("error=oauth");
   }
 
   const supabase = await createSupabaseServerClient();
-  if (!supabase) return authRedirect(request, "reason=configuration");
+  if (!supabase) return authRedirect("reason=configuration");
 
   const code = request.nextUrl.searchParams.get("code");
   const tokenHash = request.nextUrl.searchParams.get("token_hash");
@@ -38,16 +42,16 @@ export async function GET(request: NextRequest) {
   } else if (tokenHash && type) {
     ({ error } = await supabase.auth.verifyOtp({ token_hash: tokenHash, type }));
   } else {
-    return authRedirect(request, "error=invalid-link");
+    return authRedirect("error=invalid-link");
   }
 
-  if (error) return authRedirect(request, "error=expired-link");
+  if (error) return authRedirect("error=expired-link");
 
   const next = safeNextPath(request.nextUrl.searchParams.get("next"));
   const isRecovery = type === "recovery" || next.startsWith("/auth?mode=reset");
 
   if (isRecovery) {
-    const response = NextResponse.redirect(new URL("/auth?mode=reset", request.url));
+    const response = appRedirect("/auth?mode=reset");
     response.cookies.set("sg-password-recovery", "active", {
       httpOnly: true,
       maxAge: 15 * 60,
@@ -70,9 +74,9 @@ export async function GET(request: NextRequest) {
       .maybeSingle();
 
     if (profile?.password_set === false) {
-      return NextResponse.redirect(new URL("/auth?mode=set-password", request.url));
+      return appRedirect("/auth?mode=set-password");
     }
   }
 
-  return NextResponse.redirect(new URL(next, request.url));
+  return appRedirect(next);
 }

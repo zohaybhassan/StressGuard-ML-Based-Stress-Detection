@@ -191,7 +191,11 @@ function MetricChart({
       ) : (
         <>
           <div className={styles.chartCanvas} aria-hidden="true">
-            <ResponsiveContainer width="100%" height="100%">
+            <ResponsiveContainer
+              width="100%"
+              height="100%"
+              initialDimension={{ width: 640, height: 240 }}
+            >
               <LineChart data={chartData} margin={{ top: 12, right: 10, bottom: 2, left: 0 }}>
                 <CartesianGrid
                   stroke="var(--chart-grid)"

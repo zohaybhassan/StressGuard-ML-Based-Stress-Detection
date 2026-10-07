@@ -38,6 +38,119 @@
   --color-assistant: #8a63d2;
   --color-assistant-soft: #f0eafd;
 
+  /* Fixed-role application surfaces. These do not invert with OS color mode. */
+  --surface-dark: #071a17;
+  --surface-dark-raised: #0d2721;
+  --surface-dark-foreground: #f1f8f5;
+  --surface-dark-muted: #abc1ba;
+  --surface-dark-border: #29473f;
+  --surface-dark-control-border: #34564e;
+  --surface-dark-control-foreground: #d7e8e2;
+  --surface-dark-danger: #352126;
+  --surface-dark-danger-border: #6e4650;
+  --surface-dark-danger-foreground: #ffabb5;
+  --surface-light: #f7faf9;
+  --surface-light-muted: #edf3f1;
+  --surface-light-foreground: #10201d;
+  --surface-light-secondary: #526761;
+  --surface-light-tertiary: #60736d;
+  --surface-light-border: #cad9d4;
+  --surface-light-border-strong: #80938d;
+
+  --color-brand-on-dark: #51d6ba;
+  --color-brand-on-light: #08786b;
+  --color-brand-highlight: #43cdb1;
+  --color-brand-highlight-foreground: #062b25;
+  --color-status-calm: #075f56;
+  --color-status-calm-support: #237f70;
+  --color-status-info: #245fa8;
+  --color-status-info-soft: #e4eefb;
+  --color-status-heart: #b32e48;
+  --color-status-heart-soft: #fde7ec;
+
+  --surface-sidebar: #eef4f1;
+  --surface-sidebar-foreground: #334b45;
+  --surface-sidebar-hover: #dceae5;
+  --surface-sidebar-active: #0b5f55;
+  --surface-sidebar-card: #0b3b35;
+  --surface-sidebar-card-border: #24534a;
+  --surface-sidebar-card-foreground: #f5fbf9;
+  --surface-sidebar-card-muted: #c4d8d2;
+
+  --surface-accent-light: #e3f4ef;
+  --surface-accent-light-raised: #eef7f4;
+  --surface-accent-light-border: #9fc9bf;
+  --surface-warning-light: #fff0d0;
+  --surface-warning-light-foreground: #704400;
+  --surface-warning-dark: #493514;
+  --surface-warning-dark-foreground: #ffd489;
+  --surface-warning-dark-border: #76521e;
+  --surface-success-dark: #123f36;
+  --surface-success-dark-foreground: #b7f5e7;
+  --surface-success-dark-border: #2c685b;
+  --surface-neutral-dark: #172b26;
+  --surface-neutral-dark-foreground: #c3d5cf;
+  --surface-danger-light: #fbeaec;
+  --surface-danger-light-foreground: #9d303d;
+
+  --metric-heart: #4a2029;
+  --metric-heart-foreground: #fff4f5;
+  --metric-heart-accent: #ff9aaa;
+  --metric-heart-muted: #e4b8bf;
+  --metric-heart-border: #71323d;
+  --metric-steps: #17375f;
+  --metric-steps-foreground: #f4f8ff;
+  --metric-steps-accent: #9dc5ff;
+  --metric-steps-muted: #bfd0e8;
+  --metric-steps-border: #2f5c8e;
+  --metric-sleep: #302750;
+  --metric-sleep-foreground: #f8f5ff;
+  --metric-sleep-accent: #c6b9ff;
+  --metric-sleep-muted: #d0c8e8;
+  --metric-sleep-border: #50467a;
+
+  /* Protected application theme. These roles stay light regardless of OS theme. */
+  --protected-page-bg: #f8fbfa;
+  --protected-surface: #ffffff;
+  --protected-surface-muted: #eaf3f0;
+  --protected-surface-raised: #ffffff;
+  --protected-text: #10201d;
+  --protected-text-secondary: #4f655f;
+  --protected-text-tertiary: #617770;
+  --protected-border: #ceddd8;
+  --protected-border-strong: #a9bdb6;
+  --protected-accent: #0d8f7c;
+  --protected-accent-strong: #076b5f;
+  --protected-accent-deep: #064a42;
+  --protected-accent-soft: #cfece5;
+  --protected-accent-softer: #e8f6f2;
+
+  --protected-sidebar-bg: #086b60;
+  --protected-sidebar-bg-deep: #07564f;
+  --protected-sidebar-fg: #f3fbf9;
+  --protected-sidebar-muted-fg: #cae8e1;
+  --protected-sidebar-active-bg: #f6fbf9;
+  --protected-sidebar-active-fg: #075f56;
+  --protected-sidebar-hover-bg: rgb(255 255 255 / 0.1);
+  --protected-sidebar-border: #2a8176;
+  --protected-sidebar-card-bg: rgb(5 55 49 / 0.72);
+  --protected-sidebar-card-border: rgb(178 229 217 / 0.24);
+
+  --protected-card-primary-bg: #0a665c;
+  --protected-card-primary-fg: #f5fbf9;
+  --protected-card-primary-muted-fg: #c9e4de;
+  --protected-card-primary-border: #07574f;
+  --protected-card-secondary-bg: #e8f4f0;
+  --protected-card-secondary-fg: #10201d;
+  --protected-card-secondary-muted-fg: #4f655f;
+  --protected-card-secondary-border: #bad8cf;
+  --protected-card-bg: #ffffff;
+  --protected-card-fg: #10201d;
+  --protected-card-muted-fg: #4f655f;
+  --protected-card-border: #ceddd8;
+  --protected-shadow-card: 0 14px 36px rgb(24 91 76 / 0.09);
+  --protected-shadow-panel: 0 22px 58px rgb(24 91 76 / 0.13);
+
   --chart-stress: #18b990;
   --chart-heart: #ed6074;
   --chart-steps: #3f84ee;
