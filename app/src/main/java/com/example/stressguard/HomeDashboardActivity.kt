@@ -64,6 +64,8 @@ class HomeDashboardActivity : AppCompatActivity() {
     private lateinit var tvSleepDetail: TextView
     private lateinit var ivSleepChevron: ImageView
     private lateinit var cvSleep: MaterialCardView
+    private lateinit var tvGreeting: TextView
+    private lateinit var tvGreetingSubtitle: TextView
     private lateinit var tvWelcome: TextView
     private lateinit var tvAvatar: TextView
     private lateinit var tvStressPercentage: TextView
@@ -139,6 +141,8 @@ class HomeDashboardActivity : AppCompatActivity() {
         tvSleep = findViewById(R.id.tvSleep)
         tvSleepDetail = findViewById(R.id.tvSleepDetail)
         ivSleepChevron = findViewById(R.id.ivSleepChevron)
+        tvGreeting = findViewById(R.id.tvGreeting)
+        tvGreetingSubtitle = findViewById(R.id.tvGreetingSubtitle)
         tvWelcome = findViewById(R.id.tvWelcome)
         tvAvatar = findViewById(R.id.tvAvatar)
         tvStressPercentage = findViewById(R.id.tvStressPercentage)
@@ -207,6 +211,20 @@ class HomeDashboardActivity : AppCompatActivity() {
         val userName = SessionManager.getUserName(this)?.takeIf { it.isNotBlank() }
         tvWelcome.text = userName ?: "there"
         tvAvatar.text = userName?.trim()?.firstOrNull()?.uppercase() ?: "?"
+        when (TimeThemeManager.currentGreeting()) {
+            GreetingPeriod.MORNING -> {
+                tvGreeting.setText(R.string.dashboard_greeting_morning)
+                tvGreetingSubtitle.setText(R.string.dashboard_subtitle_day)
+            }
+            GreetingPeriod.AFTERNOON -> {
+                tvGreeting.setText(R.string.dashboard_greeting_afternoon)
+                tvGreetingSubtitle.setText(R.string.dashboard_subtitle_day)
+            }
+            GreetingPeriod.NIGHT -> {
+                tvGreeting.setText(R.string.dashboard_greeting_night)
+                tvGreetingSubtitle.setText(R.string.dashboard_subtitle_night)
+            }
+        }
     }
 
     /**
@@ -452,12 +470,12 @@ class HomeDashboardActivity : AppCompatActivity() {
 
         if (state.error != null) {
             tvStressStatus.text = state.error
-            tvStressStatus.setTextColor(color(R.color.text_on_dark_muted))
+            tvStressStatus.setTextColor(color(R.color.hero_foreground_muted))
             return
         }
 
         val prediction = state.prediction ?: run {
-            val neutral = color(R.color.text_on_dark_muted)
+            val neutral = color(R.color.hero_foreground_muted)
             stressGauge.setProgress(0)
             stressGauge.ringColor = neutral
             liveDot.backgroundTintList = ColorStateList.valueOf(neutral)

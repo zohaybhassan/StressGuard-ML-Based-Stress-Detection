@@ -22,9 +22,14 @@ object WatchStatePublisher {
         val state = buildState(context, result, feedbackId)
         val encrypted = EncryptionUtil.encrypt(state.encode())
         runCatching {
-            Tasks.await(
+            val requestId = Tasks.await(
                 Wearable.getMessageClient(context)
                     .sendMessage(nodeId, WatchProtocol.STATE_PATH, encrypted)
+            )
+            Log.i(
+                TAG,
+                "sent state requestId=$requestId score=${state.score} " +
+                    "measuredAt=${state.measuredAtEpochMs} alert=${state.alertActive}"
             )
         }.onFailure { Log.w(TAG, "could not send stress state to the watch", it) }
         return state

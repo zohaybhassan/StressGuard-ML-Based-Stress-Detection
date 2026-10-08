@@ -21,6 +21,11 @@ class WatchStateListenerService : WearableListenerService() {
             return
         }
         val state = WatchStateStore.state(applicationContext).value.state
+        Log.i(
+            TAG,
+            "received state score=${state.score} measuredAt=${state.measuredAtEpochMs} " +
+                "alert=${state.alertActive}"
+        )
         if (state.alertActive && state.feedbackId > 0L && state.feedbackId != previousAlert) {
             val vibrator = getSystemService(Vibrator::class.java)
             vibrator?.vibrate(VibrationEffect.createWaveform(longArrayOf(0, 180, 140, 180), -1))

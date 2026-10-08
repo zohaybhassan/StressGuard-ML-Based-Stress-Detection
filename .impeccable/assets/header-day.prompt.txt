@@ -1,0 +1,9 @@
+Use case: stylized-concept
+Asset type: Android wellness dashboard header illustration, daylight variant
+Primary request: Create a polished panoramic morning landscape illustration inspired by the daylight panel in the supplied reference image, for StressGuard's home header.
+Scene/backdrop: peaceful layered blue-green mountains, calm lake valley, soft clouds, a few rounded trees, clear luminous morning sky.
+Style/medium: premium editorial mobile-app illustration, refined soft 2D digital painting with clean silhouettes and subtle depth; sophisticated, not childish.
+Composition/framing: very wide 3:1 banner; keep the left 48% calm and low-detail for greeting text; concentrate mountain, trees, and warm rising sun toward the right half; natural fade at lower edge so it blends into an off-white app canvas.
+Lighting/mood: fresh early morning, optimistic and calm, soft golden sunlight.
+Color palette: sky #DDF4FF, mist #EEF9F7, teal #24A98A, sage #8ACB79, mountain blue #6FAED0, sun #FFD166.
+Constraints: no text, no letters, no logo, no UI controls, no phone frame, no people, no watermark; usable as a background behind dark text; avoid high-frequency detail.
