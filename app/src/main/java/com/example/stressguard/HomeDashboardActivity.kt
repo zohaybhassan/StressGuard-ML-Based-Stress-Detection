@@ -30,6 +30,7 @@ import com.example.stressguard.data.LocalUserData
 import com.example.stressguard.data.Recommendation
 import com.example.stressguard.data.RecommendationAction
 import com.example.stressguard.data.RiskLevel
+import com.example.stressguard.data.SensorReading
 import com.example.stressguard.data.SleepRepository
 import com.example.stressguard.data.StepReconciliationRepository
 import com.example.stressguard.ui.StressRingView
@@ -71,6 +72,8 @@ class HomeDashboardActivity : AppCompatActivity() {
     private lateinit var tvStressPercentage: TextView
     private lateinit var tvStressStatus: TextView
     private lateinit var tvConnectionState: TextView
+    private lateinit var rangeNotice: View
+    private lateinit var tvRangeNotice: TextView
     private lateinit var tvSyncStatus: TextView
     private lateinit var chipConnectionState: Chip
     private lateinit var stressGauge: StressRingView
@@ -79,6 +82,7 @@ class HomeDashboardActivity : AppCompatActivity() {
     private lateinit var tvRecommendationLevel: TextView
     private lateinit var tvRecommendationMessage: TextView
     private lateinit var tvRecommendationFactors: TextView
+    private var visibleRecommendationSignature: String? = null
 
     private val sleepPermission = HealthPermission.getReadPermission(SleepSessionRecord::class)
     private val stepPermission = StepReconciliationRepository.stepPermission
@@ -118,6 +122,10 @@ class HomeDashboardActivity : AppCompatActivity() {
         // The checklist is edited on another screen, so coming back here is exactly when the
         // score may have changed. No network: this reads Room only.
         viewModel.refreshRecommendation()
+
+        // The periodic worker is the fallback. When the user returns to Home, opportunistically
+        // drain anything collected while the app was closed instead of requiring a manual tap.
+        viewModel.autoSync()
     }
 
     /** Reads Health Connect again if the permission is already held. Never prompts. */
@@ -148,6 +156,8 @@ class HomeDashboardActivity : AppCompatActivity() {
         tvStressPercentage = findViewById(R.id.tvStressPercentage)
         tvStressStatus = findViewById(R.id.tvStressStatus)
         tvConnectionState = findViewById(R.id.tvConnectionState)
+        rangeNotice = findViewById(R.id.rangeNotice)
+        tvRangeNotice = findViewById(R.id.tvRangeNotice)
         tvSyncStatus = findViewById(R.id.tvSyncStatus)
         chipConnectionState = findViewById(R.id.chipConnectionState)
         stressGauge = findViewById(R.id.stressGauge)
@@ -192,6 +202,15 @@ class HomeDashboardActivity : AppCompatActivity() {
         tvRecommendationFactors = findViewById(R.id.tvRecommendationFactors)
         findViewById<MaterialButton>(R.id.btnEditChecklist).setOnClickListener {
             startActivity(HealthChecklistActivity.editIntent(this))
+        }
+        findViewById<MaterialButton>(R.id.btnDismissRecommendation).setOnClickListener {
+            visibleRecommendationSignature?.let { signature ->
+                getSharedPreferences(DASHBOARD_PREFS, MODE_PRIVATE)
+                    .edit()
+                    .putString(KEY_DISMISSED_RECOMMENDATION, signature)
+                    .apply()
+            }
+            cvRecommendation.visibility = View.GONE
         }
 
         renderGreeting()
@@ -373,6 +392,18 @@ class HomeDashboardActivity : AppCompatActivity() {
      */
     private fun renderRecommendation(recommendation: Recommendation?) {
         if (recommendation == null || recommendation.action == RecommendationAction.NOT_ENOUGH_DATA) {
+            visibleRecommendationSignature = null
+            cvRecommendation.visibility = View.GONE
+            return
+        }
+
+        // Dismiss only this verdict. If the checklist or recent pattern changes the result, the
+        // new recommendation is important enough to appear again rather than staying hidden.
+        val signature = "${recommendation.level}:${recommendation.score}:${recommendation.message}"
+        visibleRecommendationSignature = signature
+        val dismissed = getSharedPreferences(DASHBOARD_PREFS, MODE_PRIVATE)
+            .getString(KEY_DISMISSED_RECOMMENDATION, null)
+        if (dismissed == signature) {
             cvRecommendation.visibility = View.GONE
             return
         }
@@ -454,6 +485,7 @@ class HomeDashboardActivity : AppCompatActivity() {
     }
 
     private fun renderPrediction(state: DashboardUiState) {
+        rangeNotice.visibility = View.GONE
         state.workoutModeUntilEpochMs?.let { until ->
             val paused = color(R.color.metric_steps)
             stressGauge.setProgress(0)
@@ -491,21 +523,34 @@ class HomeDashboardActivity : AppCompatActivity() {
         // One colour drives the arc, the label and the live dot, so severity is legible from any
         // one of the three and they cannot disagree.
         val severity = color(severityColor(prediction.classIndex, prediction.probabilities.size))
-        tvStressStatus.text = buildStatusText(state, prediction)
+        tvStressStatus.text = buildStatusText(prediction)
         tvStressStatus.setTextColor(severity)
         stressGauge.ringColor = severity
         liveDot.backgroundTintList = ColorStateList.valueOf(severity)
 
         tvConnectionState.text = buildDetailLine(state)
+        rangeNotice.visibility = if (state.outOfTrainingRange) View.VISIBLE else View.GONE
+        if (state.outOfTrainingRange) tvRangeNotice.text = buildRangeNotice(state)
     }
 
-    /**
-     * The status line carries the extrapolation warning, because a prediction made outside the
-     * trained range should not look identical to one made inside it.
-     */
-    private fun buildStatusText(state: DashboardUiState, prediction: StressPrediction): String {
-        val name = StressDisplay.label(prediction.label)
-        return if (state.outOfTrainingRange) "$name*" else name
+    /** The model label remains readable; confidence context is presented in its own notice. */
+    private fun buildStatusText(prediction: StressPrediction): String {
+        return StressDisplay.label(prediction.label)
+    }
+
+    /** Explains the specific input limitation instead of exposing model-training terminology. */
+    private fun buildRangeNotice(state: DashboardUiState): String = when {
+        state.modelActivityLevel != null &&
+            state.modelActivityLevel < SensorReading.TRAINED_STEPS.first ->
+            getString(R.string.stress_range_activity_incomplete)
+        state.modelActivityLevel != null &&
+            state.modelActivityLevel > SensorReading.TRAINED_STEPS.last ->
+            getString(R.string.stress_range_activity_high)
+        state.heartRate != null && state.heartRate !in SensorReading.TRAINED_HEART_RATE ->
+            getString(R.string.stress_range_heart_rate)
+        state.sleepHours != null && state.sleepHours !in SensorReading.TRAINED_SLEEP_HOURS ->
+            getString(R.string.stress_range_sleep)
+        else -> getString(R.string.stress_range_caution)
     }
 
     /** Latency and last-alert are surfaced here rather than in a new card, per the plan. */
@@ -526,8 +571,6 @@ class HomeDashboardActivity : AppCompatActivity() {
                 append(", n=").append(state.latency.steadyStateSamples).append(")")
             }
         }
-
-        if (state.outOfTrainingRange) append("  •  * outside trained range")
 
         when (val decision = state.lastDecision) {
             is AlertDecision.Fire -> append("  •  ALERT")
@@ -652,6 +695,8 @@ class HomeDashboardActivity : AppCompatActivity() {
 
     companion object {
         private const val TAG = "VITALS"
+        private const val DASHBOARD_PREFS = "dashboard_ui"
+        private const val KEY_DISMISSED_RECOMMENDATION = "dismissed_recommendation"
 
         /** Beyond this, the night found is labelled with its age rather than passed off as last night's. */
         private const val STALE_SLEEP_HOURS = 36L

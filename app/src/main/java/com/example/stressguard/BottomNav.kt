@@ -2,6 +2,8 @@ package com.example.stressguard
 
 import android.app.Activity
 import android.content.Intent
+import androidx.lifecycle.DefaultLifecycleObserver
+import androidx.lifecycle.LifecycleOwner
 import com.google.android.material.bottomnavigation.BottomNavigationView
 
 /**
@@ -46,5 +48,17 @@ object BottomNav {
         // Activity, so a tab selected on the previous screen could otherwise be painted as active
         // on this one even though the correct destination content is visible.
         view.post { view.menu.findItem(selected).isChecked = true }
+
+        // A tab Activity can be brought back with REORDER_TO_FRONT without running onCreate again.
+        // Material has already checked the item the user tapped on the screen being left, so make
+        // the visible destination authoritative every time it resumes. This also covers system
+        // Back from Trends/Assistant to Home.
+        (activity as? LifecycleOwner)?.lifecycle?.addObserver(
+            object : DefaultLifecycleObserver {
+                override fun onResume(owner: LifecycleOwner) {
+                    view.menu.findItem(selected).isChecked = true
+                }
+            }
+        )
     }
 }

@@ -42,7 +42,7 @@
         <item name="android:statusBarColor">@color/canvas</item>
         <item name="android:windowLightStatusBar">@bool/window_light_system_bars</item>
         <item name="android:navigationBarColor">@color/surface</item>
-        <item name="android:windowLightNavigationBar">@bool/window_light_system_bars</item>
+        <item name="android:windowLightNavigationBar" tools:targetApi="27">@bool/window_light_system_bars</item>
 
         <!-- Shapes, applied to anything that does not override them. -->
         <item name="shapeAppearanceSmallComponent">@style/ShapeAppearance.StressGuard.Small</item>
