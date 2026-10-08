@@ -26,6 +26,11 @@ fun Activity.fitSystemBars(
     bottomFollowsKeyboard: Boolean = false,
 ) {
     WindowCompat.setDecorFitsSystemWindows(window, false)
+    WindowCompat.getInsetsController(window, window.decorView).apply {
+        val lightBars = resources.getBoolean(com.example.stressguard.R.bool.window_light_system_bars)
+        isAppearanceLightStatusBars = lightBars
+        isAppearanceLightNavigationBars = lightBars
+    }
     top.padTopForSystemBars()
     bottom?.padBottomForSystemBars(bottomFollowsKeyboard)
 }

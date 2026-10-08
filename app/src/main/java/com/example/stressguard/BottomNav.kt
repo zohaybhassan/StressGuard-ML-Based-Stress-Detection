@@ -41,5 +41,10 @@ object BottomNav {
             activity.overridePendingTransition(0, 0)
             true
         }
+
+        // Android restores checked menu state after onCreate. A theme change recreates the
+        // Activity, so a tab selected on the previous screen could otherwise be painted as active
+        // on this one even though the correct destination content is visible.
+        view.post { view.menu.findItem(selected).isChecked = true }
     }
 }

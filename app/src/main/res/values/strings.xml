@@ -44,7 +44,11 @@
     <string name="action_save_continue">Save and continue</string>
 
     <!-- Dashboard -->
-    <string name="dashboard_greeting">Welcome back</string>
+    <string name="dashboard_greeting_morning">Good morning,</string>
+    <string name="dashboard_greeting_afternoon">Good afternoon,</string>
+    <string name="dashboard_greeting_night">Good night,</string>
+    <string name="dashboard_subtitle_day">A calmer, healthier day starts here.</string>
+    <string name="dashboard_subtitle_night">Rest well. A better tomorrow awaits.</string>
     <string name="dashboard_waiting">Waiting for watch data</string>
     <string name="dashboard_sync_checking">Checking sync…</string>
     <string name="chip_watch_not_connected">Watch not connected</string>
@@ -53,6 +57,7 @@
     <string name="hero_live">Live</string>
     <string name="hero_caption">Read on-device from your wearable stream</string>
     <string name="section_vitals">Today\'s vitals</string>
+    <string name="section_actions">Take a helpful next step</string>
     <string name="metric_heart_rate">Heart rate</string>
     <string name="metric_steps">Steps</string>
     <string name="metric_sleep">Sleep</string>

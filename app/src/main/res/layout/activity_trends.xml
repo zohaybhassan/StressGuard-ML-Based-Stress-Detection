@@ -37,32 +37,59 @@
             android:paddingEnd="@dimen/screen_padding"
             android:paddingBottom="@dimen/space_xl">
 
-            <TextView
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="@string/trends_title"
-                android:textAppearance="@style/TextAppearance.StressGuard.Headline" />
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
 
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="2dp"
-                android:text="@string/trends_subtitle"
-                android:textAppearance="@style/TextAppearance.StressGuard.Caption"
-                android:textColor="@color/text_tertiary" />
+                <ImageView
+                    android:layout_width="42dp"
+                    android:layout_height="42dp"
+                    android:background="@drawable/bg_icon_tile"
+                    android:backgroundTint="@color/metric_steps_soft"
+                    android:contentDescription="@null"
+                    android:padding="9dp"
+                    android:src="@drawable/ic_pulse"
+                    app:tint="@color/metric_steps" />
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/space_md"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/trends_title"
+                        android:textAppearance="@style/TextAppearance.StressGuard.Headline" />
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp"
+                        android:text="@string/trends_subtitle"
+                        android:textAppearance="@style/TextAppearance.StressGuard.Caption"
+                        android:textColor="@color/text_tertiary" />
+                </LinearLayout>
+            </LinearLayout>
 
             <!-- Today, as a headline. A live count rather than a rollup: a day that has not yet
                  reached the high-stress threshold still has readings worth showing. -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/space_lg">
+                android:layout_marginTop="@dimen/space_lg"
+                app:cardBackgroundColor="@color/surface_analytics_raised"
+                app:strokeColor="@color/outline_analytics">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:padding="@dimen/space_xl">
+                    android:padding="@dimen/space_lg">
 
                     <TextView
                         style="@style/Widget.StressGuard.SectionLabel"
@@ -133,7 +160,9 @@
                 <com.google.android.material.card.MaterialCardView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="@dimen/space_lg">
+                    android:layout_marginTop="@dimen/space_lg"
+                    app:cardBackgroundColor="@color/surface_analytics"
+                    app:strokeColor="@color/outline_analytics">
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -165,7 +194,9 @@
                 <com.google.android.material.card.MaterialCardView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="@dimen/space_md">
+                    android:layout_marginTop="@dimen/space_md"
+                    app:cardBackgroundColor="@color/surface_analytics"
+                    app:strokeColor="@color/outline_analytics">
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -197,7 +228,9 @@
                 <com.google.android.material.card.MaterialCardView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="@dimen/space_md">
+                    android:layout_marginTop="@dimen/space_md"
+                    app:cardBackgroundColor="@color/surface_analytics"
+                    app:strokeColor="@color/outline_analytics">
 
                     <LinearLayout
                         android:layout_width="match_parent"

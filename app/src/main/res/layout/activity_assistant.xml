@@ -62,8 +62,10 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="@dimen/space_sm"
                 android:layout_weight="1"
+                android:lineSpacingExtra="3dp"
                 android:text="@string/assistant_disclaimer"
-                android:textAppearance="@style/TextAppearance.StressGuard.Footnote" />
+                android:textAppearance="@style/TextAppearance.StressGuard.Footnote"
+                android:textColor="@color/text_secondary" />
         </LinearLayout>
     </com.google.android.material.card.MaterialCardView>
 

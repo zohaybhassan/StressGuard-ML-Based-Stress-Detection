@@ -12,59 +12,67 @@
 -->
 <resources>
 
-    <color name="brand">#2ED3B7</color>
-    <color name="brand_dark">#5FE3CC</color>
+    <color name="brand">#2DE5A7</color>
+    <color name="brand_dark">#55E1BE</color>
     <color name="brand_soft">#11332D</color>
     <color name="brand_softer">#0D2723</color>
     <!-- Dark text on the bright teal: white on #2ED3B7 fails contrast, dark ink passes easily. -->
-    <color name="on_brand">#04231E</color>
+    <color name="on_brand">#03130E</color>
 
-    <color name="canvas">#081311</color>
-    <color name="surface">#101D1A</color>
-    <color name="surface_variant">#172723</color>
-    <color name="outline">#22332E</color>
-    <color name="outline_strong">#2E423B</color>
-    <color name="scrim">#66000000</color>
+    <color name="canvas">#04110F</color>
+    <color name="surface">#0A1D1A</color>
+    <color name="surface_variant">#0E2521</color>
+    <color name="surface_analytics">#081C2A</color>
+    <color name="surface_analytics_raised">#0D2638</color>
+    <color name="outline_analytics">#183E55</color>
+    <color name="outline">#183732</color>
+    <color name="outline_strong">#285249</color>
+    <color name="scrim">#73000000</color>
 
-    <color name="text_primary">#E8F1EE</color>
-    <color name="text_secondary">#9CB2AC</color>
-    <color name="text_tertiary">#6F847E</color>
+    <color name="text_primary">#F3FAF8</color>
+    <color name="text_secondary">#B2C9C3</color>
+    <color name="text_tertiary">#78928B</color>
     <color name="text_on_dark">#FFFFFF</color>
     <color name="text_on_dark_muted">#9FC3BB</color>
 
     <!-- Lifted a little from the light values so the hero still separates from a near-black
          canvas; it is the only surface that is dark in both themes. -->
-    <color name="hero_start">#0D3B34</color>
-    <color name="hero_end">#16564B</color>
-    <color name="hero_track">#20524A</color>
-    <color name="hero_divider">#24504A</color>
+    <color name="hero_start">#0B4F42</color>
+    <color name="hero_end">#0A3731</color>
+    <color name="hero_track">#1D6355</color>
+    <color name="hero_divider">#277263</color>
+    <color name="hero_foreground">#FFFFFF</color>
+    <color name="hero_foreground_muted">#9FC3BB</color>
 
-    <color name="stress_low">#4FD98F</color>
-    <color name="stress_moderate">#FFC463</color>
-    <color name="stress_elevated">#FF9A5C</color>
-    <color name="stress_high">#FF6B6E</color>
+    <color name="header_scrim_start">#F207112D</color>
+    <color name="header_scrim_end">#1807112D</color>
 
-    <color name="metric_heart">#FF7189</color>
-    <color name="metric_heart_soft">#3A1D24</color>
-    <color name="metric_steps">#6A9BFF</color>
-    <color name="metric_steps_soft">#182741</color>
-    <color name="metric_sleep">#9E85FF</color>
-    <color name="metric_sleep_soft">#241E3F</color>
+    <color name="stress_low">#35E69B</color>
+    <color name="stress_moderate">#FFC84A</color>
+    <color name="stress_elevated">#FF9850</color>
+    <color name="stress_high">#FF5C78</color>
 
-    <color name="danger">#FF6B6E</color>
-    <color name="danger_soft">#3A1B1D</color>
-    <color name="warning">#FFC463</color>
-    <color name="warning_soft">#332811</color>
-    <color name="success">#4FD98F</color>
-    <color name="neutral_soft">#172723</color>
+    <color name="metric_heart">#FF6179</color>
+    <color name="metric_heart_soft">#3C1822</color>
+    <color name="metric_steps">#36A6FF</color>
+    <color name="metric_steps_soft">#132947</color>
+    <color name="metric_sleep">#9A63F6</color>
+    <color name="metric_sleep_soft">#2B1F47</color>
 
-    <color name="bubble_user">#1C6D60</color>
-    <color name="bubble_user_text">#EAFFFA</color>
-    <color name="bubble_assistant">#172723</color>
-    <color name="bubble_assistant_text">#E8F1EE</color>
-    <color name="bubble_fallback">#332811</color>
-    <color name="bubble_fallback_text">#FFDFA3</color>
+    <color name="danger">#FF5C78</color>
+    <color name="danger_soft">#3C1822</color>
+    <color name="warning">#FFC84A</color>
+    <color name="warning_soft">#352A12</color>
+    <color name="success">#35E69B</color>
+    <color name="neutral_soft">#0E2521</color>
 
-    <color name="chart_grid">#22332E</color>
-    <color name="chart_axis_text">#6F847E</color>
+    <color name="bubble_user">#126855</color>
+    <color name="bubble_user_text">#F2FFF9</color>
+    <color name="bubble_assistant">#102720</color>
+    <color name="bubble_assistant_text">#F3FAF8</color>
+    <color name="bubble_fallback">#352A12</color>
+    <color name="bubble_fallback_text">#FFE3A1</color>
+
+    <color name="chart_grid">#1A3B35</color>
+    <color name="chart_axis_text">#78928B</color>
 </resources>

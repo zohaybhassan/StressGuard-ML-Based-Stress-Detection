@@ -64,6 +64,8 @@ class HomeDashboardActivity : AppCompatActivity() {
     private lateinit var tvSleepDetail: TextView
     private lateinit var ivSleepChevron: ImageView
     private lateinit var cvSleep: MaterialCardView
+    private lateinit var tvGreeting: TextView
+    private lateinit var tvGreetingSubtitle: TextView
     private lateinit var tvWelcome: TextView
     private lateinit var tvAvatar: TextView
     private lateinit var tvStressPercentage: TextView
@@ -139,6 +141,8 @@ class HomeDashboardActivity : AppCompatActivity() {
         tvSleep = findViewById(R.id.tvSleep)
         tvSleepDetail = findViewById(R.id.tvSleepDetail)
         ivSleepChevron = findViewById(R.id.ivSleepChevron)
+        tvGreeting = findViewById(R.id.tvGreeting)
+        tvGreetingSubtitle = findViewById(R.id.tvGreetingSubtitle)
         tvWelcome = findViewById(R.id.tvWelcome)
         tvAvatar = findViewById(R.id.tvAvatar)
         tvStressPercentage = findViewById(R.id.tvStressPercentage)
@@ -207,6 +211,20 @@ class HomeDashboardActivity : AppCompatActivity() {
         val userName = SessionManager.getUserName(this)?.takeIf { it.isNotBlank() }
         tvWelcome.text = userName ?: "there"
         tvAvatar.text = userName?.trim()?.firstOrNull()?.uppercase() ?: "?"
+        when (TimeThemeManager.currentGreeting()) {
+            GreetingPeriod.MORNING -> {
+                tvGreeting.setText(R.string.dashboard_greeting_morning)
+                tvGreetingSubtitle.setText(R.string.dashboard_subtitle_day)
+            }
+            GreetingPeriod.AFTERNOON -> {
+                tvGreeting.setText(R.string.dashboard_greeting_afternoon)
+                tvGreetingSubtitle.setText(R.string.dashboard_subtitle_day)
+            }
+            GreetingPeriod.NIGHT -> {
+                tvGreeting.setText(R.string.dashboard_greeting_night)
+                tvGreetingSubtitle.setText(R.string.dashboard_subtitle_night)
+            }
+        }
     }
 
     /**
@@ -452,12 +470,12 @@ class HomeDashboardActivity : AppCompatActivity() {
 
         if (state.error != null) {
             tvStressStatus.text = state.error
-            tvStressStatus.setTextColor(color(R.color.text_on_dark_muted))
+            tvStressStatus.setTextColor(color(R.color.hero_foreground_muted))
             return
         }
 
         val prediction = state.prediction ?: run {
-            val neutral = color(R.color.text_on_dark_muted)
+            val neutral = color(R.color.hero_foreground_muted)
             stressGauge.setProgress(0)
             stressGauge.ringColor = neutral
             liveDot.backgroundTintList = ColorStateList.valueOf(neutral)
@@ -466,7 +484,7 @@ class HomeDashboardActivity : AppCompatActivity() {
             tvStressStatus.setTextColor(neutral)
             return
         }
-        val score = gaugeScore(prediction.probabilities)
+        val score = StressDisplay.score(prediction.probabilities)
         stressGauge.setProgress(score)
         tvStressPercentage.text = "$score%"
 
@@ -486,7 +504,7 @@ class HomeDashboardActivity : AppCompatActivity() {
      * trained range should not look identical to one made inside it.
      */
     private fun buildStatusText(state: DashboardUiState, prediction: StressPrediction): String {
-        val name = displayName(prediction.label)
+        val name = StressDisplay.label(prediction.label)
         return if (state.outOfTrainingRange) "$name*" else name
     }
 
@@ -529,27 +547,11 @@ class HomeDashboardActivity : AppCompatActivity() {
      * high, weighted by its probability. Derived from the class count, so a binary or a
      * three-level bundle both work unchanged.
      */
-    private fun gaugeScore(probabilities: FloatArray): Int {
-        if (probabilities.size < 2) return 0
-        val step = (GAUGE_MAX - GAUGE_MIN) / (probabilities.size - 1)
-        return probabilities.withIndex()
-            .sumOf { (index, p) -> (p * (GAUGE_MIN + step * index)).toDouble() }
-            .roundToInt()
-            .coerceIn(0, 100)
-    }
-
     @ColorRes
     private fun severityColor(classIndex: Int, classCount: Int): Int = when {
         classIndex >= classCount - 1 -> R.color.stress_high
         classIndex == 0 -> R.color.stress_low
         else -> R.color.stress_moderate
-    }
-
-    private fun displayName(label: String): String = when (label.lowercase()) {
-        "relaxed_low_stress" -> "RELAXED"
-        "normal", "not_stressed" -> "NORMAL"
-        "stressed_high", "stressed" -> "HIGH STRESS"
-        else -> label.replace('_', ' ').uppercase()
     }
 
     /** Resolves a palette entry. Every colour on this screen comes through here, so the dark
@@ -655,8 +657,6 @@ class HomeDashboardActivity : AppCompatActivity() {
         private const val STALE_SLEEP_HOURS = 36L
 
         // Gauge anchors, inset from 0 and 100 so the extremes still read as a filled arc.
-        private const val GAUGE_MIN = 10f
-        private const val GAUGE_MAX = 90f
 
         /** Roughly 12% opacity: enough for the risk badge to read as a shape, not as a block. */
         private const val PILL_TINT_ALPHA = 30
