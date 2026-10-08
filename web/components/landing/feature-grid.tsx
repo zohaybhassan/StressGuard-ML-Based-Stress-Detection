@@ -5,62 +5,76 @@ import {
   ChatCircleText,
   Heart,
   Pulse,
+  Wind,
 } from "@phosphor-icons/react/dist/ssr";
 import Link from "next/link";
 
-import styles from "./landing.module.css";
+import styles from "./landing-reference.module.css";
 
 const features = [
   {
     icon: Pulse,
-    title: "On-device monitoring",
-    description: "Wear OS vitals feed private, on-device stress inference through Android.",
+    title: "Live Stress Tracking",
+    description: "Real-time stress monitoring from your wearable with AI-powered insights.",
     tone: "mint",
     href: "/#how-it-works",
   },
   {
     icon: Heart,
-    title: "Daily vitals",
-    description: "Heart rate, steps, sleep, and stress context stay together in one clear view.",
+    title: "Daily Vitals",
+    description: "Track heart rate, sleep, steps and more, all in one place.",
     tone: "coral",
     href: "/#health-preview",
   },
   {
     icon: ChatCircleText,
-    title: "Supportive guidance",
-    description: "The Android assistant offers grounded support when you choose to start a chat.",
+    title: "AI Wellness Assistant",
+    description: "Get personalized guidance and talk through how you are feeling.",
     tone: "lavender",
     href: "/#about",
   },
   {
     icon: ChartLineUp,
-    title: "Trends and insights",
-    description: "Compare patterns over time without presenting the result as a diagnosis.",
+    title: "Trends & Insights",
+    description: "Discover patterns and understand what affects your stress and health.",
     tone: "blue",
     href: "/auth",
   },
   {
     icon: Barbell,
-    title: "Workout mode",
-    description: "Exercise sessions stay separate so elevated workout heart rate is not misread.",
+    title: "Workout Mode",
+    description: "Track exercise while stress predictions pause for more accurate insights.",
     tone: "sky",
+    href: "/#about",
+  },
+  {
+    icon: Wind,
+    title: "Breathing Exercise",
+    description: "Follow calming breathing sessions designed to help you reset and relax.",
+    tone: "sage",
     href: "/#about",
   },
 ];
 
 export function FeatureGrid() {
   return (
-    <section id="features" className="section-space">
-      <div className="page-container">
-        <div className={styles.sectionIntro}>
-          <h2 className="section-title">Built around your real day</h2>
-          <p className="body-copy">
-            StressGuard connects sensing, private inference, clear trends, and practical support.
-          </p>
-        </div>
+    <section id="features" className={styles.featuresSection}>
+      <div className={"page-container " + styles.featuresContent}>
+        <header className={styles.featuresIntro}>
+          <h2>
+            Everything You Need
+            <span>for Daily Wellness</span>
+          </h2>
+        </header>
         <div className={styles.featureGrid}>
           {features.map(({ icon: Icon, title, description, tone, href }, index) => (
-            <article key={title} className={styles.featureCard} data-tone={tone} data-index={index}>
+            <article
+              key={title}
+              id={title === "AI Wellness Assistant" ? "assistant" : undefined}
+              className={styles.featureCard}
+              data-tone={tone}
+              data-index={index}
+            >
               <span className={styles.featureIcon}>
                 <Icon size={24} weight="duotone" aria-hidden />
               </span>

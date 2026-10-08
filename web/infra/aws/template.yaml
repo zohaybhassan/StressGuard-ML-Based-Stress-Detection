@@ -1,0 +1,104 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: StressGuard private CSV report generation
+
+Parameters:
+  EnvironmentName:
+    Type: String
+    AllowedValues: [development, staging, production]
+    Default: development
+
+Resources:
+  ReportsBucket:
+    Type: AWS::S3::Bucket
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        IgnorePublicAcls: true
+        BlockPublicPolicy: true
+        RestrictPublicBuckets: true
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      OwnershipControls:
+        Rules:
+          - ObjectOwnership: BucketOwnerEnforced
+      LifecycleConfiguration:
+        Rules:
+          - Id: DeleteReportsAfterOneDay
+            Status: Enabled
+            Prefix: reports/
+            ExpirationInDays: 1
+
+  ReportsBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref ReportsBucket
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Sid: DenyInsecureTransport
+            Effect: Deny
+            Principal: "*"
+            Action: s3:*
+            Resource:
+              - !GetAtt ReportsBucket.Arn
+              - !Sub "${ReportsBucket.Arn}/*"
+            Condition:
+              Bool:
+                aws:SecureTransport: "false"
+
+  ReportFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub "stressguard-${EnvironmentName}-report"
+      Runtime: python3.12
+      Architectures: [arm64]
+      CodeUri: lambda/
+      Handler: handler.lambda_handler
+      MemorySize: 256
+      Timeout: 30
+      ReservedConcurrentExecutions: 5
+      Environment:
+        Variables:
+          REPORTS_BUCKET: !Ref ReportsBucket
+          ENVIRONMENT_NAME: !Ref EnvironmentName
+          URL_EXPIRY_SECONDS: "600"
+          MAX_ROWS: "5000"
+      Policies:
+        - AWSLambdaBasicExecutionRole
+        - Version: "2012-10-17"
+          Statement:
+            - Effect: Allow
+              Action:
+                - s3:PutObject
+                - s3:GetObject
+              Resource: !Sub "${ReportsBucket.Arn}/reports/*"
+
+  ReportFunctionLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "/aws/lambda/${ReportFunction}"
+      RetentionInDays: 14
+
+  VercelInvokePolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      Description: Invoke only the StressGuard report function from the web server
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Action: lambda:InvokeFunction
+            Resource: !GetAtt ReportFunction.Arn
+
+Outputs:
+  ReportFunctionName:
+    Value: !Ref ReportFunction
+  ReportsBucketName:
+    Value: !Ref ReportsBucket
+  VercelInvokePolicyArn:
+    Value: !Ref VercelInvokePolicy

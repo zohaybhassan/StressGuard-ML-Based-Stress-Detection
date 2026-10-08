@@ -1,12 +1,15 @@
 import {
   ArrowLeft,
   ArrowRight,
+  ChartLineUp,
   CheckCircle,
-  CloudCheck,
-  DeviceMobile,
-  ShieldCheck,
+  Heart,
+  Leaf,
+  MoonStars,
+  Pulse,
 } from "@phosphor-icons/react/dist/ssr";
 import { cookies } from "next/headers";
+import Image from "next/image";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
@@ -15,7 +18,7 @@ import { getPasswordGate } from "@/lib/auth/password-gate";
 import { authMode } from "@/lib/auth/redirects";
 
 import { AuthForm } from "./auth-form";
-import styles from "./auth.module.css";
+import styles from "./auth-reference.module.css";
 
 type AuthPageProps = {
   searchParams: Promise<{
@@ -103,32 +106,76 @@ export default async function AuthPage({ searchParams }: AuthPageProps) {
     <main className={styles.authPage}>
       <section className={styles.storyPanel} aria-labelledby="auth-story-title">
         <div className={styles.storyInner}>
-          <BrandLockup />
-          <div className={styles.storyCopy}>
-            <p className={styles.storyEyebrow}>Your private wellness companion</p>
-            <h2 id="auth-story-title">Your patterns, in one calm place.</h2>
-            <p>
-              Review stress, heart rate, sleep, and activity insights synchronized from the
-              StressGuard Android and Wear OS apps.
-            </p>
-            <div className={styles.assuranceList}>
-              <div className={styles.assuranceItem}>
-                <span className={styles.assuranceIcon}>
-                  <ShieldCheck size={18} weight="duotone" aria-hidden />
-                </span>
-                Your authenticated account controls access to your private health data.
+          <BrandLockup authTone prominent />
+          <div className={styles.storyContent}>
+            <div className={styles.storyCopy}>
+              <p className={styles.storyEyebrow}>A calmer mind. A healthier you.</p>
+              <h2 id="auth-story-title">
+                Understand your stress. <span>Build a healthier tomorrow.</span>
+              </h2>
+              <p>
+                Track body signals, discover patterns, and get personalized guidance with
+                StressGuard.
+              </p>
+              <div className={styles.assuranceList}>
+                <div className={styles.assuranceItem}>
+                  <span className={styles.assuranceIcon}>
+                    <Heart size={21} weight="duotone" aria-hidden />
+                  </span>
+                  <span><strong>Track key signals</strong>Heart rate, sleep, activity, and stress inputs.</span>
+                </div>
+                <div className={styles.assuranceItem}>
+                  <span className={`${styles.assuranceIcon} ${styles.progressIcon}`}>
+                    <ChartLineUp size={21} weight="duotone" aria-hidden />
+                  </span>
+                  <span><strong>See your progress</strong>Understand patterns across your synced wellness data.</span>
+                </div>
+                <div className={styles.assuranceItem}>
+                  <span className={`${styles.assuranceIcon} ${styles.supportIcon}`}>
+                    <Leaf size={21} weight="duotone" aria-hidden />
+                  </span>
+                  <span><strong>Get personalized support</strong>Use insights and wellness tools that fit your routine.</span>
+                </div>
               </div>
-              <div className={styles.assuranceItem}>
-                <span className={styles.assuranceIcon}>
-                  <CloudCheck size={18} weight="duotone" aria-hidden />
-                </span>
-                Web insights reflect data synchronized by the mobile app.
+            </div>
+
+            <div className={styles.watchStage} aria-label="StressGuard smartwatch with wellness insights">
+              <span className={styles.backdropShape} aria-hidden />
+              <span className={styles.watchPlinth} aria-hidden />
+              <div className={styles.watchFigure} data-auth-watch>
+                <Image
+                  className={styles.watchImage}
+                  src="/brand/hero-smartwatch-v5-three-quarter.png"
+                  alt="Round StressGuard smartwatch"
+                  width={1312}
+                  height={1199}
+                  priority
+                  sizes="(max-width: 880px) 45vw, 32vw"
+                />
+                <div className={styles.watchFace} aria-hidden>
+                  <Pulse size={18} weight="fill" />
+                  <span>Stress level</span>
+                  <strong>Low</strong>
+                  <Leaf size={15} weight="fill" />
+                </div>
               </div>
-              <div className={styles.assuranceItem}>
-                <span className={styles.assuranceIcon}>
-                  <DeviceMobile size={18} weight="duotone" aria-hidden />
-                </span>
-                Wearable sensing and alerts continue on Android and Wear OS.
+
+              <div className={`${styles.metricCard} ${styles.heartCard}`} data-auth-metric="heart">
+                <span><Heart size={16} weight="fill" aria-hidden /> Heart rate</span>
+                <strong>72 bpm</strong>
+                <small>Within your usual range</small>
+              </div>
+              <div className={`${styles.metricCard} ${styles.sleepCard}`} data-auth-metric="sleep">
+                <span><MoonStars size={16} weight="fill" aria-hidden /> Sleep</span>
+                <strong>7h 30m</strong>
+                <small>Restful night</small>
+              </div>
+              <div className={`${styles.metricCard} ${styles.trendCard}`} data-auth-metric="trend">
+                <span><ChartLineUp size={16} weight="fill" aria-hidden /> Stress trend</span>
+                <div className={styles.trendBars} aria-hidden>
+                  <i /><i /><i /><i /><i /><i /><i />
+                </div>
+                <small>Steadier this week</small>
               </div>
             </div>
           </div>
@@ -142,6 +189,7 @@ export default async function AuthPage({ searchParams }: AuthPageProps) {
       </section>
 
       <section className={styles.formPanel} aria-label="Account access">
+        <Link className={styles.helpLink} href="/auth?mode=forgot">Need help?</Link>
         <div className={styles.formWrap}>
           <div className={styles.mobileHeader}>
             <BrandLockup />
