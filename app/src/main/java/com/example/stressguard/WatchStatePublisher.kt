@@ -50,26 +50,29 @@ object WatchStatePublisher {
         }
         val workout = runCatching { WorkoutSessionRepository.current(context) }.getOrNull()
 
-        // Keep an active alert tied to the exact prediction that caused it. Live readings may
-        // continue arriving while the check-in is waiting; they must not turn a HIGH alert into
-        // a NORMAL gauge before the user has responded.
-        val probabilities = alertSnapshot?.probabilities?.toFloatArray()
-            ?: (result as? PipelineResult.Predicted)?.prediction?.probabilities
+        // The dashboard is a live mirror of the phone. A pending check-in keeps its feedback ID
+        // until the user answers it, but it must not pin the watch gauge and timestamp to the old
+        // prediction that originally raised the alert.
+        val livePrediction = result as? PipelineResult.Predicted
+        val probabilities = livePrediction?.prediction?.probabilities
             ?: stored?.probabilities?.toFloatArray()
-        val rawLabel = alertSnapshot?.predictedLabel
-            ?: (result as? PipelineResult.Predicted)?.prediction?.label
+            ?: alertSnapshot?.probabilities?.toFloatArray()
+        val rawLabel = livePrediction?.prediction?.label
             ?: stored?.label
-        val classIndex = alertSnapshot?.predictedClassIndex
-            ?: (result as? PipelineResult.Predicted)?.prediction?.classIndex
+            ?: alertSnapshot?.predictedLabel
+        val classIndex = livePrediction?.prediction?.classIndex
             ?: stored?.classIndex
-        val measuredAt = alertSnapshot?.predictionRecordedAtEpochMs ?: when (result) {
+            ?: alertSnapshot?.predictedClassIndex
+        val measuredAt = when (result) {
             is PipelineResult.Predicted -> result.reading.measuredAtEpochMs
             is PipelineResult.PausedForWorkout -> result.reading.measuredAtEpochMs
-            else -> stored?.recordedAtEpochMs ?: 0L
+            else -> stored?.recordedAtEpochMs
+                ?: alertSnapshot?.predictionRecordedAtEpochMs
+                ?: 0L
         }
-        val outOfRange = alertSnapshot?.outOfTrainingRange
-            ?: (result as? PipelineResult.Predicted)?.extrapolating
+        val outOfRange = livePrediction?.extrapolating
             ?: stored?.outOfTrainingRange
+            ?: alertSnapshot?.outOfTrainingRange
             ?: false
 
         val status = if (alertSnapshot != null) WatchProtocol.Status.READY else when (result) {
