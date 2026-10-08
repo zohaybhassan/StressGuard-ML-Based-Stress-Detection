@@ -3,22 +3,30 @@ package com.example.stressguard
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.view.View
 import android.view.inputmethod.EditorInfo
 import android.widget.EditText
+import android.widget.FrameLayout
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.example.stressguard.data.AuthRepository
 import com.example.stressguard.data.ChatMessage
 import com.example.stressguard.data.ChatRepository
 import com.example.stressguard.data.ChatRole
+import com.example.stressguard.data.ChatSessionSummary
 import com.example.stressguard.data.StressContext
 import com.example.stressguard.data.StressPipeline
 import com.example.stressguard.ui.fitSystemBars
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.button.MaterialButton
+import com.google.android.material.bottomsheet.BottomSheetDialog
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.google.android.material.progressindicator.CircularProgressIndicator
 import kotlinx.coroutines.launch
 
 /**
@@ -63,6 +71,18 @@ class AssistantActivity : AppCompatActivity() {
         btnSend = findViewById(R.id.btnSend)
         tvTyping = findViewById(R.id.tvTyping)
 
+        val disclaimer = findViewById<View>(R.id.cardDisclaimer)
+        val assistantPrefs = getSharedPreferences(ASSISTANT_PREFS, MODE_PRIVATE)
+        disclaimer.visibility = if (assistantPrefs.getBoolean(KEY_DISCLAIMER_DISMISSED, false)) {
+            View.GONE
+        } else {
+            View.VISIBLE
+        }
+        findViewById<MaterialButton>(R.id.btnDismissDisclaimer).setOnClickListener {
+            assistantPrefs.edit().putBoolean(KEY_DISCLAIMER_DISMISSED, true).apply()
+            disclaimer.visibility = View.GONE
+        }
+
         rvMessages.layoutManager = LinearLayoutManager(this).apply {
             // New messages appear at the bottom and the view follows them, which is what a
             // conversation is expected to do.
@@ -74,11 +94,16 @@ class AssistantActivity : AppCompatActivity() {
             inflateMenu(R.menu.assistant_menu)
             setNavigationOnClickListener { finish() }
             setOnMenuItemClickListener { item ->
-                if (item.itemId == R.id.action_new_conversation) {
-                    startFreshConversation()
-                    true
-                } else {
-                    false
+                when (item.itemId) {
+                    R.id.action_chat_history -> {
+                        showChatHistory()
+                        true
+                    }
+                    R.id.action_new_conversation -> {
+                        startFreshConversation()
+                        true
+                    }
+                    else -> false
                 }
             }
         }
@@ -181,6 +206,7 @@ class AssistantActivity : AppCompatActivity() {
 
     /** Closes the stored conversation and starts an empty one. */
     private fun startFreshConversation() {
+        if (awaitingReply) return
         lifecycleScope.launch {
             sessionId?.let { ChatRepository.endSession(it) }
             sessionId = ChatRepository.openSession(stressAtStart = null)
@@ -188,7 +214,123 @@ class AssistantActivity : AppCompatActivity() {
         }
     }
 
+    /** Opens saved Supabase conversations without navigating away from the current chat. */
+    private fun showChatHistory() {
+        if (awaitingReply) {
+            Toast.makeText(this, "Please wait for the current reply.", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        val dialog = BottomSheetDialog(this)
+        val content = layoutInflater.inflate(
+            R.layout.sheet_chat_history,
+            FrameLayout(this),
+            false,
+        )
+        dialog.setContentView(content)
+
+        val progress = content.findViewById<CircularProgressIndicator>(R.id.historyProgress)
+        val empty = content.findViewById<View>(R.id.historyEmptyState)
+        val emptyTitle = content.findViewById<TextView>(R.id.tvHistoryEmptyTitle)
+        val emptyDetail = content.findViewById<TextView>(R.id.tvHistoryEmptyDetail)
+        val sessionsView = content.findViewById<RecyclerView>(R.id.rvChatSessions)
+
+        lateinit var sessionsAdapter: ChatSessionAdapter
+        sessionsAdapter = ChatSessionAdapter(
+            onOpen = { selected -> openStoredConversation(selected, dialog) },
+            onDelete = { selected ->
+                confirmDeleteSession(selected, sessionsAdapter, sessionsView, empty)
+            },
+        )
+        sessionsView.layoutManager = LinearLayoutManager(this)
+        sessionsView.adapter = sessionsAdapter
+        content.findViewById<MaterialButton>(R.id.btnCloseHistory)
+            .setOnClickListener { dialog.dismiss() }
+
+        dialog.show()
+        lifecycleScope.launch {
+            val sessions = ChatRepository.sessions()
+            progress.visibility = View.GONE
+            if (sessions.isEmpty()) {
+                empty.visibility = View.VISIBLE
+                sessionsView.visibility = View.GONE
+                if (AuthRepository.currentUser == null) {
+                    emptyTitle.text = getString(R.string.chat_history_load_failed)
+                    emptyDetail.setText(R.string.chat_history_sign_in)
+                }
+            } else {
+                sessionsAdapter.submit(sessions, sessionId)
+                empty.visibility = View.GONE
+                sessionsView.visibility = View.VISIBLE
+            }
+        }
+    }
+
+    /** Switches the active transcript and makes it the session resumed on the next app launch. */
+    private fun openStoredConversation(selected: ChatSessionSummary, dialog: BottomSheetDialog) {
+        lifecycleScope.launch {
+            if (selected.id != sessionId) {
+                sessionId?.let { ChatRepository.endSession(it) }
+                if (!ChatRepository.reopenSession(selected.id)) {
+                    Toast.makeText(
+                        this@AssistantActivity,
+                        R.string.chat_history_load_failed,
+                        Toast.LENGTH_SHORT,
+                    ).show()
+                    return@launch
+                }
+            }
+
+            val stored = ChatRepository.history(selected.id)
+            sessionId = selected.id
+            adapter.replaceAll(
+                stored.ifEmpty { listOf(ChatMessage(ChatRole.ASSISTANT, greeting())) }
+            )
+            rvMessages.scrollToPosition(adapter.itemCount - 1)
+            dialog.dismiss()
+        }
+    }
+
+    private fun confirmDeleteSession(
+        selected: ChatSessionSummary,
+        sessionsAdapter: ChatSessionAdapter,
+        sessionsView: RecyclerView,
+        empty: View,
+    ) {
+        MaterialAlertDialogBuilder(this)
+            .setTitle(R.string.chat_history_delete_title)
+            .setMessage(R.string.chat_history_delete_message)
+            .setNegativeButton(R.string.chat_history_cancel, null)
+            .setPositiveButton(R.string.chat_history_delete) { _, _ ->
+                lifecycleScope.launch {
+                    if (!ChatRepository.deleteSession(selected.id)) {
+                        Toast.makeText(
+                            this@AssistantActivity,
+                            R.string.chat_history_delete_failed,
+                            Toast.LENGTH_SHORT,
+                        ).show()
+                        return@launch
+                    }
+
+                    sessionsAdapter.remove(selected.id)
+                    if (sessionsAdapter.itemCount == 0) {
+                        sessionsView.visibility = View.GONE
+                        empty.visibility = View.VISIBLE
+                    }
+
+                    if (selected.id == sessionId) {
+                        sessionId = ChatRepository.openSession(stressAtStart = null)
+                        adapter.replaceAll(listOf(ChatMessage(ChatRole.ASSISTANT, greeting())))
+                        rvMessages.scrollToPosition(adapter.itemCount - 1)
+                    }
+                }
+            }
+            .show()
+    }
+
     companion object {
+        private const val ASSISTANT_PREFS = "assistant_ui"
+        private const val KEY_DISCLAIMER_DISMISSED = "disclaimer_dismissed"
         private const val EXTRA_FROM_ALERT = "from_alert"
         private const val EXTRA_STRESS = "stress_at_start"
 

@@ -24,6 +24,7 @@
     <dimen name="radius_lg">24dp</dimen>
 
     <dimen name="stroke_width">1dp</dimen>
+    <dimen name="stroke_width_selected">2dp</dimen>
 
     <!-- Touch targets. 56dp for primary actions, 48dp for everything else, per the Material
          accessibility minimum. -->

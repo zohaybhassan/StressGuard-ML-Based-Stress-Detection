@@ -24,6 +24,18 @@ data class ChatMessage(
     val atEpochMs: Long = System.currentTimeMillis(),
 )
 
+/** One row in the Assistant's conversation picker. */
+data class ChatSessionSummary(
+    val id: String,
+    val startedAtEpochMs: Long,
+    val endedAtEpochMs: Long?,
+    val stressAtStart: String?,
+    val preview: String?,
+    val messageCount: Int,
+) {
+    val isOpen: Boolean get() = endedAtEpochMs == null
+}
+
 /** What the Edge Function sends back. */
 @Serializable
 data class ChatReply(
@@ -98,6 +110,7 @@ private fun LiveFeature.plain(): String = when (this) {
 private data class ChatSessionRow(
     val id: String? = null,
     @SerialName("user_id") val userId: String,
+    @SerialName("started_at") val startedAt: String = "",
     @SerialName("stress_at_start") val stressAtStart: String? = null,
     @SerialName("ended_at") val endedAt: String? = null,
     @SerialName("crisis_fallback_fired") val crisisFallbackFired: Boolean = false,
@@ -194,6 +207,87 @@ object ChatRepository {
         .getOrDefault(emptyList())
 
     /**
+     * Conversations owned by the signed-in user, newest first, with enough message data to make
+     * each row recognisable. Empty archived sessions are omitted so tapping "New conversation"
+     * and immediately leaving does not fill history with blank rows.
+     */
+    suspend fun sessions(limit: Long = 50): List<ChatSessionSummary> {
+        val userId = AuthRepository.currentUser?.id ?: return emptyList()
+
+        return runCatching {
+            val sessions = SupabaseProvider.client.from(SESSIONS)
+                .select {
+                    filter { eq("user_id", userId) }
+                    order("started_at", io.github.jan.supabase.postgrest.query.Order.DESCENDING)
+                    limit(limit)
+                }
+                .decodeList<ChatSessionRow>()
+
+            if (sessions.isEmpty()) return@runCatching emptyList()
+
+            val messages = SupabaseProvider.client.from(MESSAGES)
+                .select {
+                    filter { eq("user_id", userId) }
+                    order("created_at", io.github.jan.supabase.postgrest.query.Order.DESCENDING)
+                }
+                .decodeList<ChatMessageRow>()
+                .groupBy { it.sessionId }
+
+            sessions.mapNotNull { session ->
+                val id = session.id ?: return@mapNotNull null
+                val sessionMessages = messages[id].orEmpty()
+                if (sessionMessages.isEmpty() && session.endedAt != null) return@mapNotNull null
+
+                ChatSessionSummary(
+                    id = id,
+                    startedAtEpochMs = parseInstant(session.startedAt),
+                    endedAtEpochMs = session.endedAt?.let(::parseInstant),
+                    stressAtStart = session.stressAtStart,
+                    preview = sessionMessages.firstOrNull { it.role == "user" }?.content
+                        ?: sessionMessages.firstOrNull()?.content,
+                    messageCount = sessionMessages.size,
+                )
+            }
+        }
+            .onFailure { Log.w(TAG, "could not list chat sessions", it) }
+            .getOrDefault(emptyList())
+    }
+
+    /** Makes an archived conversation the one [openSession] will resume next time. */
+    suspend fun reopenSession(sessionId: String): Boolean {
+        val userId = AuthRepository.currentUser?.id ?: return false
+        return runCatching {
+            SupabaseProvider.client.from(SESSIONS).update({
+                set("ended_at", null as String?)
+            }) {
+                filter {
+                    eq("id", sessionId)
+                    eq("user_id", userId)
+                }
+            }
+            true
+        }
+            .onFailure { Log.w(TAG, "could not reopen chat session", it) }
+            .getOrDefault(false)
+    }
+
+    /** Deletes the session; the database cascades the delete to its messages. */
+    suspend fun deleteSession(sessionId: String): Boolean {
+        val userId = AuthRepository.currentUser?.id ?: return false
+        return runCatching {
+            SupabaseProvider.client.from(SESSIONS).delete {
+                filter {
+                    eq("id", sessionId)
+                    eq("user_id", userId)
+                }
+            }
+            true
+        }
+            .onFailure { Log.w(TAG, "could not delete chat session", it) }
+            .getOrDefault(false)
+    }
+
+    /**
      * Sends a message and returns the assistant's reply.
      *
      * Throws nothing: the Edge Function answers with a usable fallback for every failure it can
@@ -281,6 +375,9 @@ object ChatRepository {
         }.onFailure { Log.w(TAG, "could not flag the crisis fallback on the session", it) }
     }
 
+    private fun parseInstant(value: String): Long =
+        runCatching { Instant.parse(value).toEpochMilli() }.getOrDefault(0L)
+
     /** Closes the conversation so the next one starts fresh. */
     suspend fun endSession(sessionId: String) {
         runCatching {
@@ -303,4 +400,5 @@ object ChatRepository {
             "Try this while you wait: breathe in for four counts, hold for four, out for six. " +
             "Four rounds. The longer out-breath is what does the work.\n\n" +
             "Message me again when you have a connection."
+
 }
