@@ -62,6 +62,21 @@ class PassiveVitalsStore(context: Context) {
             0
         }
 
+    fun recordHeartRate(heartRate: Int, atEpochMs: Long) {
+        if (heartRate <= 0) return
+        prefs.edit()
+            .putInt(KEY_HEART_RATE, heartRate)
+            .putLong(KEY_HEART_RATE_AT, atEpochMs.coerceAtLeast(0L))
+            .apply()
+    }
+
+    fun recentHeartRate(nowEpochMs: Long, maxAgeMs: Long = 5 * 60_000L): Int? {
+        val measuredAt = prefs.getLong(KEY_HEART_RATE_AT, 0L)
+        val age = nowEpochMs - measuredAt
+        return prefs.getInt(KEY_HEART_RATE, 0)
+            .takeIf { it > 0 && measuredAt > 0L && age in 0..maxAgeMs }
+    }
+
     /** Whether a background registration is believed to be in place. */
     var registered: Boolean
         get() = prefs.getBoolean(KEY_REGISTERED, false)
@@ -91,6 +106,8 @@ class PassiveVitalsStore(context: Context) {
         private const val NAME = "passive_vitals"
         private const val KEY_STEPS = "daily_steps"
         private const val KEY_STEPS_DATE = "daily_steps_date"
+        private const val KEY_HEART_RATE = "heart_rate"
+        private const val KEY_HEART_RATE_AT = "heart_rate_at"
         private const val KEY_REGISTERED = "registered"
         private const val KEY_LAST_SENT = "last_sent_elapsed_ms"
 
