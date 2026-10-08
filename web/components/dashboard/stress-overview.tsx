@@ -54,10 +54,6 @@ export function StressOverview({ snapshot, timeZone }: StressOverviewProps) {
                 <span className={styles.resultLabel}>Current status</span>
                 <strong>{formatStressLabel(prediction.label)}</strong>
               </div>
-              <div className={styles.confidenceBlock}>
-                <span>Confidence</span>
-                <strong>{Math.round(prediction.confidence * 100)}%</strong>
-              </div>
             </div>
 
             <dl className={styles.metaGrid}>
@@ -65,21 +61,7 @@ export function StressOverview({ snapshot, timeZone }: StressOverviewProps) {
                 <dt>Recorded</dt>
                 <dd>{formatDateTime(prediction.recorded_at, timeZone)}</dd>
               </div>
-              <div>
-                <dt>Model</dt>
-                <dd>{prediction.model_version}</dd>
-              </div>
             </dl>
-
-            {prediction.out_of_training_range ? (
-              <div className={styles.rangeNotice} role="status">
-                <WarningCircle size={18} weight="duotone" aria-hidden="true" />
-                <span>
-                  Some inputs were outside the model training range, so interpret
-                  this result with extra care.
-                </span>
-              </div>
-            ) : null}
           </>
         ) : (
           <div className={styles.emptyCompact}>
@@ -105,11 +87,7 @@ export function StressOverview({ snapshot, timeZone }: StressOverviewProps) {
           icon={<Footprints size={23} weight="duotone" />}
           label="Steps and activity"
           value={prediction ? prediction.daily_steps.toLocaleString("en-US") : "Not available"}
-          detail={
-            prediction
-              ? `Activity input ${prediction.activity_level.toFixed(1)}`
-              : "No synchronized reading"
-          }
+          detail={prediction ? "Synced from app" : "No synchronized reading"}
           unavailable={predictionFailed}
         />
         <VitalCard
@@ -117,7 +95,7 @@ export function StressOverview({ snapshot, timeZone }: StressOverviewProps) {
           icon={<MoonStars size={23} weight="duotone" />}
           label="Sleep"
           value={prediction ? `${prediction.sleep_hours.toFixed(1)} hr` : "Not available"}
-          detail="Model input from mobile"
+          detail="Synced from app"
           unavailable={predictionFailed}
         />
       </div>

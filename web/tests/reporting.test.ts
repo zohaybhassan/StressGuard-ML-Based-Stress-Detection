@@ -4,6 +4,8 @@ import { normalizeReportRows } from "@/lib/reports/normalization";
 import { REPORT_MAX_ROWS } from "@/lib/reports/types";
 import { reportRequestSchema, reportErrorResponse } from "@/lib/reports/validation";
 import { enforceReportRowLimit, ReportTooLargeError } from "@/lib/reports/limits";
+import { renderReportCsv } from "@/lib/reports/csv";
+import { REPORT_CSV_COLUMNS, type ReportCsvRow } from "@/lib/reports/types";
 
 describe("report validation", () => {
   it("accepts 90 days and rejects 91 days", () => {
@@ -37,5 +39,15 @@ describe("report normalization", () => {
     const bounds = getZonedDateRangeBounds("2026-11-01", "2026-11-01", "America/New_York");
     expect(bounds.start?.toISOString()).toBe("2026-11-01T04:00:00.000Z");
     expect(bounds.end?.toISOString()).toBe("2026-11-02T05:00:00.000Z");
+  });
+});
+
+describe("CSV rendering", () => {
+  it("quotes values and prevents spreadsheet formula execution", () => {
+    const row = Object.fromEntries(REPORT_CSV_COLUMNS.map((column) => [column, null])) as ReportCsvRow;
+    row.alert_reason = '=HYPERLINK("https://example.com")';
+    const csv = renderReportCsv([row]);
+    expect(csv).toContain('"\'=HYPERLINK(""https://example.com"")"');
+    expect(csv.split("\r\n")).toHaveLength(3);
   });
 });

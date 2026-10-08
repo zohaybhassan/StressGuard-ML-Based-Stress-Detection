@@ -1,6 +1,5 @@
 import Link from "next/link";
 import {
-  ArrowRight,
   Bell,
   Footprints,
   Heartbeat,
@@ -94,7 +93,6 @@ function RecentAlerts({
 
       <Link className={styles.panelLink} href="/history">
         View alert history
-        <ArrowRight size={17} aria-hidden="true" />
       </Link>
     </section>
   );
@@ -163,7 +161,6 @@ function LatestWorkout({ snapshot, now, timeZone }: ActivityPanelsProps) {
 
       <Link className={styles.panelLink} href="/history">
         View workout history
-        <ArrowRight size={17} aria-hidden="true" />
       </Link>
     </section>
   );

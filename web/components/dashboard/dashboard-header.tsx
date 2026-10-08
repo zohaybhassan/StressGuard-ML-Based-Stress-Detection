@@ -4,18 +4,18 @@ import {
   CloudSlash,
 } from "@phosphor-icons/react/dist/ssr";
 import type { DashboardSnapshot } from "@/lib/dashboard/types";
-import { formatDateTime, getGreeting } from "./format";
+import { getGreeting } from "./format";
 import styles from "./dashboard.module.css";
 
 const freshnessContent = {
   fresh: {
     label: "Fresh reading",
-    detail: "Recorded within 45 minutes",
+    detail: "Recorded within 10 minutes",
     icon: CheckCircle,
   },
   delayed: {
     label: "Delayed data",
-    detail: "Latest reading is over 45 minutes old",
+    detail: "Latest reading is over 10 minutes old",
     icon: ClockCountdown,
   },
   unavailable: {
@@ -70,9 +70,6 @@ export function DashboardHeader({
         </span>
       </div>
 
-      <p className={styles.syncLine}>
-        Latest cloud record: {formatDateTime(snapshot.latestCloudRecordAt, timeZone)}
-      </p>
     </header>
   );
 }

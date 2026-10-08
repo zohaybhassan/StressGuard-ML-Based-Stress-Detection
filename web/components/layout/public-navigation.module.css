@@ -8,11 +8,17 @@
 }
 
 .inner {
-  display: flex;
+  display: grid;
+  width: 100%;
   min-height: 3.7rem;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
   align-items: center;
-  justify-content: space-between;
   gap: 1.5rem;
+  padding-inline: clamp(1.25rem, 3vw, 3.75rem);
+}
+
+.inner > span {
+  justify-self: start;
 }
 
 .desktopNav,
@@ -22,24 +28,81 @@
 }
 
 .desktopNav {
+  grid-column: 2;
   gap: clamp(1rem, 2.2vw, 2rem);
   color: #1b3430;
   font-size: 0.78rem;
   font-weight: 560;
 }
 
-.desktopNav a,
+.desktopNav a {
+  position: relative;
+  display: inline-block;
+  padding-block: 0.2rem;
+  border-radius: 0.4rem;
+  transition: color var(--transition-ui), transform var(--transition-ui);
+}
+
+.desktopNav a::after {
+  position: absolute;
+  right: 0;
+  bottom: -0.2rem;
+  left: 0;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--color-brand-strong);
+  content: "";
+  transform: scaleX(0);
+  transform-origin: center;
+  transition: transform var(--transition-ui);
+}
+
+.desktopNav a:hover,
+.desktopNav a:focus-visible {
+  color: var(--color-brand-strong);
+  transform: translateY(-2px);
+}
+
+.desktopNav a:hover::after,
+.desktopNav a:focus-visible::after {
+  transform: scaleX(1);
+}
+
 .mobilePanel a {
   border-radius: 0.4rem;
   transition: color var(--transition-ui);
 }
 
-.desktopNav a:hover {
-  color: var(--color-brand-strong);
+.desktopActions {
+  grid-column: 3;
+  gap: 0.35rem;
+  justify-self: end;
 }
 
-.desktopActions {
-  gap: 0.35rem;
+.signIn:hover,
+.signIn:focus-visible {
+  transform: translateY(-2px);
+  box-shadow: 0 7px 18px rgb(7 62 56 / 0.09);
+}
+
+.getStarted:hover,
+.getStarted:focus-visible {
+  transform: translateY(-3px) scale(1.02);
+  box-shadow: 0 12px 26px rgb(7 107 95 / 0.27);
+}
+
+.getStarted svg {
+  transition: transform var(--transition-ui);
+}
+
+.getStarted:hover svg,
+.getStarted:focus-visible svg {
+  transform: translateX(3px);
+}
+
+.signIn:active,
+.getStarted:active {
+  transform: translateY(1px) scale(0.98);
 }
 
 .mobileMenu {
@@ -117,5 +180,32 @@
 
   .mobileMenu {
     display: block;
+    grid-column: 3;
+    justify-self: end;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .desktopNav a,
+  .desktopNav a::after {
+    transition: none;
+  }
+
+  .desktopNav a:hover,
+  .desktopNav a:focus-visible {
+    transform: none;
+  }
+
+  .signIn:hover,
+  .signIn:focus-visible,
+  .getStarted:hover,
+  .getStarted:focus-visible,
+  .getStarted:hover svg,
+  .getStarted:focus-visible svg {
+    transform: none;
+  }
+
+  .getStarted svg {
+    transition: none;
   }
 }

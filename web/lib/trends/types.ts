@@ -5,10 +5,7 @@ export type TrendPredictionInput = {
   recorded_at: string;
   label: string;
   class_index: number;
-  confidence: number | null;
-  model_version: string;
   heart_rate: number | null;
-  daily_steps: number | null;
   activity_level: number | null;
   sleep_hours: number | null;
   out_of_training_range: boolean;
@@ -23,18 +20,18 @@ export type DailyTrendPoint = {
   status: TrendDayStatus;
   readingCount: number | null;
   stressedReadingCount: number | null;
+  isHighStressDay: boolean | null;
   stressedProportion: number | null;
   averageHeartRate: number | null;
   averageSleepHours: number | null;
   averageActivityLevel: number | null;
-  averageDailyStepsSnapshot: number | null;
-  averageConfidence: number | null;
   outOfRangeCount: number | null;
 };
 
 export type TrendSummary = {
   totalReadings: number;
   totalStressedReadings: number;
+  highStressDays: number;
   daysWithData: number;
   missingDays: number;
   outOfRangeReadings: number;
@@ -46,7 +43,6 @@ export type TrendSummary = {
   sleepDays: number;
   activityDays: number;
   latestRecordedAt: string | null;
-  modelVersions: string[];
 };
 
 export type TrendsDataset = {

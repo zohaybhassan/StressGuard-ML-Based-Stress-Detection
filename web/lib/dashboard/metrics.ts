@@ -1,6 +1,6 @@
 import type { Database } from "@/types/database";
 
-export const FRESHNESS_THRESHOLD_MINUTES = 45;
+export const FRESHNESS_THRESHOLD_MINUTES = 10;
 
 type Prediction = Database["public"]["Tables"]["stress_predictions"]["Row"];
 type Workout = Database["public"]["Tables"]["workout_sessions"]["Row"];

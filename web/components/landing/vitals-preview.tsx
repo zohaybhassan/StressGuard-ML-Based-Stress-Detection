@@ -9,6 +9,7 @@ import {
 import dynamic from "next/dynamic";
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 
+import { sampleTrends, type SamplePeriod } from "./sample-trends";
 import styles from "./landing-reference.module.css";
 
 const VitalChartGraphic = dynamic(
@@ -18,31 +19,6 @@ const VitalChartGraphic = dynamic(
     loading: () => <span className={styles.chartPlaceholder} />,
   },
 );
-
-type Period = "Day" | "Week" | "Month" | "Year";
-
-const periodScale: Record<Period, number> = {
-  Day: 1,
-  Week: 0.94,
-  Month: 0.88,
-  Year: 0.82,
-};
-
-const lineData = [
-  22, 20, 25, 21, 31, 29, 37, 33, 52, 44, 39, 48, 45, 61, 56, 43, 50, 46,
-].map((value, index) => ({ index, value }));
-
-const heartData = [
-  76, 79, 74, 81, 78, 83, 80, 86, 82, 88, 84, 91, 85, 93, 87, 90, 86, 94,
-].map((value, index) => ({ index, value }));
-
-const stepData = [
-  2, 4, 3, 5, 4, 6, 7, 5, 8, 9, 7, 11, 10, 13, 9, 12, 8, 10,
-].map((value, index) => ({ index, value }));
-
-const sleepData = [
-  4, 6, 5, 7, 6, 8, 7, 10, 8, 9, 7, 11, 9, 12, 10, 13, 11, 14,
-].map((value, index) => ({ index, value }));
 
 const reducedMotionQuery = "(prefers-reduced-motion: reduce)";
 
@@ -58,14 +34,14 @@ function getReducedMotionSnapshot() {
 
 export function VitalsPreview() {
   const sectionRef = useRef<HTMLElement>(null);
-  const [period, setPeriod] = useState<Period>("Day");
+  const [period, setPeriod] = useState<SamplePeriod>("Day");
   const [isRevealed, setIsRevealed] = useState(false);
   const prefersReducedMotion = useSyncExternalStore(
     subscribeToReducedMotion,
     getReducedMotionSnapshot,
     () => false,
   );
-  const scale = periodScale[period];
+  const snapshot = sampleTrends[period];
 
   useEffect(() => {
     const section = sectionRef.current;
@@ -90,13 +66,14 @@ export function VitalsPreview() {
       <div className={"page-container " + styles.vitalsContent}>
         <div className={styles.vitalsHeader}>
           <div>
-            <h2 className={styles.sectionTitle}>Your Health at a Glance</h2>
-            <p className="body-copy">
-              See your key metrics and trends, all in one place.
+            <h2 className={styles.sectionTitle}>See the bigger picture</h2>
+            <p className={"body-copy " + styles.previewDescription}>
+              Explore how your wellness trends could look over time. These example readings are
+              illustrative, not your personal health data.
             </p>
           </div>
-          <div className={styles.periodControl} aria-label="Preview time range">
-            {(Object.keys(periodScale) as Period[]).map((item) => (
+          <div className={styles.periodControl} role="group" aria-label="Sample trend time range">
+            {(Object.keys(sampleTrends) as SamplePeriod[]).map((item) => (
               <button
                 key={item}
                 type="button"
@@ -109,14 +86,17 @@ export function VitalsPreview() {
           </div>
         </div>
 
-        <div className={styles.vitalsGrid} data-revealed={isRevealed}>
+        <p className="sr-only" aria-live="polite">{period} sample trends selected</p>
+        <div className={styles.vitalsGrid} data-revealed={isRevealed} data-period={period}>
           <VitalChart
             index={0}
             icon={Lightning}
             label="Stress Level"
-            value={Math.round(45 * scale) + "%"}
-            helper="Normal"
-            data={lineData}
+            value={snapshot.metrics.stress.value}
+            helper={snapshot.metrics.stress.helper}
+            data={snapshot.metrics.stress.values.map((value, index) => ({ index, value }))}
+            ticks={snapshot.ticks}
+            period={period}
             chart="area"
             tone="stress"
             animateChart={isRevealed && !prefersReducedMotion}
@@ -125,9 +105,11 @@ export function VitalsPreview() {
             index={1}
             icon={Heart}
             label="Heart Rate"
-            value={Math.round(94 * scale) + " bpm"}
-            helper="Today&apos;s average"
-            data={heartData}
+            value={snapshot.metrics.heart.value}
+            helper={snapshot.metrics.heart.helper}
+            data={snapshot.metrics.heart.values.map((value, index) => ({ index, value }))}
+            ticks={snapshot.ticks}
+            period={period}
             chart="area"
             tone="heart"
             animateChart={isRevealed && !prefersReducedMotion}
@@ -136,9 +118,11 @@ export function VitalsPreview() {
             index={2}
             icon={Footprints}
             label="Steps"
-            value={Math.round(4974 * scale).toLocaleString()}
-            helper="Today"
-            data={stepData}
+            value={snapshot.metrics.steps.value}
+            helper={snapshot.metrics.steps.helper}
+            data={snapshot.metrics.steps.values.map((value, index) => ({ index, value }))}
+            ticks={snapshot.ticks}
+            period={period}
             chart="bar"
             tone="steps"
             animateChart={isRevealed && !prefersReducedMotion}
@@ -147,9 +131,11 @@ export function VitalsPreview() {
             index={3}
             icon={MoonStars}
             label="Sleep"
-            value={(7.5 * scale).toFixed(1) + " hrs"}
-            helper="Total sleep"
-            data={sleepData}
+            value={snapshot.metrics.sleep.value}
+            helper={snapshot.metrics.sleep.helper}
+            data={snapshot.metrics.sleep.values.map((value, index) => ({ index, value }))}
+            ticks={snapshot.ticks}
+            period={period}
             chart="bar"
             tone="sleep"
             animateChart={isRevealed && !prefersReducedMotion}
@@ -167,6 +153,8 @@ type VitalChartProps = {
   value: string;
   helper: string;
   data: { index: number; value: number }[];
+  ticks: readonly [string, string, string, string];
+  period: SamplePeriod;
   chart: "area" | "bar";
   tone: "stress" | "heart" | "steps" | "sleep";
   animateChart: boolean;
@@ -179,6 +167,8 @@ function VitalChart({
   value,
   helper,
   data,
+  ticks,
+  period,
   chart,
   tone,
   animateChart,
@@ -195,7 +185,7 @@ function VitalChart({
       <span className={styles.vitalHelper}>{helper}</span>
       <div className={styles.chart} aria-hidden>
         <VitalChartGraphic
-          key={animateChart ? "animated" : "static"}
+          key={`${period}-${animateChart ? "animated" : "static"}`}
           chart={chart}
           data={data}
           animate={animateChart}
@@ -203,10 +193,10 @@ function VitalChart({
         />
       </div>
       <div className={styles.chartTicks} aria-hidden>
-        <span>12AM</span><span>6AM</span><span>12PM</span><span>6PM</span>
+        {ticks.map((tick) => <span key={tick}>{tick}</span>)}
       </div>
       <p className="sr-only">
-        {label} sample for this {helper.toLowerCase()}: {value}.
+        {label} sample for {period.toLowerCase()}: {value}.
       </p>
     </article>
   );

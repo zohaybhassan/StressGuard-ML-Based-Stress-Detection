@@ -10,11 +10,8 @@ describe("HeroSection", () => {
     expect(
       screen.getByRole("heading", { name: "Stress Less. Understand More." }),
     ).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /get started/i })).toHaveAttribute(
-      "href",
-      "/auth?mode=register",
-    );
-    expect(screen.getByRole("link", { name: /get it on google play/i })).toHaveAttribute(
+    expect(screen.queryByRole("link", { name: /get started/i })).not.toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /get it on play store/i })).toHaveAttribute(
       "href",
       "https://play.google.com/store/search?q=StressGuard&c=apps",
     );
@@ -22,5 +19,6 @@ describe("HeroSection", () => {
     expect(screen.getByText("Ethan Carter")).toBeInTheDocument();
     expect(screen.queryByText("Fahad Saleem")).not.toBeInTheDocument();
     expect(screen.queryByText(/diagnose/i)).not.toBeInTheDocument();
+    expect(screen.getByLabelText("Illustrative StressGuard dashboard preview").closest("[aria-hidden='true']")).toBeInTheDocument();
   });
 });

@@ -40,3 +40,13 @@ export function callbackUrl(nextPath: string) {
   callback.searchParams.set("next", safeNextPath(nextPath));
   return callback.toString();
 }
+
+export function callbackErrorKind(errorCode: string | null, nextPath: string | null) {
+  const next = safeNextPath(nextPath, "/auth");
+  const isEmailLink =
+    errorCode === "otp_expired" ||
+    next.startsWith("/auth?mode=reset") ||
+    next.startsWith("/auth?status=verified");
+
+  return isEmailLink ? "expired-link" : "oauth";
+}

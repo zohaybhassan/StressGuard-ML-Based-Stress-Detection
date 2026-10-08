@@ -3,12 +3,14 @@ package com.example.stressguard.presentation.theme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 import androidx.wear.compose.material.Colors
 import androidx.wear.compose.material.MaterialTheme
 import androidx.wear.compose.material.Typography
+import com.example.stressguard.R
 
 val Canvas = Color(0xFF081311)
 val Surface = Color(0xFF101D1A)
@@ -41,29 +43,37 @@ private val StressGuardColors = Colors(
     onError = Canvas,
 )
 
+private val OpenSansFontFamily = FontFamily(
+    Font(R.font.open_sans_regular, FontWeight.Normal),
+    Font(R.font.open_sans_medium, FontWeight.Medium),
+    Font(R.font.open_sans_semibold, FontWeight.SemiBold),
+    Font(R.font.open_sans_bold, FontWeight.Bold),
+)
+
 private val StressGuardTypography = Typography(
+    defaultFontFamily = OpenSansFontFamily,
     display1 = TextStyle(
-        fontFamily = FontFamily.SansSerif,
+        fontFamily = OpenSansFontFamily,
         fontWeight = FontWeight.SemiBold,
         fontSize = 34.sp,
     ),
     title2 = TextStyle(
-        fontFamily = FontFamily.SansSerif,
+        fontFamily = OpenSansFontFamily,
         fontWeight = FontWeight.SemiBold,
         fontSize = 16.sp,
     ),
     body1 = TextStyle(
-        fontFamily = FontFamily.SansSerif,
+        fontFamily = OpenSansFontFamily,
         fontWeight = FontWeight.Normal,
         fontSize = 14.sp,
     ),
     body2 = TextStyle(
-        fontFamily = FontFamily.SansSerif,
+        fontFamily = OpenSansFontFamily,
         fontWeight = FontWeight.Normal,
         fontSize = 12.sp,
     ),
     caption1 = TextStyle(
-        fontFamily = FontFamily.SansSerif,
+        fontFamily = OpenSansFontFamily,
         fontWeight = FontWeight.Medium,
         fontSize = 10.sp,
     ),

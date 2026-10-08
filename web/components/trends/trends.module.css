@@ -1,4 +1,6 @@
 .trends {
+  --chart-high: var(--color-heart);
+  --chart-normal: var(--color-brand-strong);
   display: grid;
   gap: 1.25rem;
   color: var(--protected-text);
@@ -16,10 +18,10 @@
 .cardEyebrow {
   margin: 0 0 0.38rem;
   color: var(--color-brand-strong);
-  font-size: 0.72rem;
+  font-size: 0.8rem;
   font-weight: 720;
   letter-spacing: 0.09em;
-  line-height: 1.35;
+  line-height: 1.45;
   text-transform: uppercase;
 }
 
@@ -35,7 +37,7 @@
   max-width: 43rem;
   margin: 0.6rem 0 0;
   color: var(--color-text-secondary);
-  font-size: 0.94rem;
+  font-size: 1.02rem;
   line-height: 1.58;
 }
 
@@ -61,12 +63,12 @@
 }
 
 .freshness strong {
-  font-size: 0.73rem;
+  font-size: 0.85rem;
 }
 
 .freshness small {
   color: inherit;
-  font-size: 0.65rem;
+  font-size: 0.75rem;
   opacity: 0.78;
 }
 
@@ -98,9 +100,9 @@
 
 .rangeSelector a {
   min-width: 5.2rem;
-  padding: 0.55rem 0.72rem;
+  padding: 0.65rem 0.85rem;
   color: var(--color-text-secondary);
-  font-size: 0.75rem;
+  font-size: 0.86rem;
   font-weight: 680;
   text-align: center;
   border-radius: 0.58rem;
@@ -129,7 +131,7 @@
 .summaryCard {
   display: grid;
   min-width: 0;
-  padding: 1rem;
+  padding: 1.2rem;
   border: 1px solid var(--protected-card-secondary-border);
   border-radius: var(--radius-card);
   background: var(--protected-card-secondary-bg);
@@ -154,8 +156,8 @@
 
 .summaryIcon {
   display: inline-grid;
-  width: 2.25rem;
-  height: 2.25rem;
+  width: 2.65rem;
+  height: 2.65rem;
   margin-bottom: 0.9rem;
   place-items: center;
   border-radius: 0.7rem;
@@ -168,20 +170,20 @@
 }
 
 .summaryCard p {
-  font-size: 0.7rem;
+  font-size: 0.86rem;
   font-weight: 650;
 }
 
 .summaryCard > strong {
   margin-top: 0.28rem;
   overflow-wrap: anywhere;
-  font-size: clamp(1.25rem, 2vw, 1.65rem);
+  font-size: clamp(1.55rem, 2.2vw, 1.9rem);
   letter-spacing: -0.04em;
 }
 
 .summaryCard small {
   margin-top: 0.24rem;
-  font-size: 0.65rem;
+  font-size: 0.77rem;
   line-height: 1.4;
 }
 
@@ -225,9 +227,14 @@
   display: flex;
   flex-direction: column;
   min-height: 31rem;
-  padding: 1.2rem;
+  padding: clamp(1.2rem, 2.5vw, 1.6rem);
   border-top: 3px solid var(--protected-accent);
 }
+
+.chartCard:first-child { border-top-color: var(--chart-high); }
+.chartCard:nth-child(2) { border-top-color: var(--chart-heart); }
+.chartCard:nth-child(3) { border-top-color: var(--chart-sleep); }
+.chartCard:nth-child(4) { border-top-color: var(--chart-steps); }
 
 .chartHeader {
   display: flex;
@@ -240,24 +247,24 @@
 .qualityHeader h2,
 .emptyState h2 {
   margin: 0;
-  font-size: 1.08rem;
+  font-size: 1.35rem;
   font-weight: 680;
   letter-spacing: -0.022em;
 }
 
 .chartHeader > div > p:last-child {
-  max-width: 31rem;
+  max-width: 55rem;
   margin: 0.4rem 0 0;
   color: var(--color-text-secondary);
-  font-size: 0.72rem;
-  line-height: 1.5;
+  font-size: 0.9rem;
+  line-height: 1.55;
 }
 
 .chartIcon {
   display: inline-grid;
   flex: 0 0 auto;
-  width: 2.5rem;
-  height: 2.5rem;
+  width: 2.8rem;
+  height: 2.8rem;
   place-items: center;
   color: var(--color-brand-strong);
   border-radius: 0.75rem;
@@ -279,17 +286,71 @@
   background: var(--color-steps-soft);
 }
 
+.chartLegend {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.55rem 1.2rem;
+  margin-top: 1.2rem;
+  color: var(--color-text-secondary);
+  font-size: 0.8rem;
+  font-weight: 650;
+}
+
+.chartLegend span { display: inline-flex; align-items: center; gap: 0.45rem; }
+.chartLegend i { display: inline-block; flex: 0 0 auto; width: 0.75rem; height: 0.75rem; border-radius: 0.22rem; }
+.chartLegend .normalSwatch { background: var(--chart-normal); }
+.chartLegend .highSwatch { background: var(--chart-high); }
+.chartLegend .thresholdSwatch { height: 0; border-top: 2px dashed var(--chart-high); border-radius: 0; }
+.chartLegend .heartSwatch { background: var(--chart-heart); border-radius: 50%; }
+.chartLegend .sleepSwatch { background: var(--chart-sleep); border-radius: 50%; }
+.chartLegend .activitySwatch { background: var(--chart-steps); border-radius: 50%; }
+
+.chartNarrative {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.chartNarrative p {
+  display: grid;
+  gap: 0.18rem;
+  min-width: 0;
+  margin: 0;
+  padding: 0.7rem;
+  border-radius: 0.65rem;
+  background: var(--color-surface-muted);
+}
+
+.chartNarrative strong {
+  overflow-wrap: anywhere;
+  font-size: 0.88rem;
+}
+
+.chartNarrative span {
+  color: var(--color-text-secondary);
+  font-size: 0.74rem;
+  line-height: 1.35;
+}
+
 .chartCanvas {
   width: 100%;
-  height: 15rem;
-  margin-top: 1.25rem;
+  height: clamp(18rem, 30vw, 22rem);
+  margin-top: 0.9rem;
+}
+
+.chartCanvas :global(.recharts-label) {
+  fill: var(--chart-axis);
+  font-size: 0.78rem;
+  font-weight: 700;
 }
 
 .tooltip {
   display: grid;
   gap: 0.18rem;
-  min-width: 9rem;
-  padding: 0.7rem 0.78rem;
+  min-width: 11rem;
+  padding: 0.85rem 0.95rem;
   color: var(--color-text);
   border: 1px solid var(--color-border-strong);
   border-radius: 0.7rem;
@@ -298,52 +359,24 @@
 }
 
 .tooltip strong {
-  font-size: 0.72rem;
+  font-size: 0.82rem;
 }
 
 .tooltip span {
   color: var(--color-brand-strong);
-  font-size: 0.95rem;
+  font-size: 1.05rem;
   font-weight: 720;
 }
 
 .tooltip small {
   color: var(--color-text-secondary);
-  font-size: 0.63rem;
-}
-
-.chartNarrative {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 0.5rem;
-  margin-top: 0.4rem;
-}
-
-.chartNarrative p {
-  display: grid;
-  gap: 0.18rem;
-  min-width: 0;
-  margin: 0;
-  padding: 0.58rem;
-  border-radius: 0.65rem;
-  background: var(--color-surface-muted);
-}
-
-.chartNarrative strong {
-  overflow-wrap: anywhere;
   font-size: 0.76rem;
-}
-
-.chartNarrative span {
-  color: var(--color-text-secondary);
-  font-size: 0.58rem;
-  line-height: 1.35;
 }
 
 .chartEmpty {
   display: grid;
   place-content: center;
-  min-height: 15rem;
+  min-height: 18rem;
   margin-top: 1.25rem;
   padding: 1rem;
   text-align: center;
@@ -353,26 +386,27 @@
 }
 
 .chartEmpty strong {
-  font-size: 0.82rem;
+  font-size: 1rem;
 }
 
 .chartEmpty p {
   max-width: 23rem;
   margin: 0.35rem 0 0;
   color: var(--color-text-secondary);
-  font-size: 0.72rem;
+  font-size: 0.86rem;
   line-height: 1.5;
 }
 
 .dataTable {
-  margin-top: auto;
-  padding-top: 1rem;
+  margin-top: 0.7rem;
+  padding-top: 0.9rem;
+  border-top: 1px solid var(--color-border);
 }
 
 .dataTable summary {
   width: fit-content;
   color: var(--color-brand-strong);
-  font-size: 0.7rem;
+  font-size: 0.85rem;
   font-weight: 700;
   cursor: pointer;
 }
@@ -387,9 +421,9 @@
 
 .dataTable table {
   width: 100%;
-  min-width: 25rem;
+  min-width: 23rem;
   border-collapse: collapse;
-  font-size: 0.68rem;
+  font-size: 0.82rem;
 }
 
 .dataTable th,
@@ -403,7 +437,7 @@
   position: sticky;
   top: 0;
   color: var(--color-text-secondary);
-  font-size: 0.61rem;
+  font-size: 0.74rem;
   letter-spacing: 0.05em;
   text-transform: uppercase;
   background: var(--color-surface-muted);
@@ -419,7 +453,7 @@
 }
 
 .qualityCard {
-  padding: 1.2rem;
+  padding: clamp(1.2rem, 2.5vw, 1.6rem);
   border-color: var(--protected-card-secondary-border);
   background: var(--protected-card-secondary-bg);
 }
@@ -439,7 +473,7 @@
 
 .qualityGrid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: minmax(0, 1fr);
   gap: 0.8rem;
   margin-top: 1rem;
 }
@@ -448,7 +482,7 @@
   display: flex;
   align-items: flex-start;
   gap: 0.65rem;
-  padding: 0.85rem;
+  padding: 1rem;
   border-radius: 0.75rem;
   background: var(--color-surface-muted);
 }
@@ -458,14 +492,10 @@
   color: var(--color-brand-strong);
 }
 
-.qualityItem:nth-child(2) svg {
-  color: var(--color-warning);
-}
-
 .qualityItem strong,
 .missingDays strong,
 .schemaNotes strong {
-  font-size: 0.74rem;
+  font-size: 0.88rem;
 }
 
 .qualityItem p,
@@ -473,7 +503,7 @@
 .schemaNotes p {
   margin: 0.2rem 0 0;
   color: var(--color-text-secondary);
-  font-size: 0.68rem;
+  font-size: 0.82rem;
   line-height: 1.5;
 }
 
@@ -521,7 +551,7 @@
   max-width: 32rem;
   margin: 0.55rem 0 0;
   color: var(--color-text-secondary);
-  font-size: 0.82rem;
+  font-size: 0.92rem;
   line-height: 1.6;
 }
 
@@ -601,7 +631,7 @@
 }
 
 .loadingCharts > div {
-  height: 29rem;
+  height: 27rem;
 }
 
 @keyframes trendsShimmer {
@@ -652,9 +682,6 @@
     grid-template-columns: 1fr;
   }
 
-  .chartNarrative {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
 }
 
 @media (max-width: 480px) {
@@ -669,7 +696,7 @@
   }
 
   .chartCanvas {
-    height: 14rem;
+    height: 17rem;
     margin-left: -0.35rem;
     width: calc(100% + 0.35rem);
   }

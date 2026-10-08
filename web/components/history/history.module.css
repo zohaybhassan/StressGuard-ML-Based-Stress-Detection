@@ -59,7 +59,7 @@
 .exportStatus p { margin: 0; color: var(--color-text-secondary); font-size: .67rem; }
 .exportStatus a { color: var(--color-brand-strong); font-weight: 720; text-decoration: underline; }
 .exportStatus small { font-size: inherit; }
-.detailDialog { width: min(34rem,calc(100% - 2rem)); max-height: calc(100dvh - 2rem); padding: 0; color: var(--color-text); border: 1px solid var(--color-border); border-radius: 1rem; background: var(--color-surface); box-shadow: var(--shadow-panel); }
+.detailDialog { position: fixed; inset: 0; width: min(38rem,calc(100vw - 2rem)); max-width: calc(100vw - 2rem); max-height: calc(100dvh - 2rem); margin: auto; padding: 0; overflow-y: auto; color: var(--color-text); border: 1px solid var(--color-border); border-radius: 1rem; background: var(--color-surface); box-shadow: var(--shadow-panel); }
 .detailDialog::backdrop { background: rgb(10 39 32 / .45); backdrop-filter: blur(3px); }
 .detailDialog > div { padding: 1.2rem; }
 .detailDialog header { display: flex; align-items: flex-start; justify-content: space-between; padding-bottom: .9rem; border-bottom: 1px solid var(--color-border); }
@@ -79,7 +79,42 @@
 .loadingHeader,.loadingTabs,.loadingFilters,.loadingTable { overflow: hidden; border: 1px solid var(--color-border); border-radius: var(--radius-card); background: linear-gradient(100deg,transparent 20%,color-mix(in srgb,var(--color-surface) 65%,transparent) 42%,transparent 64%),var(--color-surface-muted); background-size: 230% 100%; animation: historyShimmer 1.6s ease-in-out infinite; }
 .loadingHeader { width: min(36rem,80%); height: 6rem; }.loadingTabs { height: 3.2rem; }.loadingFilters { height: 5.8rem; }.loadingTable { height: 26rem; }
 @keyframes historyShimmer { from { background-position: 100% 0; } to { background-position: -100% 0; } }
+
+/* Keep History readable at normal browser zoom across filters, records and exports. */
+.eyebrow { font-size: .8rem; }
+.header > div:first-child > p:last-child { font-size: 1rem; }
+.timeZoneBadge { font-size: .82rem; }
+.tabs a { padding: .78rem 1rem; font-size: .9rem; }
+.filterHeading { font-size: .88rem; }
+.filters label,.exportControls label { font-size: .82rem; }
+.filters input,.filters select,.exportControls input { height: 2.75rem; font-size: .88rem; }
+.filterActions button,.filterActions a,.exportControls button { min-height: 2.75rem; font-size: .85rem; }
+.recordsHeader h2,.exportIntro h2 { font-size: 1.25rem; }
+.recordsHeader p,.exportIntro > div > p:last-child { font-size: .88rem; }
+.recordsHeader > strong { font-size: .8rem; }
+.tableWrap table { font-size: .86rem; }
+.tableWrap thead th { font-size: .75rem; }
+.statusCell small { font-size: .72rem; }
+.statusBadge { font-size: .8rem; }
+.detailButton,.mobileRecords button { font-size: .82rem; }
+.pagination p,.pagination a,.pagination > div > span { font-size: .83rem; }
+.emptyState h3 { font-size: 1.1rem; }
+.emptyState p { font-size: .88rem; }
+.exportPrivacy,.exportStatus p { font-size: .82rem; line-height: 1.5; }
+.detailDialog > div { padding: 1.5rem; }
+.detailDialog header p { font-size: .76rem; }
+.detailDialog h2 { font-size: 1.4rem; }
+.detailDialog header button { width: 2.4rem; height: 2.4rem; }
+.detailDialog dt { font-size: .78rem; }
+.detailDialog dd { font-size: .92rem; }
+.detailNote { font-size: .8rem; line-height: 1.5; }
 @media (max-width:1100px) { .filters { grid-template-columns: repeat(3,minmax(0,1fr)); }.filterHeading { grid-column: 1/-1; }.exportPanel { grid-template-columns: 1fr; } }
 @media (max-width:720px) { .header { align-items: flex-start; flex-direction: column; }.timeZoneBadge { max-width: 100%; }.filters { grid-template-columns: repeat(2,minmax(0,1fr)); }.filterActions { grid-column: 1/-1; }.tableWrap { display: none; }.mobileRecords { display: grid; }.mobileRecords article { display: grid; gap: .5rem; padding: 1rem; border-bottom: 1px solid var(--color-border); }.mobileRecords article > div { display: flex; align-items: center; justify-content: space-between; gap: .5rem; }.mobileRecords small,.mobileRecords time,.mobileRecords span { color: var(--color-text-secondary); font-size: .65rem; }.mobileRecords strong { font-size: .75rem; }.mobileRecords p { margin: 0; font-size: .72rem; }.mobileRecords button { width: fit-content; }.pagination { align-items: flex-start; flex-direction: column; }.exportControls { grid-template-columns: repeat(2,minmax(0,1fr)); }.exportControls button { grid-column: 1/-1; }.detailDialog dl { grid-template-columns: 1fr; } }
 @media (max-width:480px) { .filters { grid-template-columns: 1fr; }.filterActions { grid-column: auto; }.filterActions button,.filterActions a { flex: 1; }.recordsHeader { flex-direction: column; }.pagination p { flex-wrap: wrap; }.exportControls { grid-template-columns: 1fr; }.exportControls button { grid-column: auto; } }
+@media (max-width:720px) {
+  .mobileRecords small,.mobileRecords time,.mobileRecords span { font-size: .78rem; }
+  .mobileRecords strong { font-size: .92rem; }
+  .mobileRecords p { font-size: .86rem; }
+  .detailDialog > div { padding: 1rem; }
+}
 @media (prefers-reduced-motion:reduce) { .loadingHeader,.loadingTabs,.loadingFilters,.loadingTable { animation: none; } }

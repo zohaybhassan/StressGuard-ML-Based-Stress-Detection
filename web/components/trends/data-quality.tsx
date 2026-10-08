@@ -1,8 +1,4 @@
-import {
-  CheckCircle,
-  Info,
-  WarningCircle,
-} from "@phosphor-icons/react/dist/ssr";
+import { CheckCircle, Info } from "@phosphor-icons/react/dist/ssr";
 import type { TrendsDataset } from "@/lib/trends/types";
 import styles from "./trends.module.css";
 
@@ -34,17 +30,6 @@ export function DataQuality({ dataset }: { dataset: TrendsDataset }) {
             </p>
           </div>
         </div>
-
-        <div className={styles.qualityItem}>
-          <WarningCircle size={20} weight="duotone" aria-hidden="true" />
-          <div>
-            <strong>{summary.outOfRangeReadings} input-range warnings</strong>
-            <p>
-              These readings remain visible, but at least one model input was outside
-              its training range.
-            </p>
-          </div>
-        </div>
       </div>
 
       {missingLabels.length > 0 ? (
@@ -69,11 +54,6 @@ export function DataQuality({ dataset }: { dataset: TrendsDataset }) {
           input for Android parity. Step values are prediction-time cumulative
           snapshots, not a standalone step-history stream.
         </p>
-        {summary.modelVersions.length > 0 ? (
-          <p>
-            <strong>Models observed:</strong> {summary.modelVersions.join(", ")}
-          </p>
-        ) : null}
       </div>
     </section>
   );

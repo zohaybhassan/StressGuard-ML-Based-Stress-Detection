@@ -2,6 +2,7 @@ import "server-only";
 
 import type { User } from "@supabase/supabase-js";
 
+import { hasExternalAuthProvider } from "@/lib/auth/providers";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 export type PasswordGateResult =
@@ -30,5 +31,9 @@ export async function getPasswordGate(): Promise<PasswordGateResult> {
   // password_set migration, do not lock every existing user out of the portal.
   if (error || !data) return { configured: true, user, passwordSet: true };
 
-  return { configured: true, user, passwordSet: data.password_set };
+  return {
+    configured: true,
+    user,
+    passwordSet: data.password_set || hasExternalAuthProvider(user),
+  };
 }

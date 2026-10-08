@@ -41,22 +41,29 @@ const steps = [
 export function HowItWorks() {
   const sectionRef = useRef<HTMLElement>(null);
   const [isRevealed, setIsRevealed] = useState(false);
+  const [motionReady, setMotionReady] = useState(false);
+  const [revealedSteps, setRevealedSteps] = useState<Set<number>>(() => new Set());
 
   useEffect(() => {
     const section = sectionRef.current;
-    if (!section) return;
+    if (!section || typeof IntersectionObserver === "undefined" || typeof window.matchMedia !== "function" || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+    setMotionReady(true);
 
     const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
+      (entries) => {
+        for (const entry of entries) {
+          if (!entry.isIntersecting) continue;
+          const step = Number((entry.target as HTMLElement).dataset.step);
+          setRevealedSteps((previous) => new Set(previous).add(step));
           setIsRevealed(true);
-          observer.disconnect();
+          observer.unobserve(entry.target);
         }
       },
-      { threshold: 0.18, rootMargin: "0px 0px -10% 0px" },
+      { threshold: 0.2, rootMargin: "0px 0px -8% 0px" },
     );
 
-    observer.observe(section);
+    section.querySelectorAll<HTMLElement>("[data-step]").forEach((step) => observer.observe(step));
     return () => observer.disconnect();
   }, []);
 
@@ -69,9 +76,9 @@ export function HowItWorks() {
             Get started in minutes and unlock a calmer, more balanced you.
           </p>
         </div>
-        <ol className={styles.journeyTrack} data-revealed={isRevealed}>
+        <ol className={styles.journeyTrack} data-animate={motionReady} data-revealed={isRevealed}>
           {steps.map(({ title, description, image }, index) => (
-            <li key={title} className={styles.journeyStep} data-step={index + 1}>
+            <li key={title} className={styles.journeyStep} data-step={index + 1} data-revealed={revealedSteps.has(index + 1)}>
               <div className={styles.stepVisual}>
                 <span className={styles.stepNumber} aria-hidden>
                   {index + 1}

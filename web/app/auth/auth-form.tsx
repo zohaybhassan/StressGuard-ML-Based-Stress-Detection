@@ -245,10 +245,6 @@ export function AuthForm({ configured, mode, notice, sessionAvailable, userEmail
 
             {mode === "sign-in" && (
               <div className={styles.formOptions}>
-                <label className={styles.rememberOption}>
-                  <input name="remember" type="checkbox" />
-                  <span>Remember me</span>
-                </label>
                 <Link className={styles.forgotLink} href="/auth?mode=forgot">
                   Forgot password?
                 </Link>

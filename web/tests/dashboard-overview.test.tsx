@@ -19,7 +19,6 @@ function emptySnapshot(overrides: Partial<DashboardSnapshot> = {}): DashboardSna
     recentAlerts: [],
     latestWorkout: null,
     freshness: "unavailable",
-    latestCloudRecordAt: null,
     failedSections: [],
     ...overrides,
   };

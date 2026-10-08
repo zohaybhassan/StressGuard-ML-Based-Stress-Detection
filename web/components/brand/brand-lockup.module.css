@@ -1,41 +1,28 @@
 .lockup {
   display: inline-flex;
+  width: max-content;
   min-width: max-content;
   align-items: center;
   gap: 0.55rem;
   border-radius: var(--radius-input);
-  color: var(--color-brand-strong);
+  color: #0a7466;
 }
 
 .mark {
-  width: 2.625rem;
+  width: 2.9rem;
   height: auto;
   object-fit: contain;
+  transform: translateY(-2px);
 }
 
 .wordmark {
-  font-size: 1.28rem;
+  font-family: var(--font-geist-sans), "Segoe UI", sans-serif;
+  font-size: 1.55rem;
   font-weight: 740;
   letter-spacing: -0.035em;
 }
 
-.wordmarkStress { color: var(--color-text); }
-.wordmarkGuard { color: var(--color-brand-strong); }
-.wordmarkStressAuth { color: #287fbd; }
-.wordmarkGuardAuth { color: #159984; }
-
-.prominent .mark {
-  width: 2.9rem;
-}
-
-.prominent .wordmark {
-  font-size: 1.55rem;
-}
-
-.authTone .mark {
-  width: 3.35rem;
-}
-
-.authTone .wordmark {
-  font-size: 1.65rem;
+@media (max-width: 400px) {
+  .mark { width: 2.35rem; }
+  .wordmark { font-size: 1.25rem; }
 }

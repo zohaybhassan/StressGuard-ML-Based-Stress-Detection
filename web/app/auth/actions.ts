@@ -1,10 +1,15 @@
 "use server";
 
 import { cookies } from "next/headers";
-import { redirect } from "next/navigation";
+import { revalidatePath } from "next/cache";
+import { redirect, RedirectType } from "next/navigation";
 
 import { friendlyAuthError } from "@/lib/auth/errors";
 import { callbackUrl } from "@/lib/auth/redirects";
+import {
+  isSupabaseAuthCookie,
+  PASSWORD_RECOVERY_COOKIE,
+} from "@/lib/auth/session-cookies";
 import {
   forgotPasswordSchema,
   formValue,
@@ -152,7 +157,7 @@ async function savePassword(
   const cookieStore = await cookies();
   if (
     requireRecoveryCookie &&
-    cookieStore.get("sg-password-recovery")?.value !== "active"
+    cookieStore.get(PASSWORD_RECOVERY_COOKIE)?.value !== "active"
   ) {
     return {
       status: "error",
@@ -195,7 +200,7 @@ async function savePassword(
   }
 
   if (requireRecoveryCookie) {
-    cookieStore.set("sg-password-recovery", "", {
+    cookieStore.set(PASSWORD_RECOVERY_COOKIE, "", {
       httpOnly: true,
       maxAge: 0,
       path: "/",
@@ -223,6 +228,26 @@ export async function setGooglePasswordAction(
 
 export async function signOutAction() {
   const supabase = await createSupabaseServerClient();
-  if (supabase) await supabase.auth.signOut();
-  redirect("/auth?status=signed-out");
+  if (supabase) {
+    // End this browser's session without unexpectedly signing the same person out
+    // of their phone, watch, or another trusted device.
+    try {
+      await supabase.auth.signOut({ scope: "local" });
+    } catch {
+      // Cookie cleanup below is the final local safety boundary even if the
+      // Auth service is temporarily unreachable.
+    }
+  }
+
+  const cookieStore = await cookies();
+  for (const cookie of cookieStore.getAll()) {
+    if (cookie.name === PASSWORD_RECOVERY_COOKIE || isSupabaseAuthCookie(cookie.name)) {
+      cookieStore.delete(cookie.name);
+    }
+  }
+
+  // Purge protected layouts from the client router cache before handing the
+  // browser to the next person. Replace prevents Back from restoring the old view.
+  revalidatePath("/", "layout");
+  redirect("/auth?status=signed-out", RedirectType.replace);
 }

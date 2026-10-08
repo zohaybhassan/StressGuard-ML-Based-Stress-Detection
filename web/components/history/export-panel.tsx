@@ -1,15 +1,15 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { DownloadSimple, FileCsv, ShieldCheck } from "@phosphor-icons/react";
-import { reportErrorResponse } from "@/lib/reports/validation";
+import { reportErrorResponse, reportRequestSchema } from "@/lib/reports/validation";
 import styles from "./history.module.css";
 
 type ExportState =
   | { status: "idle" }
   | { status: "loading" }
   | { status: "error"; message: string }
-  | { status: "ready"; downloadUrl: string; expiresAt: string };
+  | { status: "ready"; downloadUrl: string; expiresAt: string | null; local: boolean };
 
 export function ExportPanel({ defaultFrom, defaultTo, timeZone }: {
   defaultFrom: string;
@@ -20,7 +20,16 @@ export function ExportPanel({ defaultFrom, defaultTo, timeZone }: {
   const [to, setTo] = useState(defaultTo);
   const [state, setState] = useState<ExportState>({ status: "idle" });
 
+  useEffect(() => {
+    if (state.status !== "ready" || !state.local) return;
+    return () => URL.revokeObjectURL(state.downloadUrl);
+  }, [state]);
+
   async function requestReport() {
+    if (!reportRequestSchema.safeParse({ from, to, timeZone }).success) {
+      setState({ status: "error", message: reportErrorResponse("invalid_request") });
+      return;
+    }
     setState({ status: "loading" });
     try {
       const response = await fetch("/api/reports", {
@@ -28,12 +37,17 @@ export function ExportPanel({ defaultFrom, defaultTo, timeZone }: {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ from, to, timeZone }),
       });
+      if (response.ok && response.headers.get("content-type")?.includes("text/csv")) {
+        const downloadUrl = URL.createObjectURL(await response.blob());
+        setState({ status: "ready", downloadUrl, expiresAt: null, local: true });
+        return;
+      }
       const body = (await response.json()) as { code?: string; downloadUrl?: string; expiresAt?: string };
       if (!response.ok || !body.downloadUrl || !body.expiresAt) {
         setState({ status: "error", message: reportErrorResponse(body.code ?? "generation_failed") });
         return;
       }
-      setState({ status: "ready", downloadUrl: body.downloadUrl, expiresAt: body.expiresAt });
+      setState({ status: "ready", downloadUrl: body.downloadUrl, expiresAt: body.expiresAt, local: false });
     } catch {
       setState({ status: "error", message: reportErrorResponse("generation_failed") });
     }
@@ -50,8 +64,8 @@ export function ExportPanel({ defaultFrom, defaultTo, timeZone }: {
         </div>
       </div>
       <div className={styles.exportControls}>
-        <label><span>From</span><input type="date" value={from} onChange={(event) => setFrom(event.target.value)} /></label>
-        <label><span>To</span><input type="date" value={to} onChange={(event) => setTo(event.target.value)} /></label>
+        <label><span>From</span><input type="date" value={from} onChange={(event) => { setFrom(event.target.value); setState({ status: "idle" }); }} /></label>
+        <label><span>To</span><input type="date" value={to} onChange={(event) => { setTo(event.target.value); setState({ status: "idle" }); }} /></label>
         <button type="button" onClick={requestReport} disabled={state.status === "loading" || !from || !to}>
           <DownloadSimple size={17} aria-hidden="true" />
           {state.status === "loading" ? "Preparing…" : "Prepare CSV"}
@@ -59,13 +73,13 @@ export function ExportPanel({ defaultFrom, defaultTo, timeZone }: {
       </div>
       <p className={styles.exportPrivacy}>
         <ShieldCheck size={16} weight="duotone" aria-hidden="true" />
-        The file is encrypted in private storage, deleted within 24 hours, and its download link expires in 10 minutes.
+        Only your signed-in account&apos;s records are exported. Choose up to 90 days; the download is never publicly listed.
       </p>
       <div className={styles.exportStatus} aria-live="polite">
         {state.status === "error" ? <p role="alert">{state.message}</p> : null}
         {state.status === "ready" ? (
-          <p>Your report is ready. <a href={state.downloadUrl}>Download CSV</a>{" "}
-            <small>Link expires {new Intl.DateTimeFormat("en", { timeStyle: "short", timeZone }).format(new Date(state.expiresAt))}.</small>
+          <p>Your report is ready. <a href={state.downloadUrl} download={state.local ? `stressguard-history-${from}-${to}.csv` : undefined}>Download CSV</a>{" "}
+            {state.expiresAt ? <small>Link expires {new Intl.DateTimeFormat("en", { timeStyle: "short", timeZone }).format(new Date(state.expiresAt))}.</small> : null}
           </p>
         ) : null}
       </div>

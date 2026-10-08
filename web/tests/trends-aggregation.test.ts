@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { aggregateTrends, parseTrendRange } from "@/lib/trends/aggregation";
+import { HIGH_STRESS_DAY_THRESHOLD, aggregateTrends, parseTrendRange } from "@/lib/trends/aggregation";
 import { getZonedRangeBounds } from "@/lib/dashboard/time-zone";
 import type { TrendPredictionInput } from "@/lib/trends/types";
 
@@ -13,10 +13,7 @@ function prediction(
     recorded_at: recordedAt,
     label: "not_stressed",
     class_index: 0,
-    confidence: 0.82,
-    model_version: "Voting_top3_tuned/binary",
     heart_rate: 76,
-    daily_steps: 5_200,
     activity_level: 8_400,
     sleep_hours: 7.2,
     out_of_training_range: false,
@@ -58,6 +55,26 @@ describe("trend range selection", () => {
 });
 
 describe("aggregateTrends", () => {
+  it("uses the Android three-reading threshold for high-stress days", () => {
+    expect(HIGH_STRESS_DAY_THRESHOLD).toBe(3);
+    const dataset = aggregateTrends(
+      [
+        prediction("2026-10-01T08:00:00.000Z", { label: "stressed", class_index: 1 }),
+        prediction("2026-10-01T09:00:00.000Z", { label: "stressed", class_index: 1 }),
+        prediction("2026-10-02T08:00:00.000Z", { label: "stressed", class_index: 1 }),
+        prediction("2026-10-02T09:00:00.000Z", { label: "stressed", class_index: 1 }),
+        prediction("2026-10-02T10:00:00.000Z", { label: "stressed", class_index: 1 }),
+      ],
+      7,
+      now,
+      "UTC",
+    );
+
+    expect(dataset.days.find((day) => day.date === "2026-10-01")?.isHighStressDay).toBe(false);
+    expect(dataset.days.find((day) => day.date === "2026-10-02")?.isHighStressDay).toBe(true);
+    expect(dataset.summary.highStressDays).toBe(1);
+  });
+
   it("preserves missing days as null instead of zero", () => {
     const dataset = aggregateTrends(
       [prediction("2026-10-01T08:00:00.000Z")],
@@ -124,12 +141,10 @@ describe("aggregateTrends", () => {
         prediction("2026-10-01T08:00:00.000Z", {
           sleep_hours: null,
           activity_level: null,
-          daily_steps: null,
         }),
         prediction("2026-10-02T08:00:00.000Z", {
           sleep_hours: 6.5,
           activity_level: null,
-          daily_steps: null,
         }),
       ],
       7,

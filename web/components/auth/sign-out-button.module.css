@@ -1,12 +1,17 @@
 .button {
-  display: grid;
-  width: 2.5rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
   height: 2.5rem;
-  place-items: center;
-  border: 1px solid var(--color-border);
+  padding: 0 0.9rem;
+  border: 1px solid var(--protected-accent-deep);
   border-radius: var(--radius-input);
-  background: var(--color-surface);
-  color: var(--color-text-secondary);
+  background: var(--protected-accent-strong);
+  color: #fff;
+  font: inherit;
+  font-size: 0.8rem;
+  font-weight: 700;
   cursor: pointer;
   transition:
     color var(--transition-ui),
@@ -15,9 +20,15 @@
 }
 
 .button:hover:not(:disabled) {
-  border-color: var(--color-border-strong);
-  background: var(--color-surface-muted);
-  color: var(--color-danger);
+  background: var(--protected-accent-deep);
+  color: #fff;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgb(8 100 86 / 0.2);
+}
+
+.button:focus-visible {
+  outline: 3px solid var(--protected-accent-strong);
+  outline-offset: 3px;
 }
 
 .button:disabled {

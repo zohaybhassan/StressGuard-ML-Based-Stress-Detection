@@ -220,9 +220,15 @@ body {
   margin: 0;
   background: var(--color-canvas);
   color: var(--color-text);
-  font-family: var(--font-geist-sans), "Segoe UI", sans-serif;
+  font-family: var(--font-open-sans), "Segoe UI", sans-serif;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
+}
+
+.radix-themes {
+  --default-font-family: var(--font-open-sans), "Segoe UI", sans-serif;
+  --heading-font-family: var(--default-font-family);
+  --strong-font-family: var(--default-font-family);
 }
 
 a {

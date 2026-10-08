@@ -48,3 +48,27 @@ test("authenticated visitors leave the auth page when a safe session fixture is 
   await page.goto("/auth");
   await expect(page).toHaveURL((url) => url.pathname === "/dashboard");
 });
+
+test("signing out removes protected access for the next browser user", async ({ browser }) => {
+  test.skip(
+    !process.env.E2E_AUTH_STORAGE_STATE,
+    "Provide E2E_AUTH_STORAGE_STATE for an authenticated Supabase integration run.",
+  );
+
+  const context = await browser.newContext({
+    storageState: process.env.E2E_AUTH_STORAGE_STATE,
+  });
+  const page = await context.newPage();
+
+  await page.goto("/dashboard");
+  await page.getByRole("button", { name: "Sign out" }).click();
+  await expect(page).toHaveURL(
+    (url) => url.pathname === "/auth" && url.searchParams.get("status") === "signed-out",
+  );
+
+  await page.goto("/dashboard");
+  await expect(page).toHaveURL(
+    (url) => url.pathname === "/auth" && url.searchParams.get("reason") === "session",
+  );
+  await context.close();
+});

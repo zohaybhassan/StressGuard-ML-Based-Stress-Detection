@@ -16,6 +16,7 @@ import { redirect } from "next/navigation";
 import { BrandLockup } from "@/components/brand/brand-lockup";
 import { getPasswordGate } from "@/lib/auth/password-gate";
 import { authMode } from "@/lib/auth/redirects";
+import { PASSWORD_RECOVERY_COOKIE } from "@/lib/auth/session-cookies";
 
 import { AuthForm } from "./auth-form";
 import styles from "./auth-reference.module.css";
@@ -29,7 +30,6 @@ type AuthPageProps = {
   }>;
 };
 
-export const metadata = { title: "Sign in" };
 export const dynamic = "force-dynamic";
 
 function first(value: string | string[] | undefined) {
@@ -78,7 +78,7 @@ export default async function AuthPage({ searchParams }: AuthPageProps) {
   let mode = authMode(first(params.mode));
   const gate = await getPasswordGate();
   const cookieStore = await cookies();
-  const recoveryActive = cookieStore.get("sg-password-recovery")?.value === "active";
+  const recoveryActive = cookieStore.get(PASSWORD_RECOVERY_COOKIE)?.value === "active";
 
   if (gate.user && !gate.passwordSet) {
     mode = "set-password";
@@ -106,7 +106,7 @@ export default async function AuthPage({ searchParams }: AuthPageProps) {
     <main className={styles.authPage}>
       <section className={styles.storyPanel} aria-labelledby="auth-story-title">
         <div className={styles.storyInner}>
-          <BrandLockup authTone prominent />
+          <BrandLockup />
           <div className={styles.storyContent}>
             <div className={styles.storyCopy}>
               <p className={styles.storyEyebrow}>A calmer mind. A healthier you.</p>
