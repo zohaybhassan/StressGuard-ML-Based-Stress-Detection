@@ -1,13 +1,7 @@
 "use client";
 
-import {
-  ArrowRight,
-  ChartBar,
-  Heart,
-  Leaf,
-} from "@phosphor-icons/react";
+import { ChartLineUp, Devices, Heart } from "@phosphor-icons/react";
 import Image from "next/image";
-import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 
 import styles from "./landing-reference.module.css";
@@ -52,34 +46,36 @@ export function FinalCta() {
         </div>
         <div className={styles.finalContent}>
           <div className={styles.finalCopy}>
-            <p className={styles.finalEyebrow}>A calmer, healthier you</p>
-            <h2 className={styles.finalTitle}>Start Your Wellness Journey Today</h2>
-            <p className="body-copy">
-              Join people using StressGuard to understand their stress, build healthier habits, and
-              feel better every day.
-            </p>
-            <div className={styles.finalActions}>
-              <Link className="button-primary" href="/auth?mode=register">
-                Get Started
-                <ArrowRight size={17} weight="bold" aria-hidden />
-              </Link>
+            <p className={styles.finalEyebrow}>About StressGuard</p>
+            <h2 className={styles.finalTitle}>Wellness, made clearer.</h2>
+            <div className={styles.aboutText}>
+              <p>
+                StressGuard brings stress, heart rate, sleep, and activity information from your
+                wearable into one clear experience. Your phone and watch help you check in during
+                the day; the web dashboard helps you look back and understand your patterns.
+              </p>
+              <p>
+                We turn everyday signals into understandable insights and supportive guidance, so
+                you can make more informed choices for your well-being. StressGuard supports wellness
+                awareness. It does not diagnose medical conditions or replace professional care.
+              </p>
             </div>
           </div>
           <div className={styles.finalBenefits}>
             <span>
-              <i><Leaf size={20} weight="duotone" aria-hidden /></i>
-              <strong>Less stress</strong>
-              <small>More clarity</small>
+              <i><ChartLineUp size={20} weight="duotone" aria-hidden /></i>
+              <strong>See your patterns</strong>
+              <small>Understand what changes</small>
+            </span>
+            <span>
+              <i><Devices size={20} weight="duotone" aria-hidden /></i>
+              <strong>Stay connected</strong>
+              <small>Phone, watch, and web</small>
             </span>
             <span>
               <i><Heart size={20} weight="duotone" aria-hidden /></i>
-              <strong>Better sleep</strong>
-              <small>Brighter days</small>
-            </span>
-            <span>
-              <i><ChartBar size={20} weight="duotone" aria-hidden /></i>
-              <strong>Small insights</strong>
-              <small>Big changes</small>
+              <strong>Feel supported</strong>
+              <small>Guidance without alarm</small>
             </span>
           </div>
         </div>

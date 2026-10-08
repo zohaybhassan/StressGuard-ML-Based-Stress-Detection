@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 
 import { AppShell } from "@/components/layout/app-shell";
 import { getPasswordGate } from "@/lib/auth/password-gate";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
 
@@ -24,5 +25,14 @@ export default async function ProtectedLayout({
     redirect("/auth?mode=set-password");
   }
 
-  return <AppShell email={session.user.email ?? "StressGuard account"}>{children}</AppShell>;
+  const supabase = await createSupabaseServerClient();
+  const { data: profile } = supabase
+    ? await supabase.from("profiles").select("display_name").eq("id", session.user.id).maybeSingle()
+    : { data: null };
+
+  return (
+    <AppShell email={session.user.email ?? "StressGuard account"} displayName={profile?.display_name ?? null}>
+      {children}
+    </AppShell>
+  );
 }

@@ -4,26 +4,14 @@ import Link from "next/link";
 import styles from "./brand-lockup.module.css";
 
 type BrandLockupProps = {
-  authTone?: boolean;
-  compact?: boolean;
-  href?: string;
-  prominent?: boolean;
-  splitTone?: boolean;
+  href?: string | null;
 };
 
 export function BrandLockup({
-  authTone = false,
-  compact = false,
   href = "/",
-  prominent = false,
-  splitTone = false,
 }: BrandLockupProps) {
-  return (
-    <Link
-      className={`${styles.lockup} ${prominent ? styles.prominent : ""} ${authTone ? styles.authTone : ""}`}
-      href={href}
-      aria-label="StressGuard home"
-    >
+  const content = (
+    <>
       <Image
         className={styles.mark}
         src="/brand/stressguard-mark.png"
@@ -32,20 +20,17 @@ export function BrandLockup({
         height={315}
         priority
       />
-      {!compact && (
-        <span className={styles.wordmark}>
-          {splitTone || authTone ? (
-            <>
-              <span className={authTone ? styles.wordmarkStressAuth : styles.wordmarkStress}>
-                Stress
-              </span>
-              <span className={authTone ? styles.wordmarkGuardAuth : styles.wordmarkGuard}>
-                Guard
-              </span>
-            </>
-          ) : "StressGuard"}
-        </span>
-      )}
+      <span className={styles.wordmark}>StressGuard</span>
+    </>
+  );
+
+  return href === null ? (
+    <span className={styles.lockup} aria-label="StressGuard">
+      {content}
+    </span>
+  ) : (
+    <Link className={styles.lockup} href={href} aria-label="StressGuard home">
+      {content}
     </Link>
   );
 }

@@ -17,7 +17,7 @@ import styles from "./landing-reference.module.css";
 
 export function ProductPreview() {
   return (
-    <div className={styles.productStage} data-hero-reveal="product">
+    <div className={styles.productStage} data-hero-reveal="product" aria-hidden="true">
       <span className={styles.watchNote}>
         Works with<br />your wearable
         <ArrowDownRight size={22} weight="bold" aria-hidden />

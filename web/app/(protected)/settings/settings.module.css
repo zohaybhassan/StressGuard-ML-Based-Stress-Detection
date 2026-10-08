@@ -1,0 +1,196 @@
+.grid {
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+  grid-template-areas: "profile security" "privacy security";
+  grid-template-rows: repeat(2, minmax(0, 1fr));
+  align-items: stretch;
+  gap: 0.9rem;
+}
+
+.profileCard { grid-area: profile; }
+.securityCard { grid-area: security; }
+.privacyCard { grid-area: privacy; }
+
+.card {
+  display: grid;
+  align-content: start;
+  gap: 0.95rem;
+  min-width: 0;
+  padding: clamp(1rem, 1.7vw, 1.3rem);
+  color: var(--protected-card-fg);
+  border: 1px solid var(--protected-card-border);
+  border-radius: var(--radius-card);
+  background: var(--protected-card-bg);
+  box-shadow: var(--protected-shadow-card);
+}
+
+.heading {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.7rem;
+}
+
+.icon {
+  display: grid;
+  flex: 0 0 auto;
+  width: 2.35rem;
+  height: 2.35rem;
+  place-items: center;
+  color: var(--protected-accent-strong);
+  border-radius: 0.75rem;
+  background: var(--protected-accent-softer);
+}
+
+.heading h2 {
+  margin: 0;
+  font-size: 1.08rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.heading p,
+.helper {
+  margin: 0.3rem 0 0;
+  color: var(--protected-card-muted-fg);
+  font-size: 0.83rem;
+  line-height: 1.55;
+}
+
+.form {
+  display: grid;
+  align-content: start;
+  gap: 0.65rem;
+}
+
+.field { display: grid; gap: 0.3rem; min-width: 0; }
+
+.form label,
+.accountEmail span {
+  color: var(--protected-card-muted-fg);
+  font-size: 0.82rem;
+  font-weight: 650;
+}
+
+.form input {
+  width: 100%;
+  min-height: 2.55rem;
+  padding: 0.55rem 0.75rem;
+  color: var(--protected-card-fg);
+  border: 1px solid var(--protected-border-strong);
+  border-radius: 0.65rem;
+  background: var(--protected-surface);
+  font: inherit;
+  font-size: 0.9rem;
+}
+
+.passwordField { position: relative; min-width: 0; }
+.passwordField input { padding-right: 3rem; }
+.passwordField button {
+  position: absolute;
+  top: 50%;
+  right: 0.3rem;
+  display: grid;
+  width: 2.1rem;
+  height: 2.1rem;
+  padding: 0;
+  place-items: center;
+  color: var(--protected-card-muted-fg);
+  border: 0;
+  border-radius: 0.5rem;
+  background: transparent;
+  cursor: pointer;
+  transform: translateY(-50%);
+}
+.passwordField button:hover { color: var(--protected-accent-strong); background: var(--protected-accent-softer); }
+
+.form input:focus-visible,
+.form button:focus-visible,
+.passwordField button:focus-visible,
+.privacyActions a:focus-visible {
+  outline: 3px solid var(--protected-accent-strong);
+  outline-offset: 2px;
+}
+
+.form > button[type="submit"] {
+  width: fit-content;
+  min-height: 2.5rem;
+  margin-top: 0.15rem;
+  padding: 0.55rem 0.9rem;
+  color: #fff;
+  border: 0;
+  border-radius: 0.65rem;
+  background: var(--protected-accent-strong);
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform var(--transition-ui), background var(--transition-ui);
+}
+
+.form > button[type="submit"]:hover:not(:disabled) {
+  background: var(--protected-accent-deep);
+  transform: translateY(-2px);
+}
+
+.form > button[type="submit"]:disabled { cursor: wait; opacity: 0.65; }
+
+.accountEmail {
+  display: grid;
+  gap: 0.2rem;
+  padding: 0.65rem 0.75rem;
+  border-radius: 0.7rem;
+  background: var(--protected-surface-muted);
+}
+
+.accountEmail strong { overflow-wrap: anywhere; font-size: 0.87rem; }
+
+.success,
+.error {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin: 0.15rem 0;
+  font-size: 0.78rem;
+  line-height: 1.4;
+}
+
+.success { color: var(--protected-accent-deep); }
+.error { color: var(--color-danger); }
+
+.privacyActions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-top: 0.7rem;
+  border-top: 1px solid var(--protected-card-border);
+}
+
+.privacyActions > div { display: grid; gap: 0.25rem; }
+.privacyActions strong { font-size: 0.87rem; }
+.privacyActions span { color: var(--protected-card-muted-fg); font-size: 0.78rem; }
+
+.privacyActions a {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 0.3rem;
+  color: var(--protected-accent-deep);
+  font-size: 0.81rem;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.privacyActions a:hover { text-decoration: underline; text-underline-offset: 0.2rem; }
+
+@media (max-width: 780px) {
+  .grid {
+    grid-template-columns: 1fr;
+    grid-template-areas: "profile" "security" "privacy";
+    grid-template-rows: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .privacyActions { align-items: flex-start; flex-direction: column; }
+}

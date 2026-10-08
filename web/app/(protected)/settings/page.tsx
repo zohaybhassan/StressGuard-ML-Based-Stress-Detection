@@ -1,21 +1,37 @@
-import { GearSix } from "@phosphor-icons/react/dist/ssr";
+import { redirect } from "next/navigation";
 
 import { PageHeader } from "@/components/layout/page-header";
-import { EmptyState } from "@/components/states/empty-state";
+import { hasExternalAuthProvider } from "@/lib/auth/providers";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
 
-export const metadata = { title: "Settings" };
+import { SettingsForms } from "./settings-forms";
 
-export default function SettingsPage() {
+export const dynamic = "force-dynamic";
+
+export default async function SettingsPage() {
+  const supabase = await createSupabaseServerClient();
+  if (!supabase) redirect("/auth?reason=configuration");
+
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) redirect("/auth?reason=session");
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("display_name,password_set")
+    .eq("id", user.id)
+    .maybeSingle();
+
   return (
-    <div className="grid gap-8">
+    <div className="grid gap-5">
       <PageHeader
         title="Settings"
-        description="Manage your StressGuard profile, health checklist, privacy preferences, and account."
+        description="Keep your profile and account up to date, and review your data controls."
       />
-      <EmptyState
-        icon={GearSix}
-        title="Settings forms are in the account phase"
-        description="No profile fields are being guessed. Forms will use the exact profile and checklist constraints already defined in Supabase."
+      <SettingsForms
+        displayName={profile?.display_name ?? ""}
+        email={user.email ?? ""}
+        hasPassword={profile?.password_set ?? false}
+        usesGoogle={hasExternalAuthProvider(user)}
       />
     </div>
   );

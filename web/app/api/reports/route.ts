@@ -6,6 +6,7 @@ import { normalizeReportRows } from "@/lib/reports/normalization";
 import { checkReportRateLimit, privateSubjectHash } from "@/lib/reports/rate-limit";
 import { ReportTooLargeError } from "@/lib/reports/limits";
 import { getReportData } from "@/lib/reports/repository";
+import { renderReportCsv } from "@/lib/reports/csv";
 import { REPORT_MAX_PAYLOAD_BYTES } from "@/lib/reports/types";
 import { reportRequestSchema } from "@/lib/reports/validation";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
@@ -51,8 +52,6 @@ export async function POST(request: NextRequest) {
   const parsed = reportRequestSchema.safeParse(body);
   if (!parsed.success) return json({ code: "invalid_request" }, 400);
 
-  const lambdaConfig = getReportLambdaConfig();
-  if (!lambdaConfig) return json({ code: "export_unavailable" }, 503);
   const rateLimit = checkReportRateLimit(user.id);
   if (!rateLimit.allowed) {
     return json(
@@ -68,6 +67,18 @@ export async function POST(request: NextRequest) {
     if (!bounds.start || !bounds.end) return json({ code: "invalid_request" }, 400);
     const reportData = await getReportData(client, user.id, bounds.start, bounds.end);
     const rows = normalizeReportRows(reportData, timeZone, new Date());
+    const lambdaConfig = getReportLambdaConfig();
+    if (!lambdaConfig) {
+      return new NextResponse(renderReportCsv(rows), {
+        status: 200,
+        headers: {
+          "Content-Type": "text/csv; charset=utf-8",
+          "Content-Disposition": `attachment; filename="stressguard-history-${from}-${to}.csv"`,
+          "Cache-Control": "private, no-store, max-age=0",
+          "X-Content-Type-Options": "nosniff",
+        },
+      });
+    }
     const payload = {
       requestId: randomUUID(),
       subjectHash: privateSubjectHash(user.id),

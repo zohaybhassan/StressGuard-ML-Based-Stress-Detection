@@ -36,6 +36,12 @@
   box-shadow: 12px 0 32px rgb(8 72 64 / 0.1);
 }
 
+.sidebar > :first-child {
+  width: max-content;
+  gap: 0.35rem;
+  color: #fff;
+}
+
 .sideNav {
   display: grid;
   gap: 0.35rem;
@@ -69,26 +75,76 @@
   box-shadow: 0 8px 24px rgb(4 47 42 / 0.18);
 }
 
-.syncNote {
-  display: grid;
-  gap: 0.35rem;
+.reloadCard {
+  position: relative;
+  display: flex;
+  width: fit-content;
+  max-width: 100%;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.38rem 0.55rem;
+  border: 1px solid rgb(161 232 214 / 0.14);
+  border-radius: 999px;
+  background: rgb(255 255 255 / 0.035);
+  cursor: help;
+}
+
+.sidebarReload {
   margin-top: auto;
-  padding: 1rem;
-  border: 1px solid var(--protected-sidebar-card-border);
-  border-radius: var(--radius-card);
-  background: var(--protected-sidebar-card-bg);
+  align-self: flex-end;
 }
 
-.syncNote strong {
-  color: var(--protected-sidebar-fg);
-  font-size: 0.82rem;
+.mobileReload {
+  display: none;
 }
 
-.syncNote span {
+.reloadIcon {
+  display: grid;
+  width: 1rem;
+  height: 1rem;
+  place-items: center;
   color: var(--protected-sidebar-muted-fg);
-  font-size: 0.75rem;
-  line-height: 1.5;
 }
+
+.reloadCard strong {
+  display: block;
+  color: var(--protected-sidebar-muted-fg);
+  font-size: 0.68rem;
+  font-weight: 600;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.reloadCard p {
+  position: absolute;
+  z-index: 5;
+  right: 0;
+  bottom: calc(100% + 0.5rem);
+  width: 13rem;
+  margin: 0;
+  padding: 0.6rem 0.7rem;
+  color: var(--protected-sidebar-fg);
+  border: 1px solid var(--protected-sidebar-border);
+  border-radius: 0.6rem;
+  background: var(--protected-sidebar-bg-deep);
+  box-shadow: 0 8px 24px rgb(0 0 0 / 0.16);
+  font-size: 0.72rem;
+  line-height: 1.45;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translateY(0.25rem);
+  transition: opacity var(--transition-ui), transform var(--transition-ui), visibility var(--transition-ui);
+}
+
+.reloadCard:hover p,
+.reloadCard:focus-visible p {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.reloadCard:focus-visible { outline: 2px solid var(--protected-accent-strong); outline-offset: 3px; }
 
 .contentColumn {
   min-height: 100dvh;
@@ -96,6 +152,8 @@
 }
 
 .topbar {
+  position: relative;
+  z-index: 30;
   display: flex;
   min-height: 4.8rem;
   align-items: center;
@@ -117,22 +175,8 @@
   gap: 0.75rem;
 }
 
-.accountText {
-  display: grid;
-  text-align: right;
-}
-
-.accountText span {
-  color: var(--color-text-tertiary);
-  font-size: 0.7rem;
-}
-
-.accountText strong {
-  max-width: 15rem;
-  overflow: hidden;
-  font-size: 0.82rem;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+.accountMenu {
+  position: relative;
 }
 
 .avatar {
@@ -145,6 +189,70 @@
   color: var(--protected-card-primary-fg);
   font-size: 0.86rem;
   font-weight: 750;
+  border: 0;
+  cursor: pointer;
+  transition: transform var(--transition-ui), box-shadow var(--transition-ui);
+}
+
+.avatar:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgb(8 100 86 / 0.23);
+}
+
+.avatar:focus-visible,
+.accountDropdown a:focus-visible {
+  outline: 3px solid var(--protected-accent-strong);
+  outline-offset: 3px;
+}
+
+.accountDropdown {
+  position: absolute;
+  z-index: 40;
+  top: calc(100% + 0.65rem);
+  right: 0;
+  display: grid;
+  gap: 0.25rem;
+  width: min(17rem, calc(100vw - 2rem));
+  padding: 1rem;
+  color: var(--protected-card-fg);
+  border: 1px solid var(--protected-card-border);
+  border-radius: 0.9rem;
+  background: var(--protected-card-bg);
+  box-shadow: var(--shadow-panel);
+}
+
+.dropdownEyebrow {
+  color: var(--protected-card-muted-fg);
+  font-size: 0.7rem;
+}
+
+.accountDropdown strong {
+  overflow-wrap: anywhere;
+  font-size: 0.93rem;
+}
+
+.accountDropdown small {
+  overflow-wrap: anywhere;
+  color: var(--protected-card-muted-fg);
+  font-size: 0.76rem;
+}
+
+.accountDropdown a {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  margin-top: 0.65rem;
+  padding: 0.65rem;
+  color: var(--protected-accent-deep);
+  border-radius: 0.55rem;
+  background: var(--protected-accent-softer);
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.accountDropdown a:hover {
+  background: var(--protected-accent-soft);
 }
 
 .main {
@@ -168,7 +276,7 @@
 
   .topbar {
     position: sticky;
-    z-index: 10;
+    z-index: 30;
     top: 0;
     justify-content: space-between;
   }
@@ -177,8 +285,25 @@
     display: inline-flex;
   }
 
-  .accountText {
-    display: none;
+  .mobileReload {
+    display: flex;
+    margin: 0.65rem var(--space-page) 0 auto;
+    border-color: var(--protected-card-secondary-border);
+    background: var(--protected-accent-softer);
+  }
+
+  .mobileReload .reloadIcon {
+    color: var(--protected-accent-deep);
+  }
+
+  .mobileReload strong {
+    color: var(--protected-text-secondary);
+  }
+
+  .mobileReload p {
+    color: var(--protected-card-fg);
+    border-color: var(--protected-card-border);
+    background: var(--protected-card-bg);
   }
 
   .mobileNav {

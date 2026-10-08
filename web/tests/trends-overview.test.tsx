@@ -13,10 +13,7 @@ function prediction(recordedAt: string): TrendPredictionInput {
     recorded_at: recordedAt,
     label: "not_stressed",
     class_index: 0,
-    confidence: 0.8,
-    model_version: "binary-test",
     heart_rate: 78,
-    daily_steps: 5_000,
     activity_level: 8_200,
     sleep_hours: 7.1,
     out_of_training_range: false,
@@ -43,7 +40,25 @@ describe("TrendsOverview", () => {
     );
     render(<TrendsOverview dataset={dataset} now={now} />);
 
+    expect(screen.getByRole("region", { name: "Trend charts" })).toBeInTheDocument();
     expect(screen.getAllByText("One observed day so far")).toHaveLength(4);
     expect(screen.getByText("1 of 7 local days observed")).toBeInTheDocument();
+  });
+
+  it("shows the four original chart subjects when two days have readings", () => {
+    const dataset = aggregateTrends(
+      [prediction("2026-10-01T08:00:00.000Z"), prediction("2026-10-02T08:00:00.000Z")],
+      7,
+      now,
+      "UTC",
+    );
+    render(<TrendsOverview dataset={dataset} now={now} />);
+
+    expect(screen.getByRole("region", { name: "Trend charts" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Stress overview" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Heart rate trend" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Sleep trend" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Activity trend" })).toBeInTheDocument();
+    expect(screen.queryByText(/input-range warnings/i)).not.toBeInTheDocument();
   });
 });

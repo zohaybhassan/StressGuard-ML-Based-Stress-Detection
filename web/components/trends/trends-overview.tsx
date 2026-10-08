@@ -1,8 +1,8 @@
 import { ChartLineUp } from "@phosphor-icons/react/dist/ssr";
 import type { TrendsDataset } from "@/lib/trends/types";
 import { DataQuality } from "./data-quality";
-import { RangeSelector } from "./range-selector";
 import { TrendCharts } from "./trend-charts";
+import { RangeSelector } from "./range-selector";
 import { TrendsHeader } from "./trends-header";
 import { TrendSummary } from "./trend-summary";
 import styles from "./trends.module.css";

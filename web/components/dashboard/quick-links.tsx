@@ -23,7 +23,7 @@ const links = [
   {
     href: "/settings",
     title: "Manage settings",
-    description: "Update your profile, privacy preferences, and account.",
+    description: "Edit your profile and password, and review your data controls.",
     icon: GearSix,
   },
 ] as const;

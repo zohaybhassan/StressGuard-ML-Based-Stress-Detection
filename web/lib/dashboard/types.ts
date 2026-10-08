@@ -15,8 +15,7 @@ export type DashboardSection =
   | "latest-prediction"
   | "today-summary"
   | "recent-alerts"
-  | "latest-workout"
-  | "cloud-record";
+  | "latest-workout";
 
 export type DashboardSnapshot = {
   profile: ProfileSummary | null;
@@ -26,7 +25,6 @@ export type DashboardSnapshot = {
   recentAlerts: RecentAlert[];
   latestWorkout: LatestWorkout | null;
   freshness: ReadingFreshness;
-  latestCloudRecordAt: string | null;
   failedSections: DashboardSection[];
 };
 

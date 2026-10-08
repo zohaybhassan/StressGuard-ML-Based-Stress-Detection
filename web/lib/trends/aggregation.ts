@@ -7,6 +7,9 @@ import type {
   TrendsDataset,
 } from "./types";
 
+// Mirrors StressAlertPolicy.THRESHOLD used by Android's Trends screen.
+export const HIGH_STRESS_DAY_THRESHOLD = 3;
+
 function dateKey(date: Date, timeZone: string) {
   const parts = getZonedDateParts(date, timeZone);
   return [
@@ -88,12 +91,11 @@ export function aggregateTrends(
         status: "missing",
         readingCount: null,
         stressedReadingCount: null,
+        isHighStressDay: null,
         stressedProportion: null,
         averageHeartRate: null,
         averageSleepHours: null,
         averageActivityLevel: null,
-        averageDailyStepsSnapshot: null,
-        averageConfidence: null,
         outOfRangeCount: null,
       };
     }
@@ -106,12 +108,11 @@ export function aggregateTrends(
       status: key === bounds.currentDateKey ? "in-progress" : "observed",
       readingCount: dayRows.length,
       stressedReadingCount,
+      isHighStressDay: stressedReadingCount >= HIGH_STRESS_DAY_THRESHOLD,
       stressedProportion: stressedReadingCount / dayRows.length,
       averageHeartRate: average(dayRows.map((row) => row.heart_rate), 0),
       averageSleepHours: average(dayRows.map((row) => row.sleep_hours), 2),
       averageActivityLevel: average(dayRows.map((row) => row.activity_level), 0),
-      averageDailyStepsSnapshot: average(dayRows.map((row) => row.daily_steps), 0),
-      averageConfidence: average(dayRows.map((row) => row.confidence), 3),
       outOfRangeCount: dayRows.filter((row) => row.out_of_training_range).length,
     };
   });
@@ -135,6 +136,7 @@ export function aggregateTrends(
         (sum, day) => sum + (day.stressedReadingCount ?? 0),
         0,
       ),
+      highStressDays: observedDays.filter((day) => day.isHighStressDay).length,
       daysWithData: observedDays.length,
       missingDays: range - observedDays.length,
       outOfRangeReadings: observedDays.reduce(
@@ -157,7 +159,6 @@ export function aggregateTrends(
       sleepDays: observedDays.filter((day) => day.averageSleepHours !== null).length,
       activityDays: observedDays.filter((day) => day.averageActivityLevel !== null).length,
       latestRecordedAt,
-      modelVersions: [...new Set(allValidRows.map((row) => row.model_version))].sort(),
     },
   };
 }

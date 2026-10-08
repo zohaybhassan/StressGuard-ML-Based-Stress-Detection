@@ -11,13 +11,12 @@ function Button() {
   const { pending } = useFormStatus();
   return (
     <button
-      aria-label={pending ? "Signing out" : "Sign out"}
       className={styles.button}
       disabled={pending}
-      title="Sign out"
       type="submit"
     >
       <SignOut size={19} aria-hidden />
+      <span>{pending ? "Logging out..." : "Log out"}</span>
     </button>
   );
 }

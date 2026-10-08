@@ -16,13 +16,13 @@
     "test:e2e": "playwright test"
   },
   "dependencies": {
+    "@aws-sdk/client-lambda": "^3.0.0",
     "@phosphor-icons/react": "^2.0.0",
     "@radix-ui/themes": "3.3.0",
-    "@aws-sdk/client-lambda": "^3.0.0",
     "@supabase/ssr": "0.12.7",
     "@supabase/supabase-js": "^2.0.0",
     "@tanstack/react-table": "^8.0.0",
-    "geist": "^1.0.0",
+    "geist": "^1.7.2",
     "next": "16.3.8",
     "react": "19.3.0",
     "react-dom": "19.3.0",

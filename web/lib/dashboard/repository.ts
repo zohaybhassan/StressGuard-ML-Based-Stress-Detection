@@ -115,45 +115,6 @@ export async function getLatestWorkout(
   return assertQuery("latest-workout", result) as LatestWorkout | null;
 }
 
-export async function getLatestCloudRecordAt(
-  client: DashboardClient,
-  userId: string,
-) {
-  const [prediction, alert, workout] = await Promise.all([
-    client
-      .from("stress_predictions")
-      .select("created_at")
-      .eq("user_id", userId)
-      .order("created_at", { ascending: false })
-      .limit(1)
-      .maybeSingle(),
-    client
-      .from("alert_events")
-      .select("created_at")
-      .eq("user_id", userId)
-      .order("created_at", { ascending: false })
-      .limit(1)
-      .maybeSingle(),
-    client
-      .from("workout_sessions")
-      .select("created_at")
-      .eq("user_id", userId)
-      .order("created_at", { ascending: false })
-      .limit(1)
-      .maybeSingle(),
-  ]);
-
-  if (prediction.error || alert.error || workout.error) {
-    throw new DashboardQueryError("cloud-record");
-  }
-
-  return latestTimestamp([
-    prediction.data?.created_at,
-    alert.data?.created_at,
-    workout.data?.created_at,
-  ]);
-}
-
 type Captured<T> = {
   data: T;
   failedSection: DashboardSection | null;
@@ -169,20 +130,6 @@ async function capture<T>(
   } catch {
     return { data: fallback, failedSection: section };
   }
-}
-
-function latestTimestamp(values: Array<string | null | undefined>) {
-  return values.reduce<string | null>((latest, value) => {
-    if (!value || !Number.isFinite(new Date(value).getTime())) {
-      return latest;
-    }
-
-    if (!latest || new Date(value).getTime() > new Date(latest).getTime()) {
-      return value;
-    }
-
-    return latest;
-  }, null);
 }
 
 export async function getDashboardSnapshot(
@@ -209,7 +156,6 @@ export async function getDashboardSnapshot(
     todayPredictions,
     recentAlerts,
     latestWorkout,
-    latestCloudRecord,
   ] =
     await Promise.all([
       capture("profile", getDashboardProfile(client, user.id), null),
@@ -221,7 +167,6 @@ export async function getDashboardSnapshot(
       ),
       capture("recent-alerts", getRecentAlerts(client, user.id), []),
       capture("latest-workout", getLatestWorkout(client, user.id), null),
-      capture("cloud-record", getLatestCloudRecordAt(client, user.id), null),
     ]);
 
   const failedSections = [
@@ -230,7 +175,6 @@ export async function getDashboardSnapshot(
     todayPredictions.failedSection,
     recentAlerts.failedSection,
     latestWorkout.failedSection,
-    latestCloudRecord.failedSection,
   ].filter((section): section is DashboardSection => section !== null);
 
   return {
@@ -248,7 +192,6 @@ export async function getDashboardSnapshot(
         latestPrediction.data?.recorded_at,
         now,
       ),
-      latestCloudRecordAt: latestCloudRecord.data,
       failedSections,
     },
   };

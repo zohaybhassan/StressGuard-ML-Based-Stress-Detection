@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  ArrowClockwise,
   ChartLineUp,
   ClockCounterClockwise,
   GearSix,
@@ -8,6 +9,7 @@ import {
 } from "@phosphor-icons/react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
 
 import { BrandLockup } from "@/components/brand/brand-lockup";
 import { SignOutButton } from "@/components/auth/sign-out-button";
@@ -24,16 +26,50 @@ const navigation = [
 type AppShellProps = {
   children: React.ReactNode;
   email: string;
+  displayName: string | null;
 };
 
-export function AppShell({ children, email }: AppShellProps) {
+function ReloadNotice({ mobile = false }: { mobile?: boolean }) {
+  return (
+    <div className={`${styles.reloadCard} ${mobile ? styles.mobileReload : styles.sidebarReload}`} role="note" tabIndex={0}>
+      <span className={styles.reloadIcon} aria-hidden="true">
+        <ArrowClockwise size={15} weight="bold" />
+      </span>
+      <div>
+        <strong>Updates on reload</strong>
+        <p>New app readings appear here when you reload this page.</p>
+      </div>
+    </div>
+  );
+}
+
+export function AppShell({ children, email, displayName }: AppShellProps) {
   const pathname = usePathname();
-  const initial = email.slice(0, 1).toUpperCase();
+  const name = displayName?.trim() || email.split("@")[0] || "Your account";
+  const initial = name.slice(0, 1).toUpperCase();
+  const [accountOpen, setAccountOpen] = useState(false);
+  const accountMenuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!accountOpen) return;
+    const dismiss = (event: PointerEvent) => {
+      if (!accountMenuRef.current?.contains(event.target as Node)) setAccountOpen(false);
+    };
+    const dismissEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setAccountOpen(false);
+    };
+    document.addEventListener("pointerdown", dismiss);
+    document.addEventListener("keydown", dismissEscape);
+    return () => {
+      document.removeEventListener("pointerdown", dismiss);
+      document.removeEventListener("keydown", dismissEscape);
+    };
+  }, [accountOpen]);
 
   return (
     <div className={styles.shell}>
       <aside className={styles.sidebar}>
-        <BrandLockup />
+        <BrandLockup href={null} />
         <nav className={styles.sideNav} aria-label="Portal navigation">
           {navigation.map((item) => {
             const Icon = item.icon;
@@ -51,26 +87,40 @@ export function AppShell({ children, email }: AppShellProps) {
             );
           })}
         </nav>
-        <div className={styles.syncNote}>
-          <strong>Android connected</strong>
-          <span>Portal data is synchronized from the mobile app.</span>
-        </div>
+        <ReloadNotice />
       </aside>
 
       <div className={styles.contentColumn}>
         <header className={styles.topbar}>
-          <BrandLockup compact />
+          <BrandLockup href={null} />
           <div className={styles.account}>
-            <div className={styles.accountText}>
-              <span>Signed in</span>
-              <strong>{email}</strong>
+            <div className={styles.accountMenu} ref={accountMenuRef}>
+              <button
+                aria-expanded={accountOpen}
+                aria-haspopup="true"
+                aria-label={`Account menu for ${name}`}
+                className={styles.avatar}
+                onClick={() => setAccountOpen((current) => !current)}
+                type="button"
+              >
+                {initial}
+              </button>
+              {accountOpen ? (
+                <div aria-label="Account options" className={styles.accountDropdown} role="group">
+                  <span className={styles.dropdownEyebrow}>Signed in as</span>
+                  <strong>{name}</strong>
+                  <small>{email}</small>
+                  <Link href="/settings" onClick={() => setAccountOpen(false)}>
+                    <GearSix size={18} aria-hidden />
+                    Settings
+                  </Link>
+                </div>
+              ) : null}
             </div>
-            <span className={styles.avatar} aria-hidden>
-              {initial}
-            </span>
             <SignOutButton />
           </div>
         </header>
+        <ReloadNotice mobile />
         <main className={styles.main}>{children}</main>
       </div>
 

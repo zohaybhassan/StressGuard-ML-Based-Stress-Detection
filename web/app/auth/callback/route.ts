@@ -1,7 +1,13 @@
 import type { EmailOtpType } from "@supabase/supabase-js";
 import { NextResponse, type NextRequest } from "next/server";
 
-import { getSiteUrl, safeNextPath } from "@/lib/auth/redirects";
+import {
+  callbackErrorKind,
+  getSiteUrl,
+  safeNextPath,
+} from "@/lib/auth/redirects";
+import { hasExternalAuthProvider } from "@/lib/auth/providers";
+import { PASSWORD_RECOVERY_COOKIE } from "@/lib/auth/session-cookies";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 const emailOtpTypes = new Set<EmailOtpType>([
@@ -23,7 +29,11 @@ function authRedirect(query: string) {
 
 export async function GET(request: NextRequest) {
   if (request.nextUrl.searchParams.has("error")) {
-    return authRedirect("error=oauth");
+    const error = callbackErrorKind(
+      request.nextUrl.searchParams.get("error_code"),
+      request.nextUrl.searchParams.get("next"),
+    );
+    return authRedirect(`error=${error}`);
   }
 
   const supabase = await createSupabaseServerClient();
@@ -52,7 +62,7 @@ export async function GET(request: NextRequest) {
 
   if (isRecovery) {
     const response = appRedirect("/auth?mode=reset");
-    response.cookies.set("sg-password-recovery", "active", {
+    response.cookies.set(PASSWORD_RECOVERY_COOKIE, "active", {
       httpOnly: true,
       maxAge: 15 * 60,
       path: "/",
@@ -73,7 +83,7 @@ export async function GET(request: NextRequest) {
       .eq("id", user.id)
       .maybeSingle();
 
-    if (profile?.password_set === false) {
+    if (profile?.password_set === false && !hasExternalAuthProvider(user)) {
       return appRedirect("/auth?mode=set-password");
     }
   }

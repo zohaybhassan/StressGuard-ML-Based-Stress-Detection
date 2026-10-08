@@ -412,6 +412,7 @@
 .revealButton:hover { background: #eef7f4; color: var(--auth-accent-strong); }
 
 .formOptions {
+  justify-content: flex-end;
   display: flex;
   align-items: center;
   justify-content: space-between;

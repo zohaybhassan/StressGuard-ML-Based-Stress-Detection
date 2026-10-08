@@ -35,6 +35,10 @@ function workout(overrides: Partial<Workout> = {}): Workout {
 }
 
 describe("classifyReadingFreshness", () => {
+  it("uses a ten-minute freshness window", () => {
+    expect(FRESHNESS_THRESHOLD_MINUTES).toBe(10);
+  });
+
   it("treats a reading at the threshold as fresh", () => {
     const recordedAt = new Date(
       now.getTime() - FRESHNESS_THRESHOLD_MINUTES * 60_000,
@@ -45,7 +49,7 @@ describe("classifyReadingFreshness", () => {
 
   it("marks older readings as delayed", () => {
     const recordedAt = new Date(
-      now.getTime() - (FRESHNESS_THRESHOLD_MINUTES + 1) * 60_000,
+      now.getTime() - FRESHNESS_THRESHOLD_MINUTES * 60_000 - 1,
     ).toISOString();
 
     expect(classifyReadingFreshness(recordedAt, now)).toBe("delayed");

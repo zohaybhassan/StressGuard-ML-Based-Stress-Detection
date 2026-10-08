@@ -27,7 +27,7 @@ export async function getTrendPredictionRows(
     const { data, error } = await client
       .from("stress_predictions")
       .select(
-        "recorded_at,label,class_index,confidence,model_version,heart_rate,daily_steps,activity_level,sleep_hours,out_of_training_range",
+        "recorded_at,label,class_index,heart_rate,activity_level,sleep_hours,out_of_training_range",
       )
       .eq("user_id", userId)
       .gte("recorded_at", start.toISOString())

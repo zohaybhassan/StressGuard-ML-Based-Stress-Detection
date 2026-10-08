@@ -14,8 +14,6 @@ import { parseHistoryFilters, type HistorySearchParams } from "@/lib/history/val
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 export const fetchCache = "force-no-store";
-export const metadata = { title: "History" };
-
 export default async function HistoryPage({ searchParams }: { searchParams: Promise<HistorySearchParams> }) {
   await connection();
   const [params, cookieStore] = await Promise.all([searchParams, cookies()]);
