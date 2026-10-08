@@ -2,6 +2,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
     <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.VIBRATE" />
 
     <!--
         Heart rate access changed in Android 15 (API 35): BODY_SENSORS was deprecated in favour
@@ -61,7 +62,7 @@
         -->
         <meta-data
             android:name="com.google.android.wearable.standalone"
-            android:value="true" />
+            android:value="false" />
 
         <activity
             android:name=".presentation.MainActivity"
@@ -91,6 +92,52 @@
             <intent-filter>
                 <action android:name="androidx.health.services.action.PASSIVE_LISTENER_SERVICE" />
             </intent-filter>
+        </service>
+
+        <service
+            android:name=".presentation.WatchStateListenerService"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="com.google.android.gms.wearable.MESSAGE_RECEIVED" />
+
+                <data
+                    android:host="*"
+                    android:pathPrefix="/stress_state"
+                    android:scheme="wear" />
+            </intent-filter>
+        </service>
+
+        <service
+            android:name=".presentation.StressTileService"
+            android:description="@string/stress_tile_description"
+            android:exported="true"
+            android:icon="@mipmap/ic_launcher"
+            android:label="@string/stress_tile_label"
+            android:permission="com.google.android.wearable.permission.BIND_TILE_PROVIDER">
+            <intent-filter>
+                <action android:name="androidx.wear.tiles.action.BIND_TILE_PROVIDER" />
+            </intent-filter>
+            <meta-data
+                android:name="androidx.wear.tiles.PREVIEW"
+                android:resource="@drawable/tile_preview" />
+        </service>
+
+        <service
+            android:name=".presentation.StressComplicationService"
+            android:description="@string/stress_complication_description"
+            android:exported="true"
+            android:icon="@mipmap/ic_launcher"
+            android:label="@string/stress_complication_label"
+            android:permission="com.google.android.wearable.permission.BIND_COMPLICATION_PROVIDER">
+            <intent-filter>
+                <action android:name="android.support.wearable.complications.ACTION_COMPLICATION_UPDATE_REQUEST" />
+            </intent-filter>
+            <meta-data
+                android:name="android.support.wearable.complications.SUPPORTED_TYPES"
+                android:value="RANGED_VALUE,SHORT_TEXT" />
+            <meta-data
+                android:name="android.support.wearable.complications.UPDATE_PERIOD_SECONDS"
+                android:value="300" />
         </service>
 
         <!-- A passive registration does not reliably survive a reboot or an upgrade. -->
