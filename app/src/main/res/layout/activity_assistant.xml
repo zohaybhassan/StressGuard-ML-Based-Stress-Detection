@@ -62,8 +62,18 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="@dimen/space_sm"
                 android:layout_weight="1"
+                android:lineSpacingExtra="3dp"
                 android:text="@string/assistant_disclaimer"
-                android:textAppearance="@style/TextAppearance.StressGuard.Footnote" />
+                android:textAppearance="@style/TextAppearance.StressGuard.Footnote"
+                android:textColor="@color/text_secondary" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnDismissDisclaimer"
+                style="@style/Widget.StressGuard.Button.Icon"
+                android:layout_marginStart="@dimen/space_xs"
+                android:contentDescription="@string/cd_dismiss_assistant_disclaimer"
+                app:icon="@drawable/ic_close"
+                app:iconTint="@color/text_tertiary" />
         </LinearLayout>
     </com.google.android.material.card.MaterialCardView>
 

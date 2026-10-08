@@ -17,6 +17,10 @@
     <string name="cd_menu">More options</string>
     <string name="cd_send">Send message</string>
     <string name="cd_new_conversation">Start a new conversation</string>
+    <string name="cd_dismiss_health_check">Dismiss health check</string>
+    <string name="cd_dismiss_assistant_disclaimer">Dismiss assistant information</string>
+    <string name="cd_close_chat_history">Close chat history</string>
+    <string name="cd_delete_chat">Delete conversation</string>
     <string name="cd_logo">StressGuard logo</string>
 
     <!-- Launch -->
@@ -44,15 +48,25 @@
     <string name="action_save_continue">Save and continue</string>
 
     <!-- Dashboard -->
-    <string name="dashboard_greeting">Welcome back</string>
+    <string name="dashboard_greeting_morning">Good morning,</string>
+    <string name="dashboard_greeting_afternoon">Good afternoon,</string>
+    <string name="dashboard_greeting_night">Good night,</string>
+    <string name="dashboard_subtitle_day">A calmer, healthier day starts here.</string>
+    <string name="dashboard_subtitle_night">Rest well. A better tomorrow awaits.</string>
     <string name="dashboard_waiting">Waiting for watch data</string>
     <string name="dashboard_sync_checking">Checking sync…</string>
+    <string name="stress_range_caution">Estimate confidence is limited because one or more inputs are outside the model’s usual reference range.</string>
+    <string name="stress_range_activity_incomplete">Limited confidence: the best available activity level is below the model’s reference range. This can happen early in the day or with limited step history.</string>
+    <string name="stress_range_activity_high">Limited confidence: today’s activity is above the range represented in the model’s reference data.</string>
+    <string name="stress_range_heart_rate">Limited confidence: the current heart rate is outside the range represented in the model’s reference data.</string>
+    <string name="stress_range_sleep">Limited confidence: the available sleep value is outside the range represented in the model’s reference data.</string>
     <string name="chip_watch_not_connected">Watch not connected</string>
     <string name="chip_encrypted">Encrypted</string>
     <string name="hero_label">Current stress</string>
     <string name="hero_live">Live</string>
     <string name="hero_caption">Read on-device from your wearable stream</string>
     <string name="section_vitals">Today\'s vitals</string>
+    <string name="section_actions">Take a helpful next step</string>
     <string name="metric_heart_rate">Heart rate</string>
     <string name="metric_steps">Steps</string>
     <string name="metric_sleep">Sleep</string>
@@ -175,6 +189,21 @@
     <string name="assistant_hint">How are you feeling?</string>
     <string name="assistant_thinking">Thinking…</string>
     <string name="action_new_conversation">New conversation</string>
+    <string name="action_chat_history">Chat history</string>
+    <string name="chat_history_title">Chat history</string>
+    <string name="chat_history_empty">No saved conversations yet</string>
+    <string name="chat_history_empty_detail">Your conversations will appear here after you send a message.</string>
+    <string name="chat_history_loading">Loading conversations…</string>
+    <string name="chat_history_load_failed">Couldn’t load chat history. Check your connection and try again.</string>
+    <string name="chat_history_sign_in">Sign in to view saved conversations.</string>
+    <string name="chat_history_delete_title">Delete this conversation?</string>
+    <string name="chat_history_delete_message">This permanently removes the conversation from your account.</string>
+    <string name="chat_history_delete">Delete</string>
+    <string name="chat_history_cancel">Cancel</string>
+    <string name="chat_history_delete_failed">Couldn’t delete this conversation.</string>
+    <string name="chat_history_empty_preview">No messages</string>
+    <string name="chat_history_active">Current chat</string>
+    <string name="chat_history_messages">%1$d messages</string>
 
     <!-- Health checklist -->
     <string name="checklist_title">Health checklist</string>

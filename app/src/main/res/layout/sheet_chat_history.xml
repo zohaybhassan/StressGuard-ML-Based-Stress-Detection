@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@color/surface"
+    android:orientation="vertical"
+    android:paddingStart="@dimen/space_lg"
+    android:paddingTop="@dimen/space_md"
+    android:paddingEnd="@dimen/space_lg"
+    android:paddingBottom="@dimen/space_xl">
+
+    <View
+        android:layout_width="36dp"
+        android:layout_height="4dp"
+        android:layout_gravity="center_horizontal"
+        android:background="@drawable/bg_pill"
+        android:backgroundTint="@color/outline_strong" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/space_sm"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/chat_history_title"
+            android:textAppearance="@style/TextAppearance.StressGuard.Headline" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnCloseHistory"
+            style="@style/Widget.StressGuard.Button.Icon"
+            android:contentDescription="@string/cd_close_chat_history"
+            app:icon="@drawable/ic_close" />
+    </LinearLayout>
+
+    <com.google.android.material.progressindicator.CircularProgressIndicator
+        android:id="@+id/historyProgress"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="@dimen/space_xl"
+        android:layout_marginBottom="@dimen/space_xl"
+        android:contentDescription="@string/chat_history_loading"
+        android:indeterminate="true" />
+
+    <LinearLayout
+        android:id="@+id/historyEmptyState"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:paddingTop="@dimen/space_2xl"
+        android:paddingBottom="@dimen/space_2xl"
+        android:visibility="gone"
+        tools:visibility="visible">
+
+        <ImageView
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:background="@drawable/bg_icon_tile"
+            android:backgroundTint="@color/brand_soft"
+            android:contentDescription="@null"
+            android:padding="12dp"
+            android:src="@drawable/ic_history"
+            app:tint="@color/brand" />
+
+        <TextView
+            android:id="@+id/tvHistoryEmptyTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_md"
+            android:gravity="center"
+            android:text="@string/chat_history_empty"
+            android:textAppearance="@style/TextAppearance.StressGuard.Title" />
+
+        <TextView
+            android:id="@+id/tvHistoryEmptyDetail"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_xs"
+            android:gravity="center"
+            android:text="@string/chat_history_empty_detail"
+            android:textAppearance="@style/TextAppearance.StressGuard.Caption" />
+    </LinearLayout>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rvChatSessions"
+        android:layout_width="match_parent"
+        android:layout_height="360dp"
+        android:layout_marginTop="@dimen/space_md"
+        android:clipToPadding="false"
+        android:paddingBottom="@dimen/space_sm"
+        android:scrollbars="none"
+        android:visibility="gone"
+        tools:listitem="@layout/item_chat_session"
+        tools:visibility="visible" />
+</LinearLayout>

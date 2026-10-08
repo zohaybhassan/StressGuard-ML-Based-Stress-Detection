@@ -45,6 +45,8 @@ enum class WatchLink { UNKNOWN, NO_WATCH, PAIRED_NO_DATA, STREAMING }
 data class DashboardUiState(
     val heartRate: Int? = null,
     val steps: Int? = null,
+    /** Full-day activity estimate given to the model; may differ from today's partial steps. */
+    val modelActivityLevel: Int? = null,
     val sleepHours: Float? = null,
     /** True when no Health Connect record existed and a default was substituted. */
     val sleepAssumed: Boolean = false,
@@ -122,6 +124,9 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
     /** When the displayed reading was measured on the watch, for [tickReadingAge]. */
     private var measuredAtElapsedMs: Long? = null
 
+    /** Prevent tab switches from enqueuing the same opportunistic sync repeatedly. */
+    private var lastAutoSyncAtElapsedMs = Long.MIN_VALUE
+
     init {
         viewModelScope.launch {
             pipeline.latest.filterNotNull().collect { render(it) }
@@ -145,6 +150,20 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
 
     /** Asks for a sync now, for the moments where waiting half an hour would be wrong. */
     fun syncNow() {
+        SyncScheduler.syncNow(getApplication())
+    }
+
+    /**
+     * Starts a background sync when Home becomes visible, throttled across quick tab switches.
+     * WorkManager still owns connectivity, retry, and deduplication, so this never blocks the UI.
+     */
+    fun autoSync() {
+        val now = SystemClock.elapsedRealtime()
+        if (lastAutoSyncAtElapsedMs != Long.MIN_VALUE &&
+            now - lastAutoSyncAtElapsedMs < AUTO_SYNC_THROTTLE_MS
+        ) return
+
+        lastAutoSyncAtElapsedMs = now
         SyncScheduler.syncNow(getApplication())
     }
 
@@ -236,6 +255,7 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
                 _state.value = current.copy(
                     heartRate = reading.heartRate,
                     steps = reading.dailySteps,
+                    modelActivityLevel = result.activityLevel,
                     sleepHours = result.sleepHours,
                     sleepAssumed = result.sleepAssumed,
                     source = if (result.simulated) ReadingSource.SIMULATED else ReadingSource.WATCH,
@@ -266,6 +286,7 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
                 _state.value = _state.value.copy(
                     heartRate = reading.heartRate,
                     steps = reading.dailySteps,
+                    modelActivityLevel = null,
                     source = ReadingSource.WATCH,
                     sourceDetail = "Workout mode active",
                     watchLink = WatchLink.STREAMING,
@@ -323,7 +344,10 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
         SyncStatus(
             pending = database.stressPredictions().countUnsynced() +
                 database.latencyMetrics().countUnsynced() +
-                database.alertEvents().countUnsynced(),
+                database.alertEvents().countUnsynced() +
+                database.healthChecklists().countUnsynced() +
+                database.stressFeedback().countUnsyncedCompleted() +
+                database.workoutSessions().countUnsyncedCompleted(),
             lastSuccessEpochMs = SyncState(getApplication()).lastSuccessEpochMs,
             signedIn = AuthRepository.currentUser != null,
             backendConfigured = SupabaseConfig.isBackendConfigured,
@@ -348,6 +372,9 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
 
         /** How often [tickReadingAge] recomputes the on-screen age. */
         private const val AGE_TICK_MS = 5_000L
+
+        /** Long enough to ignore rapid tab switching, short enough for a resumed app to self-heal. */
+        private const val AUTO_SYNC_THROTTLE_MS = 60_000L
 
         /** Kept for the Activity's Health Connect fallback path. */
         const val DEFAULT_SLEEP_HOURS = StressPipeline.DEFAULT_SLEEP_HOURS

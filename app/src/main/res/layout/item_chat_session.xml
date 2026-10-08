@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/chatSessionCard"
+    style="@style/Widget.StressGuard.Card.Interactive"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="@dimen/space_sm">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:minHeight="88dp"
+        android:orientation="horizontal"
+        android:paddingStart="@dimen/space_lg"
+        android:paddingTop="@dimen/space_md"
+        android:paddingEnd="@dimen/space_xs"
+        android:paddingBottom="@dimen/space_md">
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/tvSessionTitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:maxLines="1"
+                android:textAppearance="@style/TextAppearance.StressGuard.Title"
+                tools:text="Today, 4:35 PM" />
+
+            <TextView
+                android:id="@+id/tvSessionPreview"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:ellipsize="end"
+                android:maxLines="2"
+                android:textAppearance="@style/TextAppearance.StressGuard.Caption"
+                tools:text="I have been feeling overwhelmed by my final project…" />
+
+            <TextView
+                android:id="@+id/tvSessionMeta"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_xs"
+                android:maxLines="1"
+                android:textAppearance="@style/TextAppearance.StressGuard.Footnote"
+                tools:text="8 messages · Current chat" />
+        </LinearLayout>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnDeleteSession"
+            style="@style/Widget.StressGuard.Button.Icon"
+            android:layout_marginStart="@dimen/space_sm"
+            android:contentDescription="@string/cd_delete_chat"
+            app:icon="@drawable/ic_delete"
+            app:iconTint="@color/danger" />
+    </LinearLayout>
+</com.google.android.material.card.MaterialCardView>

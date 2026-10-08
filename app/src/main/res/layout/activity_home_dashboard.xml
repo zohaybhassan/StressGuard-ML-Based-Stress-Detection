@@ -40,101 +40,123 @@
             android:paddingEnd="@dimen/screen_padding"
             android:paddingBottom="@dimen/space_xl">
 
-            <!-- Header. The avatar is the user's initial rather than a photo: there is nowhere in
-                 the app to set one, and a grey silhouette is a placeholder pretending to be a
-                 feature. -->
-            <LinearLayout
+            <!-- Time-aware scenic header. The same information and controls remain available in
+                 both themes; only the atmosphere and supporting copy change with local time. -->
+            <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:baselineAligned="false"
-                android:gravity="center_vertical"
-                android:orientation="horizontal">
+                android:layout_height="178dp"
+                app:cardCornerRadius="@dimen/radius_lg"
+                app:cardElevation="0dp"
+                app:strokeWidth="0dp">
 
-                <TextView
-                    android:id="@+id/tvAvatar"
-                    android:layout_width="44dp"
-                    android:layout_height="44dp"
-                    android:background="@drawable/bg_circle"
-                    android:backgroundTint="@color/brand_soft"
-                    android:fontFamily="@font/open_sans_medium"
-                    android:gravity="center"
-                    android:textColor="@color/brand_dark"
-                    android:textSize="18sp"
-                    tools:text="F" />
+                <FrameLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent">
 
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="@dimen/space_md"
-                    android:layout_weight="1"
-                    android:orientation="vertical">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/dashboard_greeting"
-                        android:textAppearance="@style/TextAppearance.StressGuard.Caption"
-                        android:textColor="@color/text_tertiary" />
-
-                    <TextView
-                        android:id="@+id/tvWelcome"
+                    <ImageView
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:ellipsize="end"
-                        android:maxLines="1"
-                        android:textAppearance="@style/TextAppearance.StressGuard.Headline"
-                        tools:text="Fahad" />
-                </LinearLayout>
+                        android:layout_height="match_parent"
+                        android:contentDescription="@null"
+                        android:importantForAccessibility="no"
+                        android:scaleType="centerCrop"
+                        android:src="@drawable/header_scene" />
 
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btnMenu"
-                    style="@style/Widget.StressGuard.Button.Icon"
-                    android:contentDescription="@string/cd_menu"
-                    app:icon="@drawable/ic_more" />
-            </LinearLayout>
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:background="@drawable/bg_header_scrim"
+                        android:importantForAccessibility="no" />
 
-            <!-- Link status. Scrolls sideways so a long watch name cannot squeeze the second chip
-                 down to an ellipsis. -->
-            <HorizontalScrollView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/space_lg"
-                android:clipToPadding="false"
-                android:scrollbars="none">
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:orientation="vertical"
+                        android:paddingStart="@dimen/space_lg"
+                        android:paddingTop="@dimen/space_md"
+                        android:paddingEnd="@dimen/space_sm"
+                        android:paddingBottom="@dimen/space_md">
 
-                <LinearLayout
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal">
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="48dp"
+                            android:gravity="center_vertical"
+                            android:orientation="horizontal">
 
-                    <com.google.android.material.chip.Chip
-                        android:id="@+id/chipConnectionState"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/chip_watch_not_connected"
-                        app:chipIcon="@drawable/ic_watch"
-                        app:chipIconTint="@color/text_tertiary" />
+                            <ImageView
+                                android:layout_width="118dp"
+                                android:layout_height="46dp"
+                                android:adjustViewBounds="true"
+                                android:contentDescription="@string/cd_logo"
+                                android:scaleType="fitStart"
+                                android:src="@drawable/logo" />
 
-                    <com.google.android.material.chip.Chip
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="@dimen/space_sm"
-                        android:text="@string/chip_encrypted"
-                        app:chipIcon="@drawable/ic_shield"
-                        app:chipIconTint="@color/text_tertiary" />
-                </LinearLayout>
-            </HorizontalScrollView>
+                            <Space
+                                android:layout_width="0dp"
+                                android:layout_height="1dp"
+                                android:layout_weight="1" />
+
+                            <TextView
+                                android:id="@+id/tvAvatar"
+                                android:layout_width="42dp"
+                                android:layout_height="42dp"
+                                android:background="@drawable/bg_circle"
+                                android:backgroundTint="@color/brand_soft"
+                                android:fontFamily="@font/open_sans_medium"
+                                android:gravity="center"
+                                android:textColor="@color/brand_dark"
+                                android:textSize="17sp"
+                                tools:text="F" />
+
+                            <com.google.android.material.button.MaterialButton
+                                android:id="@+id/btnMenu"
+                                style="@style/Widget.StressGuard.Button.Icon"
+                                android:layout_marginStart="@dimen/space_xs"
+                                android:contentDescription="@string/cd_menu"
+                                app:icon="@drawable/ic_more" />
+                        </LinearLayout>
+
+                        <TextView
+                            android:id="@+id/tvGreeting"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/space_sm"
+                            android:fontFamily="sans-serif"
+                            android:textAppearance="@style/TextAppearance.StressGuard.Caption"
+                            android:textColor="@color/text_secondary"
+                            tools:text="Good morning," />
+
+                        <TextView
+                            android:id="@+id/tvWelcome"
+                            android:layout_width="220dp"
+                            android:layout_height="wrap_content"
+                            android:ellipsize="end"
+                            android:maxLines="1"
+                            android:textAppearance="@style/TextAppearance.StressGuard.Headline"
+                            tools:text="Fahad" />
+
+                        <TextView
+                            android:id="@+id/tvGreetingSubtitle"
+                            android:layout_width="240dp"
+                            android:layout_height="wrap_content"
+                            android:ellipsize="end"
+                            android:maxLines="1"
+                            android:textAppearance="@style/TextAppearance.StressGuard.Footnote"
+                            android:textColor="@color/text_secondary"
+                            tools:text="A calmer, healthier day starts here." />
+                    </LinearLayout>
+                </FrameLayout>
+            </com.google.android.material.card.MaterialCardView>
 
             <!-- The hero. Dark in both themes; see bg_hero.xml. -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/space_lg"
+                android:layout_marginTop="@dimen/space_md"
                 android:background="@drawable/bg_hero"
                 android:orientation="vertical"
-                android:paddingStart="@dimen/space_xl"
-                android:paddingTop="@dimen/space_xl"
-                android:paddingEnd="@dimen/space_xl"
+                android:paddingStart="@dimen/space_lg"
+                android:paddingTop="@dimen/space_lg"
+                android:paddingEnd="@dimen/space_lg"
                 android:paddingBottom="@dimen/space_lg">
 
                 <LinearLayout
@@ -147,41 +169,29 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:letterSpacing="0.09"
                         android:text="@string/hero_label"
-                        android:textAllCaps="true"
-                        android:textColor="@color/text_on_dark_muted"
-                        android:textSize="12sp" />
+                        android:textAppearance="@style/TextAppearance.StressGuard.Title"
+                        android:textColor="@color/hero_foreground" />
 
-                    <LinearLayout
+                    <View
+                        android:id="@+id/liveDot"
+                        android:layout_width="7dp"
+                        android:layout_height="7dp"
+                        android:layout_marginEnd="@dimen/space_sm"
+                        android:background="@drawable/bg_circle"
+                        android:backgroundTint="@color/stress_low" />
+
+                    <com.google.android.material.chip.Chip
+                        android:id="@+id/chipConnectionState"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:background="@drawable/bg_pill"
-                        android:backgroundTint="@color/hero_track"
-                        android:gravity="center_vertical"
-                        android:orientation="horizontal"
-                        android:paddingStart="10dp"
-                        android:paddingTop="5dp"
-                        android:paddingEnd="12dp"
-                        android:paddingBottom="5dp">
-
-                        <View
-                            android:id="@+id/liveDot"
-                            android:layout_width="7dp"
-                            android:layout_height="7dp"
-                            android:background="@drawable/bg_circle"
-                            android:backgroundTint="@color/stress_low" />
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginStart="6dp"
-                            android:letterSpacing="0.06"
-                            android:text="@string/hero_live"
-                            android:textAllCaps="true"
-                            android:textColor="@color/text_on_dark"
-                            android:textSize="10.5sp" />
-                    </LinearLayout>
+                        android:ellipsize="end"
+                        android:maxWidth="174dp"
+                        android:text="@string/chip_watch_not_connected"
+                        app:chipBackgroundColor="@color/brand_soft"
+                        app:chipIcon="@drawable/ic_watch"
+                        app:chipIconTint="@color/hero_foreground_muted"
+                        app:chipStrokeColor="@color/hero_divider" />
                 </LinearLayout>
 
                 <FrameLayout
@@ -189,7 +199,7 @@
                     android:layout_width="@dimen/gauge_size"
                     android:layout_height="@dimen/gauge_size"
                     android:layout_gravity="center_horizontal"
-                    android:layout_marginTop="@dimen/space_lg">
+                    android:layout_marginTop="@dimen/space_sm">
 
                     <com.example.stressguard.ui.StressRingView
                         android:id="@+id/stressGauge"
@@ -212,7 +222,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:textAppearance="@style/TextAppearance.StressGuard.Display"
-                            android:textColor="@color/text_on_dark"
+                            android:textColor="@color/hero_foreground"
                             tools:text="15%" />
 
                         <TextView
@@ -247,13 +257,47 @@
                     android:layout_marginTop="@dimen/space_md"
                     android:lineSpacingExtra="2dp"
                     android:text="@string/dashboard_waiting"
-                    android:textColor="@color/text_on_dark_muted"
+                    android:textColor="@color/hero_foreground_muted"
                     android:textSize="12.5sp" />
+
+                <LinearLayout
+                    android:id="@+id/rangeNotice"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/space_sm"
+                    android:background="@drawable/bg_pill"
+                    android:backgroundTint="@color/hero_divider"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:paddingStart="@dimen/space_md"
+                    android:paddingTop="@dimen/space_sm"
+                    android:paddingEnd="@dimen/space_md"
+                    android:paddingBottom="@dimen/space_sm"
+                    android:visibility="gone"
+                    tools:visibility="visible">
+
+                    <ImageView
+                        android:layout_width="18dp"
+                        android:layout_height="18dp"
+                        android:contentDescription="@null"
+                        android:src="@drawable/ic_info"
+                        app:tint="@color/hero_foreground_muted" />
+
+                    <TextView
+                        android:id="@+id/tvRangeNotice"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="@dimen/space_sm"
+                        android:layout_weight="1"
+                        android:text="@string/stress_range_caution"
+                        android:textColor="@color/hero_foreground_muted"
+                        android:textSize="12sp" />
+                </LinearLayout>
             </LinearLayout>
 
             <TextView
                 style="@style/Widget.StressGuard.SectionLabel"
-                android:layout_marginTop="@dimen/space_xl"
+                android:layout_marginTop="@dimen/space_lg"
                 android:text="@string/section_vitals" />
 
             <LinearLayout
@@ -267,40 +311,44 @@
                 <com.google.android.material.card.MaterialCardView
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_marginEnd="@dimen/space_sm"
+                    android:layout_marginEnd="4dp"
                     android:layout_weight="1">
 
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+                        android:minHeight="136dp"
                         android:orientation="vertical"
-                        android:padding="@dimen/space_lg">
+                        android:padding="@dimen/space_md">
 
                         <ImageView
-                            android:layout_width="@dimen/icon_tile"
-                            android:layout_height="@dimen/icon_tile"
+                            android:layout_width="36dp"
+                            android:layout_height="36dp"
                             android:background="@drawable/bg_icon_tile"
                             android:backgroundTint="@color/metric_heart_soft"
                             android:contentDescription="@string/metric_heart_rate"
-                            android:padding="9dp"
+                            android:padding="8dp"
                             android:src="@drawable/ic_heart"
                             app:tint="@color/metric_heart" />
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="@dimen/space_md"
+                            android:layout_marginTop="@dimen/space_sm"
+                            android:maxLines="1"
                             android:text="@string/metric_heart_rate"
-                            android:textAppearance="@style/TextAppearance.StressGuard.Caption"
-                            android:textColor="@color/text_tertiary" />
+                            android:textColor="@color/text_secondary"
+                            android:textSize="11.5sp" />
 
                         <TextView
                             android:id="@+id/tvHeartRate"
-                            android:layout_width="wrap_content"
+                            android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="2dp"
+                            android:maxLines="1"
                             android:text="@string/metric_empty"
-                            android:textAppearance="@style/TextAppearance.StressGuard.Metric"
+                            android:textColor="@color/text_primary"
+                            android:textSize="20sp"
                             tools:text="72 bpm" />
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
@@ -310,135 +358,123 @@
                     style="@style/Widget.StressGuard.Card.Interactive"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="@dimen/space_sm"
+                    android:layout_marginStart="4dp"
+                    android:layout_marginEnd="4dp"
                     android:layout_weight="1">
 
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+                        android:minHeight="136dp"
                         android:orientation="vertical"
-                        android:padding="@dimen/space_lg">
+                        android:padding="@dimen/space_md">
 
                         <ImageView
-                            android:layout_width="@dimen/icon_tile"
-                            android:layout_height="@dimen/icon_tile"
+                            android:layout_width="36dp"
+                            android:layout_height="36dp"
                             android:background="@drawable/bg_icon_tile"
                             android:backgroundTint="@color/metric_steps_soft"
                             android:contentDescription="@string/metric_steps"
-                            android:padding="9dp"
+                            android:padding="8dp"
                             android:src="@drawable/ic_steps"
                             app:tint="@color/metric_steps" />
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="@dimen/space_md"
+                            android:layout_marginTop="@dimen/space_sm"
                             android:text="@string/metric_steps"
-                            android:textAppearance="@style/TextAppearance.StressGuard.Caption"
-                            android:textColor="@color/text_tertiary" />
+                            android:textColor="@color/text_secondary"
+                            android:textSize="11.5sp" />
 
                         <TextView
                             android:id="@+id/tvSteps"
-                            android:layout_width="wrap_content"
+                            android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="2dp"
+                            android:maxLines="1"
                             android:text="@string/metric_empty"
-                            android:textAppearance="@style/TextAppearance.StressGuard.Metric"
+                            android:textColor="@color/text_primary"
+                            android:textSize="20sp"
                             tools:text="5,412" />
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
-            </LinearLayout>
 
-            <!-- Sleep. Wider than the other two because it is the one metric that has to explain
-                 itself: the value may be a substitute, and the caveat travels with it. -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/cvSleep"
                 style="@style/Widget.StressGuard.Card.Interactive"
-                android:layout_width="match_parent"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/space_md">
+                android:layout_marginStart="4dp"
+                android:layout_weight="1">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:minHeight="136dp"
                     android:orientation="vertical"
-                    android:padding="@dimen/space_lg">
+                    android:padding="@dimen/space_md">
 
-                    <LinearLayout
+                    <FrameLayout
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:baselineAligned="false"
-                        android:gravity="center_vertical"
-                        android:orientation="horizontal">
+                        android:layout_height="36dp">
 
                         <ImageView
-                            android:layout_width="@dimen/icon_tile"
-                            android:layout_height="@dimen/icon_tile"
+                            android:layout_width="36dp"
+                            android:layout_height="36dp"
                             android:background="@drawable/bg_icon_tile"
                             android:backgroundTint="@color/metric_sleep_soft"
                             android:contentDescription="@string/metric_sleep"
-                            android:padding="9dp"
+                            android:padding="8dp"
                             android:src="@drawable/ic_sleep"
                             app:tint="@color/metric_sleep" />
 
-                        <LinearLayout
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_marginStart="@dimen/space_md"
-                            android:layout_weight="1"
-                            android:orientation="vertical">
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="@string/metric_sleep"
-                                android:textAppearance="@style/TextAppearance.StressGuard.Caption"
-                                android:textColor="@color/text_tertiary" />
-
-                            <TextView
-                                android:id="@+id/tvSleep"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginTop="2dp"
-                                android:text="@string/metric_empty"
-                                android:textAppearance="@style/TextAppearance.StressGuard.Metric"
-                                tools:text="7.2 hrs" />
-                        </LinearLayout>
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="@string/metric_sleep_source"
-                            android:textAppearance="@style/TextAppearance.StressGuard.Footnote" />
-
                         <ImageView
                             android:id="@+id/ivSleepChevron"
-                            android:layout_width="18dp"
-                            android:layout_height="18dp"
-                            android:layout_marginStart="4dp"
+                            android:layout_width="16dp"
+                            android:layout_height="16dp"
+                            android:layout_gravity="top|end"
                             android:contentDescription="@null"
                             android:src="@drawable/ic_chevron_right"
                             android:visibility="gone"
                             app:tint="@color/text_tertiary"
                             tools:visibility="visible" />
-                    </LinearLayout>
+                    </FrameLayout>
 
-                    <!--
-                        Shown only when the figure needs qualifying: substituted from the training
-                        mean, or a real measurement from a night or two ago. A number that looks
-                        like a measurement and is not is worse than no number.
-                    -->
                     <TextView
-                        android:id="@+id/tvSleepDetail"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/space_sm"
+                        android:text="@string/metric_sleep"
+                        android:textColor="@color/text_secondary"
+                        android:textSize="11.5sp" />
+
+                    <TextView
+                        android:id="@+id/tvSleep"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="@dimen/space_md"
-                        android:textAppearance="@style/TextAppearance.StressGuard.Footnote"
-                        android:visibility="gone"
-                        tools:text="Assumed — no sleep records. Tap to fix."
-                        tools:visibility="visible" />
+                        android:layout_marginTop="2dp"
+                        android:maxLines="1"
+                        android:text="@string/metric_empty"
+                        android:textColor="@color/text_primary"
+                        android:textSize="20sp"
+                        tools:text="7.2 hrs" />
+
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/tvSleepDetail"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_sm"
+                android:paddingStart="@dimen/space_xs"
+                android:paddingEnd="@dimen/space_xs"
+                android:textAppearance="@style/TextAppearance.StressGuard.Footnote"
+                android:visibility="gone"
+                tools:text="Measured last night"
+                tools:visibility="visible" />
 
             <!-- The rule-based checkup suggestion. Hidden until there is enough history for a
                  verdict; an empty card reading "Low" would be a claim, not a blank. -->
@@ -495,6 +531,14 @@
                             android:textColor="@color/stress_low"
                             android:textSize="12sp"
                             tools:text="LOW · 2" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnDismissRecommendation"
+                            style="@style/Widget.StressGuard.Button.Icon"
+                            android:layout_marginStart="@dimen/space_xs"
+                            android:contentDescription="@string/cd_dismiss_health_check"
+                            app:icon="@drawable/ic_close"
+                            app:iconTint="@color/text_tertiary" />
                     </LinearLayout>
 
                     <TextView
@@ -544,38 +588,49 @@
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <com.google.android.material.card.MaterialCardView
-                android:id="@+id/btnWorkoutMode"
-                style="@style/Widget.StressGuard.Card.Interactive"
+            <TextView
+                style="@style/Widget.StressGuard.SectionLabel"
+                android:layout_marginTop="@dimen/space_lg"
+                android:text="@string/section_actions" />
+
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="@dimen/space_md"
-                app:cardBackgroundColor="@color/metric_steps_soft"
-                app:strokeColor="@color/metric_steps_soft">
+                android:baselineAligned="false"
+                android:orientation="horizontal">
+
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/btnWorkoutMode"
+                style="@style/Widget.StressGuard.Card.Interactive"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_marginEnd="@dimen/space_xs"
+                android:layout_weight="1"
+                app:cardBackgroundColor="@color/brand_soft"
+                app:strokeColor="@color/brand_soft">
 
                 <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:baselineAligned="false"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal"
-                    android:padding="@dimen/space_lg">
+                    android:layout_height="match_parent"
+                    android:minHeight="130dp"
+                    android:orientation="vertical"
+                    android:padding="@dimen/space_md">
 
                     <ImageView
-                        android:layout_width="@dimen/icon_tile_lg"
-                        android:layout_height="@dimen/icon_tile_lg"
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
                         android:background="@drawable/bg_circle"
-                        android:backgroundTint="@color/surface"
+                        android:backgroundTint="@color/brand"
                         android:contentDescription="@null"
-                        android:padding="12dp"
+                        android:padding="9dp"
                         android:src="@drawable/ic_steps"
-                        app:tint="@color/metric_steps" />
+                        app:tint="@color/on_brand" />
 
                     <LinearLayout
-                        android:layout_width="0dp"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginStart="@dimen/space_md"
-                        android:layout_weight="1"
+                        android:layout_marginTop="@dimen/space_sm"
                         android:orientation="vertical">
 
                         <TextView
@@ -588,8 +643,9 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="1dp"
+                            android:maxLines="2"
                             android:text="@string/workout_mode_dashboard_subtitle"
-                            android:textAppearance="@style/TextAppearance.StressGuard.Caption" />
+                            android:textAppearance="@style/TextAppearance.StressGuard.Footnote" />
                     </LinearLayout>
 
                     <ImageView
@@ -597,6 +653,7 @@
                         android:layout_height="20dp"
                         android:contentDescription="@null"
                         android:src="@drawable/ic_chevron_right"
+                        android:visibility="gone"
                         app:tint="@color/metric_steps" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
@@ -609,35 +666,34 @@
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/btnEmergency"
                 style="@style/Widget.StressGuard.Card.Interactive"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/space_md"
-                app:cardBackgroundColor="@color/danger_soft"
-                app:strokeColor="@color/danger_soft">
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_marginStart="@dimen/space_xs"
+                android:layout_weight="1"
+                app:cardBackgroundColor="@color/metric_sleep_soft"
+                app:strokeColor="@color/metric_sleep_soft">
 
                 <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:baselineAligned="false"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal"
-                    android:padding="@dimen/space_lg">
+                    android:layout_height="match_parent"
+                    android:minHeight="130dp"
+                    android:orientation="vertical"
+                    android:padding="@dimen/space_md">
 
                     <ImageView
-                        android:layout_width="@dimen/icon_tile_lg"
-                        android:layout_height="@dimen/icon_tile_lg"
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
                         android:background="@drawable/bg_circle"
-                        android:backgroundTint="@color/surface"
+                        android:backgroundTint="@color/metric_sleep"
                         android:contentDescription="@null"
-                        android:padding="12dp"
+                        android:padding="9dp"
                         android:src="@drawable/ic_support"
-                        app:tint="@color/danger" />
+                        app:tint="@color/text_on_dark" />
 
                     <LinearLayout
-                        android:layout_width="0dp"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginStart="@dimen/space_md"
-                        android:layout_weight="1"
+                        android:layout_marginTop="@dimen/space_sm"
                         android:orientation="vertical">
 
                         <TextView
@@ -650,8 +706,9 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="1dp"
+                            android:maxLines="2"
                             android:text="@string/support_subtitle"
-                            android:textAppearance="@style/TextAppearance.StressGuard.Caption" />
+                            android:textAppearance="@style/TextAppearance.StressGuard.Footnote" />
                     </LinearLayout>
 
                     <ImageView
@@ -659,9 +716,11 @@
                         android:layout_height="20dp"
                         android:contentDescription="@null"
                         android:src="@drawable/ic_chevron_right"
+                        android:visibility="gone"
                         app:tint="@color/danger" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
+            </LinearLayout>
 
             <!-- Backend sync. A footnote by design: it is the only line here that is about the app
                  rather than the user. Tapping it syncs now. -->

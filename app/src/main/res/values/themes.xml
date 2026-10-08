@@ -43,8 +43,9 @@
         <!-- System bars. Honoured below API 35; from 35 the window is edge-to-edge and the bars
              are transparent, which is why every screen pads itself for the insets instead. -->
         <item name="android:statusBarColor">@color/canvas</item>
-        <item name="android:windowLightStatusBar">true</item>
+        <item name="android:windowLightStatusBar">@bool/window_light_system_bars</item>
         <item name="android:navigationBarColor">@color/surface</item>
+        <item name="android:windowLightNavigationBar" tools:targetApi="27">@bool/window_light_system_bars</item>
 
         <!-- Shapes, applied to anything that does not override them. -->
         <item name="shapeAppearanceSmallComponent">@style/ShapeAppearance.StressGuard.Small</item>
@@ -115,7 +116,7 @@
 
     <style name="TextAppearance.StressGuard.Display" parent="TextAppearance.Material3.DisplaySmall">
         <item name="android:fontFamily">@font/open_sans</item>
-        <item name="android:textSize">52sp</item>
+        <item name="android:textSize">46sp</item>
         <item name="android:textStyle">bold</item>
         <item name="android:letterSpacing">-0.02</item>
     </style>
@@ -158,7 +159,7 @@
          with the stress figure the screen is actually about. -->
     <style name="TextAppearance.StressGuard.Metric" parent="TextAppearance.Material3.HeadlineSmall">
         <item name="android:fontFamily">@font/open_sans_medium</item>
-        <item name="android:textSize">24sp</item>
+        <item name="android:textSize">22sp</item>
         <item name="android:textColor">@color/text_primary</item>
     </style>
 
@@ -172,10 +173,10 @@
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">wrap_content</item>
         <item name="android:fontFamily">@font/open_sans_medium</item>
-        <item name="android:textSize">12sp</item>
-        <item name="android:textAllCaps">true</item>
-        <item name="android:letterSpacing">0.09</item>
-        <item name="android:textColor">@color/text_tertiary</item>
+        <item name="android:textSize">17sp</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="android:letterSpacing">0</item>
+        <item name="android:textColor">@color/text_primary</item>
     </style>
 
     <!-- ============================================================ Cards -->

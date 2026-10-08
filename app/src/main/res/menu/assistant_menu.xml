@@ -10,6 +10,12 @@
         item hidden behind an overflow menu is a menu that will never be opened.
     -->
     <item
+        android:id="@+id/action_chat_history"
+        android:icon="@drawable/ic_history"
+        android:title="@string/action_chat_history"
+        app:showAsAction="always" />
+
+    <item
         android:id="@+id/action_new_conversation"
         android:icon="@drawable/ic_chat_new"
         android:title="@string/action_new_conversation"

@@ -1,0 +1,9 @@
+Use case: stylized-concept
+Asset type: Android wellness dashboard header illustration, nighttime variant
+Primary request: Create a polished panoramic night interior illustration inspired by the night panel in the supplied reference image, for StressGuard's home header.
+Scene/backdrop: tranquil bedroom or study by a large window, distant quiet city lights, deep indigo sky, subtle crescent moon glow, small desk lamp, one leafy plant.
+Style/medium: premium editorial mobile-app illustration, refined soft 2D digital painting with clean architectural silhouettes and subtle depth; sophisticated, not childish.
+Composition/framing: very wide 3:1 banner; keep the left 48% calm, dark, and low-detail for greeting text; concentrate window, furniture silhouette, lamp, and plant toward the right half; natural fade at lower edge into a deep navy app canvas.
+Lighting/mood: restful, quiet, protective, late evening; restrained violet and teal ambient glow.
+Color palette: canvas #07112D, indigo #111B55, violet #552B9B, teal #18B8B2, lamp amber #FFC66D, text-safe midnight #081126.
+Constraints: no text, no letters, no logo, no UI controls, no phone frame, no person, no watermark; usable as a background behind white text; avoid neon overload and high-frequency detail.

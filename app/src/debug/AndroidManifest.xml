@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <application>
+        <receiver
+            android:name=".DebugStressAlertReceiver"
+            android:exported="true"
+            android:permission="android.permission.DUMP">
+            <intent-filter>
+                <action android:name="com.example.stressguard.debug.SHOW_HIGH_STRESS_ALERT" />
+            </intent-filter>
+        </receiver>
+    </application>
+</manifest>

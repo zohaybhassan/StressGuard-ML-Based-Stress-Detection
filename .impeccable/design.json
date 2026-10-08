@@ -1,0 +1,115 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-08T17:00:00+05:00",
+  "title": "Design System: StressGuard",
+  "extensions": {
+    "colorMeta": {
+      "day-canvas": {
+        "role": "neutral",
+        "displayName": "Sea-Glass Daylight",
+        "canonical": "#F2F9F7",
+        "tonalRamp": ["#15312B", "#294D45", "#467069", "#68938A", "#91B7AE", "#BAD8D1", "#DCEDE9", "#F2F9F7"]
+      },
+      "night-canvas": {
+        "role": "neutral",
+        "displayName": "Restful Midnight Teal",
+        "canonical": "#04110F",
+        "tonalRamp": ["#04110F", "#0A1D1A", "#15312D", "#2D514A", "#54776F", "#83A59D", "#B9D1CB", "#EAF5F2"]
+      },
+      "day-primary": {
+        "role": "primary",
+        "displayName": "Grounded Day Green",
+        "canonical": "#087A61",
+        "tonalRamp": ["#073126", "#07513F", "#087A61", "#199D80", "#43B99E", "#7BD2BC", "#B5E8D9", "#EAF9F3"]
+      },
+      "night-primary": {
+        "role": "primary",
+        "displayName": "Luminous Night Mint",
+        "canonical": "#2DE5A7",
+        "tonalRamp": ["#06382A", "#075B43", "#087A5B", "#0EA879", "#2DE5A7", "#78EDC7", "#B9F6E1", "#EAFFF7"]
+      }
+    },
+    "typographyMeta": {
+      "display-metric": {
+        "displayName": "Display Metric",
+        "purpose": "The current stress percentage and other singular hero values."
+      },
+      "page-greeting": {
+        "displayName": "Personal Greeting",
+        "purpose": "Time-aware greeting and account name in the scenic Home header."
+      },
+      "body": {
+        "displayName": "Supportive Body",
+        "purpose": "Readable, non-clinical explanations and recovery guidance."
+      }
+    },
+    "shadows": [
+      {
+        "name": "tonal-card-depth",
+        "value": "0 2px 8px rgba(4,17,15,0.08)",
+        "purpose": "Subtle daylight card separation; night mode relies primarily on borders and tonal layering."
+      }
+    ],
+    "motion": [
+      {
+        "name": "quiet-state-change",
+        "value": "180-240ms standard Material easing",
+        "purpose": "Card, navigation, and semantic-state changes without distracting from live wellness data."
+      }
+    ],
+    "breakpoints": [
+      { "name": "compact-phone", "value": "320dp" },
+      { "name": "single-column-max", "value": "600dp" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Scenic Greeting Header",
+      "kind": "custom",
+      "description": "A time-aware 160-180dp header pairing a personal greeting with the matching decorative landscape and contrast-preserving scrim."
+    },
+    {
+      "name": "Current Stress Hero",
+      "kind": "card",
+      "description": "The dominant live-data card combining score, classification, freshness, uncertainty, and watch status."
+    },
+    {
+      "name": "Bottom Navigation",
+      "kind": "nav",
+      "description": "Persistent Home, Trends, and Assistant destinations with one restored and visibly selected item."
+    }
+  ],
+  "narrative": {
+    "northStar": "A Calm Day-to-Night Companion",
+    "overview": "StressGuard shifts from an airy, optimistic daylight environment to a deep, restful night environment while keeping every health signal, action, and trust cue in the same place. The scenery creates atmosphere; semantic tokens and data truth remain in control.",
+    "keyCharacteristics": [
+      "Automatic local-time day and night modes",
+      "Scenic but accessible personal greeting",
+      "One-glance stress hierarchy",
+      "Honest freshness and uncertainty states",
+      "Calm native Android interaction patterns"
+    ],
+    "rules": [
+      {
+        "name": "The Same Truth Rule",
+        "body": "Day and night may change atmosphere, never data, available actions, or semantic meaning.",
+        "section": "colors"
+      },
+      {
+        "name": "The Scenic Restraint Rule",
+        "body": "Illustration supports the greeting and yields to legibility; it never behaves like live weather.",
+        "section": "components"
+      }
+    ],
+    "dos": [
+      "Do use semantic resources with day and night variants.",
+      "Do preserve 4.5:1 normal-text contrast and correct system-bar icon appearance.",
+      "Do exclude decorative scenery from accessibility focus."
+    ],
+    "donts": [
+      "Don't fork features or information hierarchy by time of day.",
+      "Don't hardcode dark-only colors in layouts.",
+      "Don't label stale or simulated data as live."
+    ]
+  }
+}

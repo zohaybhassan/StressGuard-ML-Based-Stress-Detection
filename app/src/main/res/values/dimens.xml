@@ -16,14 +16,15 @@
     <dimen name="space_2xl">32dp</dimen>
 
     <!-- Screen gutter. One value, used by every scrolling screen. -->
-    <dimen name="screen_padding">20dp</dimen>
+    <dimen name="screen_padding">16dp</dimen>
 
     <!-- Corner radii. Small for tiles and chips, medium for cards, large for the hero. -->
     <dimen name="radius_sm">14dp</dimen>
     <dimen name="radius_md">20dp</dimen>
-    <dimen name="radius_lg">28dp</dimen>
+    <dimen name="radius_lg">24dp</dimen>
 
     <dimen name="stroke_width">1dp</dimen>
+    <dimen name="stroke_width_selected">2dp</dimen>
 
     <!-- Touch targets. 56dp for primary actions, 48dp for everything else, per the Material
          accessibility minimum. -->
@@ -35,6 +36,6 @@
     <dimen name="icon_tile_lg">48dp</dimen>
 
     <!-- The stress gauge. Sized so the whole hero card clears the fold on a 5.5" screen. -->
-    <dimen name="gauge_size">216dp</dimen>
-    <dimen name="gauge_thickness">16dp</dimen>
+    <dimen name="gauge_size">148dp</dimen>
+    <dimen name="gauge_thickness">12dp</dimen>
 </resources>

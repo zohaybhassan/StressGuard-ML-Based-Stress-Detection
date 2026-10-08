@@ -20,6 +20,10 @@ import kotlinx.coroutines.launch
 class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        if (BuildConfig.DEBUG) {
+            TimeThemeManager.setDebugPreview(intent.getStringExtra(EXTRA_THEME_PREVIEW))
+            TimeThemeManager.applyCurrentTheme()
+        }
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
@@ -47,5 +51,9 @@ class MainActivity : AppCompatActivity() {
     private fun route(destination: Class<*>) {
         startActivity(Intent(this, destination))
         finish()
+    }
+
+    companion object {
+        const val EXTRA_THEME_PREVIEW = "stressguard_theme_preview"
     }
 }
