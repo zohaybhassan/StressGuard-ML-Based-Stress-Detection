@@ -18,6 +18,7 @@
     <color name="brand_soft">#D9F5EA</color>
     <color name="brand_softer">#EAF9F3</color>
     <color name="on_brand">#FFFFFF</color>
+    <color name="launcher_background">#073F35</color>
 
     <!-- Surfaces. The canvas is a barely-green off-white so that white cards lift off it without
          needing shadows; the whole UI is drawn with borders rather than elevation. -->
