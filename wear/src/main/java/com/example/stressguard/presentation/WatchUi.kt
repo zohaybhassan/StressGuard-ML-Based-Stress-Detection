@@ -104,16 +104,24 @@ private enum class Screen {
 fun StressGuardWearApp(
     sensor: WatchSensorUiState,
     received: ReceivedWatchState,
+    openAlertRequestId: Long = 0L,
     onCommand: (WatchProtocol.Command) -> Unit,
     onOpenSettings: () -> Unit,
 ) {
     var screenName by remember { mutableStateOf(Screen.DASHBOARD.name) }
     val screen = runCatching { Screen.valueOf(screenName) }.getOrDefault(Screen.DASHBOARD)
 
-    LaunchedEffect(received.state.alertActive, received.state.feedbackId) {
-        if (received.state.alertActive && received.state.feedbackId > 0L) {
+    LaunchedEffect(openAlertRequestId) {
+        if (
+            openAlertRequestId > 0L &&
+            received.state.alertActive &&
+            received.state.feedbackId > 0L
+        ) {
             screenName = Screen.ALERT.name
-        } else if (screenName == Screen.ALERT.name) {
+        }
+    }
+    LaunchedEffect(received.state.alertActive) {
+        if (!received.state.alertActive && screenName == Screen.ALERT.name) {
             screenName = Screen.DASHBOARD.name
         }
     }

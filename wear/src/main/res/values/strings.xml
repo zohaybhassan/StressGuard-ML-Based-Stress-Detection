@@ -4,6 +4,12 @@
     <string name="stress_tile_description">Your latest phone-computed StressGuard result</string>
     <string name="stress_complication_label">Stress percentage</string>
     <string name="stress_complication_description">Latest StressGuard percentage from your phone</string>
+    <string name="stress_notification_channel_name">Stress alerts</string>
+    <string name="stress_notification_channel_description">High-stress alerts calculated from your recent readings</string>
+    <string name="stress_notification_title">High stress detected</string>
+    <string name="stress_notification_score">Stress %1$d%%</string>
+    <string name="stress_notification_no_score">Stress reading available</string>
+    <string name="stress_notification_detail">%1$s · %2$s. Open StressGuard to check in.</string>
     <!--
     This string is used for square devices and overridden by hello_world in
     values-round/strings.xml for round devices.

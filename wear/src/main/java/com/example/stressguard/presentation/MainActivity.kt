@@ -49,6 +49,7 @@ class MainActivity : ComponentActivity(), SensorEventListener {
     private var displayState by mutableStateOf("Waiting for permissions...")
     private var sensorUiState by mutableStateOf(WatchSensorUiState())
     private var phoneConnected by mutableStateOf(false)
+    private var openAlertRequestId by mutableStateOf(0L)
 
     /**
      * A condition that overrides the normal readout: a missing permission, a watch that cannot
@@ -131,12 +132,27 @@ class MainActivity : ComponentActivity(), SensorEventListener {
         // later, and onPermissionLost records that plainly -- a better outcome than never trying
         // and never knowing.
         registerBackgroundCollection()
+        requestNotificationPermissionIfNeeded()
+    }
+
+    private val notificationPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        if (granted) {
+            WearStressNotificationManager.ensureChannel(this)
+            WearStressNotificationManager.show(this, WatchStateStore.state(this).value.state)
+            Log.i(TAG, "watch stress notifications enabled")
+        } else {
+            Log.w(TAG, "notification permission denied; watch OS alerts will not be shown")
+        }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen()
         super.onCreate(savedInstanceState)
         setTheme(android.R.style.Theme_DeviceDefault)
+        WearStressNotificationManager.ensureChannel(this)
+        handleLaunchIntent(intent)
 
         // Initialize the traditional Step Counter sensor for live updates
         sensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
@@ -161,9 +177,22 @@ class MainActivity : ComponentActivity(), SensorEventListener {
             StressGuardWearApp(
                 sensor = sensorUiState,
                 received = phoneState,
+                openAlertRequestId = openAlertRequestId,
                 onCommand = ::sendCommand,
                 onOpenSettings = ::openAppSettings,
             )
+        }
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        handleLaunchIntent(intent)
+    }
+
+    private fun handleLaunchIntent(intent: Intent?) {
+        if (intent?.action == WearStressNotificationManager.ACTION_OPEN_STRESS_ALERT) {
+            openAlertRequestId += 1L
         }
     }
 
@@ -203,6 +232,16 @@ class MainActivity : ComponentActivity(), SensorEventListener {
         }
         return heartRate == PackageManager.PERMISSION_GRANTED &&
             activity == PackageManager.PERMISSION_GRANTED
+    }
+
+    private fun requestNotificationPermissionIfNeeded() {
+        if (
+            Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+            ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) !=
+            PackageManager.PERMISSION_GRANTED
+        ) {
+            notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+        }
     }
 
     private fun startSensors() {
@@ -303,6 +342,7 @@ class MainActivity : ComponentActivity(), SensorEventListener {
             return
         }
         registerBackgroundCollection()
+        requestNotificationPermissionIfNeeded()
     }
 
     /**

@@ -1,7 +1,5 @@
 package com.example.stressguard.presentation
 
-import android.os.VibrationEffect
-import android.os.Vibrator
 import android.util.Log
 import com.google.android.gms.wearable.MessageEvent
 import com.google.android.gms.wearable.WearableListenerService
@@ -27,8 +25,9 @@ class WatchStateListenerService : WearableListenerService() {
                 "alert=${state.alertActive}"
         )
         if (state.alertActive && state.feedbackId > 0L && state.feedbackId != previousAlert) {
-            val vibrator = getSystemService(Vibrator::class.java)
-            vibrator?.vibrate(VibrationEffect.createWaveform(longArrayOf(0, 180, 140, 180), -1))
+            WearStressNotificationManager.show(applicationContext, state)
+        } else if (!state.alertActive) {
+            WearStressNotificationManager.cancel(applicationContext)
         }
     }
 
